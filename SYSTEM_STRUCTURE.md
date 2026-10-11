@@ -17,7 +17,8 @@
 
 ## Database modules
 - Existing tables retained: `schools`, `profiles`, `students`, `exam_marks`, `platform_activity_log`, `platform_user_presence`, `platform_messages`.
-- Added by the migration: `teachers`, `school_classes`, `attendance_records`, `fee_payments`, `school_events`, `school_announcements`, `parent_student_links`, `school_messages`.
+- Added by the core migration: `teachers`, `school_classes`, `attendance_records`, `fee_payments`, `school_events`, `school_announcements`, `parent_student_links`, `school_messages`.
+- School registration workflow: `school_registration_requests` (created and secured by `20261011190000_school_registration_requests.sql`).
 - Row-level security is enabled on all new tables. Policies scope data to a school and reserve fee management for principal/bursar and platform oversight for super admins.
 
 ## Important rollout notes
