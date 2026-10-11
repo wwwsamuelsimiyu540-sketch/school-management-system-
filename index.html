@@ -211,7 +211,7 @@ const demoAccounts = {
 };
 const roleMenus = {
  super_admin:[['Dashboard','▦'],['School Settings','🏫'],['Reports','▥']],
- principal:[['Dashboard','▦'],['Students','♟'],['Teachers','♙'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],['School Settings','⚙']],
+ principal:[['Dashboard','▦'],['School Registration','🏫'],['Students','♟'],['Teachers','♙'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],['School Settings','⚙']],
  teacher:[['Dashboard','▦'],['My Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Reports','▥']],
  bursar:[['Dashboard','▦'],['Fees','＄'],['Reports','▥']],
  parent:[['Dashboard','▦'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']],
@@ -266,6 +266,7 @@ function bursarHome(){let due=db.Fees.reduce((s,x)=>s+Math.max(0,+x.amount-+x.pa
 function familyHome(isStudent){let label=isStudent?'Student':'Parent';return `${hero(isStudent?'Your learning dashboard':'Your child’s school dashboard',isStudent?'View your own results, attendance and fee status.':'View linked children’s results, attendance and fee information.')}<div class="portal-grid">${tile('Latest average','78%','Illustrative sample result','📊')}${tile('Attendance','92%','Illustrative sample attendance','✓')}${tile('Fee balance','KES 5,000','Illustrative sample balance','🧾')}</div><div class="panel"><h2>${isStudent?'My learning':'Family access'}</h2><div class="quick"><button data-goto="My Results">View results</button><button class="secondary" data-goto="My Attendance">View attendance</button><button class="secondary" data-goto="My Fees">View fee balance</button></div><div class="demo-warning">These are sample figures, not real records. In the live system, parents will only see children linked to their account; students will only see their own records.</div></div>`}
 function simpleRolePage(page){
  const role=activeUser.role;
+ if(page==='School Registration'&&role==='principal') return `${hero('Register a school','Submit your school for Super Admin review. You will receive access after approval.')}<div class="panel"><p>Use this secure registration form to submit your school details. Requests remain pending until the Super Admin approves them.</p><iframe title="School registration" src="./school-registration.html" style="width:100%;height:760px;border:1px solid var(--line);border-radius:12px;background:white"></iframe></div>`;
  if(page==='School Settings'&&role==='super_admin') return `${hero('School workspace administration','Review and configure demo school workspaces.')}<div class="panel"><div class="sectionhead"><h2>Academic workspace</h2><button id="msOpenSuite">Open workspace settings →</button></div><p class="ms-note">Use the existing academic suite to manage school settings, examinations, marks, report cards and activities.</p></div>`;
  if(page==='School Settings'&&role==='principal') return msSettings();
  if(page==='My Classes') return `${hero('My classes','Example class assignments for the signed-in teacher.')}<div class="panel"><div class="tablewrap"><table><thead><tr><th>Class</th><th>Subject / class teacher</th><th>Room</th><th>Capacity</th></tr></thead><tbody>${db.Classes.slice(0,2).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.teacher)}</td><td>${esc(c.room)}</td><td>${esc(c.capacity)}</td></tr>`).join('')}</tbody></table></div></div>`;
@@ -526,7 +527,7 @@ body{background:#f3f7fc;color:#102a56}
 <script>
 (function(){
  const superNav=[
-  ['Dashboard','▦'],['Schools','🏫'],['Users & Roles','♙'],['School Settings','⚙'],
+  ['Dashboard','▦'],['Schools','🏫'],['School Approvals','🛡'],['Users & Roles','♙'],['School Settings','⚙'],
   ['Students','🎓'],['Teachers','♟'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],
   ['Activity Monitor','◷'],['Communication Centre','✉'],['System Reports','▤']
  ];
@@ -534,11 +535,11 @@ body{background:#f3f7fc;color:#102a56}
   const side=document.querySelector('.sidebar');if(!side||activeUser?.role!=='super_admin')return;
   side.innerHTML='<div class="brand">🎓 School<br><span>Management System</span></div>'+
    '<div class="admin-nav-heading">System management</div>'+
-   superNav.slice(0,4).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
+   superNav.slice(0,5).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
    '<div class="admin-nav-heading">School services</div>'+
-   superNav.slice(4,11).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
+   superNav.slice(5,12).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
    '<div class="admin-nav-heading">Platform</div>'+
-   superNav.slice(11).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
+   superNav.slice(12).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
    '<div style="height:14px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>';
   side.querySelectorAll('[data-admin-page]').forEach(b=>b.addEventListener('click',()=>{currentPage=b.dataset.adminPage;render()}));
   const out=side.querySelector('#logoutBtn');if(out)out.addEventListener('click',logout);
@@ -563,6 +564,7 @@ body{background:#f3f7fc;color:#102a56}
   document.getElementById('userPill').textContent='● '+(activeUser.name||'Super Admin')+' · Super Admin';
   let html;
   if(currentPage==='Dashboard')html=adminDashboard();
+  else if(currentPage==='School Approvals')html='<div class="portal-hero"><h2>School Registration Approvals</h2><p>Review administrator registration requests and activate approved schools.</p></div><div class="panel"><iframe title="School approvals" src="./school-approvals.html" style="width:100%;height:820px;border:1px solid var(--line);border-radius:12px;background:white"></iframe></div>';
   else if(['Schools','Users & Roles','Activity Monitor','Communication Centre','System Reports'].includes(currentPage))html=adminPageShell(currentPage);
   else if(['Students','Teachers','Classes','Attendance','Fees','Examinations'].includes(currentPage))html=moduleShell(currentPage);
   else if(currentPage==='Reports')html=adminPageShell('System Reports');
