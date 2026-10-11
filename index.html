@@ -210,12 +210,12 @@ const demoAccounts = {
   student:{password:'demo123',role:'student',name:'Demo Student',label:'Student Portal'}
 };
 const roleMenus = {
- super_admin:[['Dashboard','▦'],['School Settings','🏫'],['Reports','▥']],
- principal:[['Dashboard','▦'],['School Registration','🏫'],['Students','♟'],['Teachers','♙'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],['School Settings','⚙']],
- teacher:[['Dashboard','▦'],['My Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Reports','▥']],
- bursar:[['Dashboard','▦'],['Fees','＄'],['Reports','▥']],
- parent:[['Dashboard','▦'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']],
- student:[['Dashboard','▦'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']]
+ super_admin:[['Dashboard','▦'],['Feature Directory','☷'],['School Settings','🏫'],['Reports','▥']],
+ principal:[['Dashboard','▦'],['Feature Directory','☷'],['School Registration','🏫'],['Students','♟'],['Teachers','♙'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],['School Settings','⚙']],
+ teacher:[['Dashboard','▦'],['Feature Directory','☷'],['My Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Reports','▥']],
+ bursar:[['Dashboard','▦'],['Feature Directory','☷'],['Fees','＄'],['Reports','▥']],
+ parent:[['Dashboard','▦'],['Feature Directory','☷'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']],
+ student:[['Dashboard','▦'],['Feature Directory','☷'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']]
 };
 const roleNames={super_admin:'Developer',principal:'Administrator',teacher:'Teacher',bursar:'Bursar',parent:'Parent',student:'Student'};
 const originalForm=document.getElementById('loginForm');
@@ -527,7 +527,7 @@ body{background:#f3f7fc;color:#102a56}
 <script>
 (function(){
  const superNav=[
-  ['Dashboard','▦'],['Schools','🏫'],['School Approvals','🛡'],['Users & Roles','♙'],['School Settings','⚙'],
+  ['Dashboard','▦'],['Feature Directory','☷'],['Schools','🏫'],['School Approvals','🛡'],['Users & Roles','♙'],['School Settings','⚙'],
   ['Students','🎓'],['Teachers','♟'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],
   ['Activity Monitor','◷'],['Communication Centre','✉'],['System Reports','▤']
  ];
@@ -575,6 +575,64 @@ body{background:#f3f7fc;color:#102a56}
   else if(['Schools','Users & Roles','Activity Monitor','Communication Centre','System Reports'].includes(currentPage))refreshAdminPage();
   else if(['Students','Teachers','Classes','Attendance','Fees','Examinations'].includes(currentPage)&&activeUser.authMode==='supabase')loadLiveModule(currentPage);
  };
+})();
+</script>
+
+
+<!-- Role-aware feature directory: navigation-only items are labelled clearly; live modules keep their existing Supabase handlers. -->
+<style>
+.feature-toolbar{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:16px}.feature-toolbar input{flex:1;min-width:180px;padding:11px;border:1px solid var(--line);border-radius:9px}.feature-group{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px;margin:0 0 14px}.feature-group h2{font-size:16px;margin:0 0 12px}.feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.feature-btn{min-height:50px;text-align:left;white-space:normal;background:#f3f7fc;color:#12396f;border:1px solid #dce8f7;font-size:13px}.feature-btn:hover{background:#e5efff}.feature-note{font-size:12px;color:var(--muted);line-height:1.5}.feature-status{font-size:11px;color:#64748b;display:block;margin-top:4px;font-weight:400}
+@media(max-width:850px){.feature-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:520px){.feature-grid{grid-template-columns:1fr}.feature-toolbar input{min-width:100%}}
+</style>
+<script>
+(function(){
+ const featureGroups=[
+  {name:'Platform Management',roles:['super_admin'],items:['Dashboard','Manage All Schools','Register New School','School Approvals','Rejected Registrations','School Settings','System Health Dashboard','System Performance Dashboard','System Overview','System Activity Overview','System Reports','View School Statistics']},
+  {name:'Users & Roles',roles:['super_admin'],items:['Manage All Users','Create User Form','View User Details','Edit User Details Form','View User Roles','View Active Users','View Login History','View User Activity Reports','Search Users','Filter Users']},
+  {name:'School Administration',roles:['super_admin','principal'],items:['School Dashboard','School Profile','Edit School Details Form','Academic Year','School Terms','Departments','School Calendar','School Events','School Announcements','School Documents','School Policies']},
+  {name:'Students',roles:['super_admin','principal','teacher','parent','student'],items:['Student Dashboard','Register Student Form','View All Students','Student Details','Edit Student Details Form','Student Admission','Student Transfer Form','Student Promotion Form','Student Attendance History','Student Discipline Records','Student Documents','Student ID Card Preview','Student Graduation List','Student Reports']},
+  {name:'Teachers & Staff',roles:['super_admin','principal','teacher'],items:['Staff Dashboard','Register Teacher Form','View All Teachers','Staff Details','Edit Staff Details Form','Assign Subjects Form','Assign Classes Form','Staff Attendance Records','Staff Leave Requests List','Staff Performance Records','Staff Documents','Teacher Timetable']},
+  {name:'Classes & Timetable',roles:['super_admin','principal','teacher','student'],items:['Manage Classes','Create Class Form','Edit Class Form','Assign Class Teacher Form','Manage Subjects','Assign Students to Class','Create Timetable Form','View Timetable','Exam Timetable','Class Capacity Overview','Room Allocation','My Classes']},
+  {name:'Attendance',roles:['super_admin','principal','teacher','parent','student'],items:['Mark Student Attendance','Mark Staff Attendance','View Daily Attendance','Attendance Records','Absent Students','Late Arrivals','Attendance Summary','Attendance Alerts','Print Attendance Register','My Attendance','Child Attendance View']},
+  {name:'Fees & Finance',roles:['super_admin','principal','bursar','parent','student'],items:['Finance Dashboard','Fee Structure','Student Fee Statements','Fee Payment Entry Form','Receipt Preview','Outstanding Balances','Fee Discounts','Fee Waivers','Expense Records','Income & Expenses Overview','Budget Overview','Financial Reports','My Fees','Child Fee Balance View']},
+  {name:'Examinations & Academics',roles:['super_admin','principal','teacher','parent','student'],items:['Exam Dashboard','Create Examination Form','Enter Marks Form','Edit Marks Form','Grade Calculator','Report Card Preview','Examination Results','Subject Performance','Class Performance','Academic Progress','Print Report Cards','My Results','Child Results View','Learning Resources']},
+  {name:'Parent & Student Portals',roles:['super_admin','principal','parent','student'],items:['Parent Dashboard','Student Portal Dashboard','Link Parent to Student Form','Download Report Card','Student Personal Profile']},
+  {name:'Communication Centre',roles:['super_admin','principal','teacher','bursar','parent','student'],items:['Communication Centre','Internal Chat Interface','Email Message Draft','WhatsApp Message Draft','School Announcements','Message Templates','Parent Notifications List','Staff Notifications List','Message History']},
+  {name:'Reports & Analytics',roles:['super_admin','principal','teacher','bursar'],items:['School Performance Report','Student Statistics','Staff Statistics','Enrollment Report','Attendance Report','Finance Report','Examination Report','School Comparison','Export Report to Excel (CSV)','Export Report to PDF / Print']},
+  {name:'Account & Help',roles:['super_admin','principal','teacher','bursar','parent','student'],items:['My Profile','Edit My Profile Form','System Notifications View','Help Centre','Contact Support Form','Privacy Information','Logout']}
+ ];
+ const liveRoutes={
+  'Dashboard':'Dashboard','Manage All Schools':'Schools','School Approvals':'School Approvals','School Settings':'School Settings',
+  'Manage All Users':'Users & Roles','View User Details':'Users & Roles','View User Roles':'Users & Roles','View Active Users':'Activity Monitor','View Login History':'Activity Monitor','View User Activity Reports':'Activity Monitor',
+  'School Dashboard':'Dashboard','School Profile':'School Settings','View All Students':'Students','Student Details':'Students','Student Dashboard':'Students',
+  'Staff Dashboard':'Teachers','View All Teachers':'Teachers','Teacher Timetable':'My Classes','My Classes':'My Classes','Manage Classes':'Classes','View Timetable':'Classes','Exam Timetable':'Examinations',
+  'Mark Student Attendance':'Attendance','Mark Staff Attendance':'Attendance','View Daily Attendance':'Attendance','Attendance Records':'Attendance','Attendance Summary':'Attendance','Print Attendance Register':'Attendance','My Attendance':'My Attendance','Child Attendance View':'My Attendance',
+  'Finance Dashboard':'Fees','Student Fee Statements':'Fees','Fee Payment Entry Form':'Fees','Outstanding Balances':'Fees','Financial Reports':'Reports','My Fees':'My Fees','Child Fee Balance View':'My Fees',
+  'Exam Dashboard':'Examinations','Enter Marks Form':'Examinations','Examination Results':'Examinations','Print Report Cards':'Reports','My Results':'My Results','Child Results View':'My Results',
+  'Communication Centre':'Communication Centre','School Performance Report':'Reports','Student Statistics':'Reports','Staff Statistics':'Reports','Enrollment Report':'Reports','Attendance Report':'Reports','Finance Report':'Reports','Examination Report':'Reports','Export Report to PDF / Print':'Reports',
+  'Register New School':'School Registration','Register Student Form':'Students','Register Teacher Form':'Teachers'
+ };
+ function escFeature(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+ function featureDirectory(){
+  const role=activeUser?.role||'student';
+  const groups=featureGroups.filter(g=>g.roles.includes(role));
+  return '<div class="portal-hero"><span class="role-tag">'+escFeature(roleNames[role]||role)+'</span><h2 style="margin-top:10px">Feature Directory</h2><p>Find the pages and controls available to your role. Live record pages use the existing database connection; other entries open a clearly labelled interface guide rather than pretending an unfinished feature saves data.</p></div>'+
+   '<div class="feature-toolbar"><input id="featureSearch" type="search" placeholder="Search buttons and features…" aria-label="Search feature directory"><button id="featurePrint" class="secondary">Print directory</button><button id="featureExport" class="secondary">Export list (CSV)</button></div>'+
+   '<div id="featureDirectoryGroups">'+groups.map(g=>'<section class="feature-group" data-feature-group="'+escFeature(g.name)+'"><h2>'+escFeature(g.name)+'</h2><div class="feature-grid">'+g.items.map(name=>'<button class="feature-btn" data-feature-name="'+escFeature(name)+'">'+escFeature(name)+'</button>').join('')+'</div></section>').join('')+'</div>'+
+   '<p class="feature-note">Security note: this directory does not grant permissions. Supabase policies and role checks remain responsible for access to real school records. Email and WhatsApp options prepare drafts only; they do not send messages automatically.</p>';
+ }
+ const priorRenderWithDirectory=render;
+ render=function(){
+  if(currentPage!=='Feature Directory'){priorRenderWithDirectory();return;}
+  if(!activeUser)return;
+  document.getElementById('pageTitle').textContent='Feature Directory';
+  const content=document.getElementById('content');content.innerHTML=featureDirectory();
+  const search=document.getElementById('featureSearch');
+  search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();content.querySelectorAll('[data-feature-group]').forEach(group=>{let shown=0;group.querySelectorAll('[data-feature-name]').forEach(btn=>{const yes=btn.dataset.featureName.toLowerCase().includes(q);btn.style.display=yes?'':'none';if(yes)shown++;});group.style.display=shown?'':'none';});});
+  document.getElementById('featurePrint').onclick=()=>window.print();
+  document.getElementById('featureExport').onclick=()=>{const rows=[['Section','Feature']];content.querySelectorAll('[data-feature-group]').forEach(g=>g.querySelectorAll('[data-feature-name]').forEach(b=>{if(b.style.display!=='none'&&g.style.display!=='none')rows.push([g.querySelector('h2').textContent,b.dataset.featureName]);}));const csv=rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='school-management-feature-list.csv';a.click();URL.revokeObjectURL(url);};
+  content.querySelectorAll('[data-feature-name]').forEach(btn=>btn.addEventListener('click',()=>{const name=btn.dataset.featureName;const route=liveRoutes[name];if(route&&route!==currentPage){go(route);return;}if(name==='Logout'){logout();return;}if(name==='Export Report to Excel (CSV)'){document.getElementById('featureExport').click();return;}if(name==='Register New School'&&activeUser.role==='principal'){go('School Registration');return;}content.innerHTML='<div class="portal-hero"><span class="role-tag">INTERFACE GUIDE</span><h2 style="margin-top:10px">'+escFeature(name)+'</h2><p>This page entry is included in your role-based system navigation.</p></div><div class="panel"><h2>'+escFeature(name)+'</h2><p class="feature-note">This control is currently an interface/navigation placeholder. It does not save or modify school records. To make it operational, connect it to the relevant Supabase table and enforce role-based Row Level Security.</p><div class="quick"><button id="featureBack">← Back to Feature Directory</button><button class="secondary" id="featurePrintPage">Print this page</button></div></div>';document.getElementById('featureBack').onclick=()=>go('Feature Directory');document.getElementById('featurePrintPage').onclick=()=>window.print();}));
+ }
 })();
 </script>
 
