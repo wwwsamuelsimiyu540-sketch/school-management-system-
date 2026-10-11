@@ -127,7 +127,7 @@ function bindPage(){document.querySelectorAll('[data-goto]').forEach(b=>b.addEve
 function bindDeletes(){document.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Delete this record?')){db[b.dataset.page]=db[b.dataset.page].filter(x=>x.id!==b.dataset.delete);saveDB();render()}}))}
 function showAddForm(){const c=configs[currentPage];if(['Attendance','Fees','Examinations'].includes(currentPage)&&!db.Students.length){alert('Add a student first.');return}if(currentPage==='Classes'&&!db.Teachers.length){alert('Add a teacher first, or add one after creating your first class.');return}document.getElementById('formArea').innerHTML=`<div class="panel"><h2>Add ${c.singular}</h2><form id="recordForm"><div class="formgrid">${c.fields.map(inputField).join('')}</div><div class="form-actions"><button type="button" class="secondary" id="cancelForm">Cancel</button><button>Save Record</button></div></form></div>`;document.getElementById('cancelForm').addEventListener('click',()=>document.getElementById('formArea').innerHTML='');document.getElementById('recordForm').addEventListener('submit',e=>{e.preventDefault();let row=Object.fromEntries(new FormData(e.target).entries());row.id=idFor(currentPage);db[currentPage].unshift(row);saveDB();render()});document.getElementById('formArea').scrollIntoView({behavior:'smooth',block:'start'})}
 function go(page){currentPage=page;document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));render();window.scrollTo(0,0)}
-if(sessionStorage.getItem('edumanage_login')==='1')showApp();
+/* Legacy auto-login removed: initialize through the current role-based Supabase login only. */
 </script>
 
 <!-- MULTI-SCHOOL ACADEMIC UPGRADE -->
