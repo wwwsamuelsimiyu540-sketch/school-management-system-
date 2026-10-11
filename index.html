@@ -43,7 +43,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
   </form>
 </div>
 <div id="app">
-<aside class="sidebar">
+<div class="menu-scrim" id="menuScrim" aria-hidden="true"></div><aside class="sidebar" id="appSidebar" aria-label="Main navigation">
   <div class="brand">Edu<span>Manage</span></div>
   <button class="navbtn active" data-page="Dashboard"><small>▦</small> Dashboard</button>
   <button class="navbtn" data-page="Students"><small>♟</small> Students</button>
@@ -57,7 +57,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
   <div style="height:20px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>
 </aside>
 <main class="main">
-  <header class="topbar"><div><h1 id="pageTitle">Dashboard</h1><p id="today"></p></div><div class="userpill" id="userPill">● Signed out</div></header>
+  <header class="topbar"><div class="topbar-start"><button type="button" class="menu-toggle" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false">☰ <span style="font-size:13px">Menu</span></button><div><h1 id="pageTitle">Dashboard</h1><p id="today"></p></div></div><div class="userpill" id="userPill">● Signed out</div></header>
   <div id="content"></div>
   <div class="footer">EduManage School Management System · Demo edition · Data saved in this browser</div>
 </main>
