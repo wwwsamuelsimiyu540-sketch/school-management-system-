@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EduManage | School Management System</title>
+<style>
+:root{--navy:#14213d;--blue:#2563eb;--light:#f4f7fb;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--light);color:var(--ink)}
+button,input,select{font:inherit}button{cursor:pointer;border:0;border-radius:8px;padding:10px 14px;background:var(--blue);color:#fff;font-weight:600}
+button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#fee2e2;color:var(--red)}
+#loginScreen{min-height:100vh;display:grid;place-items:center;padding:20px;background:linear-gradient(135deg,#14213d,#2563eb)}
+.login-card{background:white;width:min(410px,100%);padding:30px;border-radius:18px;box-shadow:0 18px 55px #0003}.login-card h1{margin:0 0 8px}.login-card p{color:var(--muted);line-height:1.5}.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}.field label{font-size:13px;color:#475569;font-weight:700}.field input,.field select{padding:11px;border:1px solid #cbd5e1;border-radius:8px;width:100%;background:#fff}.hint{font-size:12px;color:var(--muted)}
+#app{display:none;min-height:100vh}.sidebar{position:fixed;left:0;top:0;bottom:0;width:235px;background:var(--navy);color:white;padding:22px 14px;overflow:auto}.brand{font-size:20px;font-weight:800;padding:6px 10px 25px}.brand span{color:#93c5fd}.navbtn{display:block;width:100%;text-align:left;background:transparent;color:#cbd5e1;margin:3px 0;padding:11px 12px;font-weight:500}.navbtn.active,.navbtn:hover{background:#ffffff19;color:white}.navbtn small{display:inline-block;width:27px}.main{margin-left:235px;padding:25px;max-width:1600px}.topbar{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:24px}.topbar h1{margin:0;font-size:27px}.topbar p{margin:5px 0;color:var(--muted);font-size:14px}.userpill{background:#fff;border:1px solid var(--line);padding:9px 12px;border-radius:999px;font-size:13px}.cards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:22px}.stat,.panel{background:white;border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:0 2px 5px #0f172a05}.stat .label{font-size:13px;color:var(--muted)}.stat .number{font-size:29px;font-weight:800;margin-top:9px}.stat .icon{float:right;background:#eff6ff;border-radius:10px;padding:9px}.panel{margin-bottom:18px}.panel h2{font-size:17px;margin:0 0 15px}.sectionhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}.sectionhead h2{margin:0}.tools{display:flex;gap:8px;flex-wrap:wrap}.tools input{padding:10px;border:1px solid var(--line);border-radius:8px;min-width:180px}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px;white-space:nowrap}th,td{padding:12px 11px;border-bottom:1px solid #edf0f5;text-align:left}th{background:#f8fafc;color:#475569;font-size:12px}tr:last-child td{border-bottom:0}.badge{padding:5px 8px;border-radius:999px;font-size:11px;font-weight:700;background:#dcfce7;color:#166534}.badge.warn{background:#fef3c7;color:#92400e}.badge.blue{background:#dbeafe;color:#1d4ed8}.empty{text-align:center;color:var(--muted);padding:28px}.formgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.notice{padding:12px 14px;border-radius:9px;background:#eff6ff;color:#1e40af;font-size:13px;line-height:1.5;margin-bottom:15px}.barrow{display:grid;grid-template-columns:110px 1fr 45px;gap:10px;align-items:center;margin:13px 0;font-size:13px}.bar{height:9px;background:#e2e8f0;border-radius:99px;overflow:hidden}.bar i{display:block;height:100%;background:var(--blue);border-radius:99px}.quick{display:flex;gap:8px;flex-wrap:wrap}.footer{color:#94a3b8;text-align:center;font-size:12px;padding:18px}
+@media(max-width:900px){.sidebar{width:70px;padding:15px 8px}.brand{font-size:0;padding:8px 6px 20px}.brand:after{content:"E";font-size:22px;color:#93c5fd}.navbtn{font-size:0;text-align:center;padding:12px 4px}.navbtn small{font-size:17px;width:auto}.main{margin-left:70px;padding:17px}.cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.main{padding:12px}.topbar{align-items:flex-start}.topbar h1{font-size:22px}.userpill{display:none}.cards{gap:8px}.stat{padding:13px}.stat .number{font-size:24px}.formgrid{grid-template-columns:1fr}.tools input{min-width:130px}}
+@media print{.sidebar,.topbar .userpill,.tools,button,.footer{display:none!important}.main{margin:0;padding:0}.panel,.stat{box-shadow:none;break-inside:avoid}}
+
+.role-tag{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#eaf1ff;color:#1d4ed8;font-size:12px;font-weight:700}
+.portal-hero{background:linear-gradient(135deg,#14213d,#1d4ed8);color:#fff;padding:24px;border-radius:16px;margin-bottom:18px}
+.portal-hero h2{margin:0 0 8px;font-size:24px}.portal-hero p{margin:0;color:#dbeafe;line-height:1.6}
+.portal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:16px 0}
+.portal-tile{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:0 2px 7px #17203308}.portal-tile .big{font-size:26px;font-weight:800;color:var(--navy);margin:8px 0}.portal-tile p{color:var(--muted);font-size:13px;margin:0}
+.demo-warning{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:12px 14px;border-radius:10px;margin:14px 0;font-size:13px;line-height:1.5}
+@media(max-width:650px){.portal-hero{padding:18px}.portal-hero h2{font-size:20px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="loginScreen">
+  <form class="login-card" id="loginForm">
+    <div style="font-size:34px">🎓</div>
+    <h1>Edu<span style="color:#2563eb">Manage</span></h1>
+    <p>School Management System<br>Sign in to open the dashboard assigned to your account role.</p>
+    <div class="field"><label for="username">EMAIL ADDRESS</label><input id="username" type="email" required placeholder="Enter your account email" autocomplete="username"></div>
+    <div class="field"><label for="password">PASSWORD</label><input id="password" type="password" required placeholder="Enter your password" autocomplete="current-password"></div>
+    <button style="width:100%;margin-top:8px">Sign in →</button>
+    <div class="hint" style="text-align:left;line-height:1.7;background:#f4f7fb;padding:10px;border-radius:9px">Sign in with the email and password assigned to your Supabase Auth account. Your dashboard is selected automatically from your assigned database role. No role selector is used.</div>
+    <p class="hint" id="loginError" style="color:#b91c1c"></p>
+  </form>
+</div>
+<div id="app">
+<aside class="sidebar">
+  <div class="brand">Edu<span>Manage</span></div>
+  <button class="navbtn active" data-page="Dashboard"><small>▦</small> Dashboard</button>
+  <button class="navbtn" data-page="Students"><small>♟</small> Students</button>
+  <button class="navbtn" data-page="Teachers"><small>♙</small> Teachers</button>
+  <button class="navbtn" data-page="Classes"><small>▤</small> Classes</button>
+  <button class="navbtn" data-page="Attendance"><small>✓</small> Attendance</button>
+  <button class="navbtn" data-page="Fees"><small>＄</small> Fees</button>
+  <button class="navbtn" data-page="Examinations"><small>✎</small> Examinations</button>
+  <button class="navbtn" data-page="Reports"><small>▥</small> Reports</button>
+  <div style="height:20px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>
+</aside>
+<main class="main">
+  <header class="topbar"><div><h1 id="pageTitle">Dashboard</h1><p id="today"></p></div><div class="userpill" id="userPill">● Signed out</div></header>
+  <div id="content"></div>
+  <div class="footer">EduManage School Management System · Demo edition · Data saved in this browser</div>
+</main>
+</div>
+<script>
+const STORAGE_KEY='edumanage_school_v1';
+const starter={
+ Students:[
+  {id:'ST001',name:'Amina Wanjiku',gender:'Female',className:'Grade 7',phone:'0712345678',status:'Active'},
+  {id:'ST002',name:'Brian Otieno',gender:'Male',className:'Grade 8',phone:'0723456789',status:'Active'},
+  {id:'ST003',name:'Faith Chebet',gender:'Female',className:'Grade 9',phone:'0734567890',status:'Active'}
+ ],
+ Teachers:[
+  {id:'T001',name:'Grace Njeri',subject:'Mathematics',phone:'0711223344',email:'grace@example.com'},
+  {id:'T002',name:'Peter Kiptoo',subject:'English',phone:'0722334455',email:'peter@example.com'}
+ ],
+ Classes:[
+  {id:'C001',name:'Grade 7',teacher:'Grace Njeri',room:'Room 1',capacity:'40'},
+  {id:'C002',name:'Grade 8',teacher:'Peter Kiptoo',room:'Room 2',capacity:'40'},
+  {id:'C003',name:'Grade 9',teacher:'Grace Njeri',room:'Room 3',capacity:'35'}
+ ],
+ Attendance:[
+  {id:'A001',date:new Date().toISOString().slice(0,10),student:'Amina Wanjiku',className:'Grade 7',status:'Present'},
+  {id:'A002',date:new Date().toISOString().slice(0,10),student:'Brian Otieno',className:'Grade 8',status:'Present'}
+ ],
+ Fees:[
+  {id:'F001',student:'Amina Wanjiku',term:'Term 1',amount:'15000',paid:'10000',date:new Date().toISOString().slice(0,10)},
+  {id:'F002',student:'Brian Otieno',term:'Term 1',amount:'15000',paid:'15000',date:new Date().toISOString().slice(0,10)},
+  {id:'F003',student:'Faith Chebet',term:'Term 1',amount:'15000',paid:'5000',date:new Date().toISOString().slice(0,10)}
+ ],
+ Examinations:[
+  {id:'E001',student:'Amina Wanjiku',subject:'Mathematics',exam:'Mid-term',score:'82',outOf:'100'},
+  {id:'E002',student:'Brian Otieno',subject:'English',exam:'Mid-term',score:'74',outOf:'100'}
+ ]
+};
+let db=loadDB(), currentPage='Dashboard';
+function loadDB(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||structuredClone(starter)}catch(e){return JSON.parse(JSON.stringify(starter))}}
+function saveDB(){localStorage.setItem(STORAGE_KEY,JSON.stringify(db))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function money(n){return 'KES '+Number(n||0).toLocaleString('en-KE')}
+function setToday(){document.getElementById('today').textContent=new Date().toLocaleDateString('en-KE',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
+document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;if(u==='admin'&&p==='admin123'){sessionStorage.setItem('edumanage_login','1');showApp()}else document.getElementById('loginError').textContent='Incorrect username or password.'});
+function showApp(){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';setToday();render()}
+function logout(){sessionStorage.removeItem('edumanage_login');sessionStorage.removeItem('edumanage_auth_mode');sessionStorage.removeItem('edumanage_demo_user');if(window.supabase&&supabaseClient){supabaseClient.auth.signOut().catch(()=>{});}activeUser=null;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='grid'}
+document.getElementById('logoutBtn').addEventListener('click',logout);
+document.querySelectorAll('.navbtn[data-page]').forEach(b=>b.addEventListener('click',()=>{currentPage=b.dataset.page;document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x===b));render()}));
+function stat(label,value,icon){return `<div class="stat"><span class="icon">${icon}</span><div class="label">${label}</div><div class="number">${value}</div></div>`}
+function dashboard(){let due=db.Fees.reduce((s,x)=>s+Math.max(0,Number(x.amount)-Number(x.paid)),0),paid=db.Fees.reduce((s,x)=>s+Number(x.paid),0),today=new Date().toISOString().slice(0,10),present=db.Attendance.filter(x=>x.date===today&&x.status==='Present').length;return `
+<div class="cards">${stat('Total Students',db.Students.length,'🎓')}${stat('Total Teachers',db.Teachers.length,'👩‍🏫')}${stat('Fees Collected',money(paid),'💰')}${stat('Fees Outstanding',money(due),'📌')}</div>
+<div class="panel"><div class="sectionhead"><h2>Welcome to EduManage</h2><span class="badge blue">Academic overview</span></div><p style="color:#64748b;line-height:1.7;margin-top:0">Manage student records, staff, classes, attendance, fee payments, examinations and school reports from one place.</p><div class="quick"><button data-goto="Students">＋ Add Student</button><button class="secondary" data-goto="Attendance">✓ Take Attendance</button><button class="secondary" data-goto="Fees">＋ Record Fees</button><button class="secondary" data-goto="Reports">▥ View Reports</button></div></div>
+<div class="cards">${stat('Classes',db.Classes.length,'🏫')}${stat('Attendance Today',present,'✓')}${stat('Exam Records',db.Examinations.length,'📝')}${stat('Modules','8','▦')}</div>
+<div class="panel"><h2>Fee Collection Progress</h2><div class="barrow"><span>Collected</span><div class="bar"><i style="width:${paid+due?Math.round(paid/(paid+due)*100):0}%"></i></div><b>${paid+due?Math.round(paid/(paid+due)*100):0}%</b></div><div class="barrow"><span>Outstanding</span><div class="bar"><i style="width:${paid+due?Math.round(due/(paid+due)*100):0}%;background:#f59e0b"></i></div><b>${paid+due?Math.round(due/(paid+due)*100):0}%</b></div></div>
+<div class="notice">Demo note: the included records are sample data. Replace them with your school's actual records before real use. Data is stored in this browser only.</div>`}
+const configs={
+ Students:{singular:'Student',fields:[['name','Full name','text'],['gender','Gender','select','Female|Male|Other'],['className','Class','selectClasses'],['phone','Phone','tel'],['status','Status','select','Active|Inactive']],cols:[['id','Admission No.'],['name','Student Name'],['gender','Gender'],['className','Class'],['phone','Phone'],['status','Status']]},
+ Teachers:{singular:'Teacher',fields:[['name','Full name','text'],['subject','Subject','text'],['phone','Phone','tel'],['email','Email','email']],cols:[['id','Staff ID'],['name','Teacher Name'],['subject','Subject'],['phone','Phone'],['email','Email']]},
+ Classes:{singular:'Class',fields:[['name','Class name','text'],['teacher','Class teacher','selectTeachers'],['room','Room','text'],['capacity','Capacity','number']],cols:[['id','Class ID'],['name','Class'],['teacher','Class Teacher'],['room','Room'],['capacity','Capacity']]},
+ Attendance:{singular:'Attendance record',fields:[['date','Date','date'],['student','Student','selectStudents'],['className','Class','selectClasses'],['status','Attendance status','select','Present|Absent|Late|Excused']],cols:[['id','Record ID'],['date','Date'],['student','Student'],['className','Class'],['status','Status']]},
+ Fees:{singular:'Fee record',fields:[['student','Student','selectStudents'],['term','Term','select','Term 1|Term 2|Term 3'],['amount','Amount due (KES)','number'],['paid','Amount paid (KES)','number'],['date','Payment date','date']],cols:[['id','Receipt ID'],['student','Student'],['term','Term'],['amount','Amount Due'],['paid','Amount Paid'],['balance','Balance'],['date','Date']]},
+ Examinations:{singular:'Exam result',fields:[['student','Student','selectStudents'],['subject','Subject','text'],['exam','Examination','text'],['score','Score','number'],['outOf','Maximum score','number']],cols:[['id','Result ID'],['student','Student'],['subject','Subject'],['exam','Exam'],['score','Score'],['outOf','Out of'],['grade','Grade']]}
+};
+function idFor(page){const prefixes={Students:'ST',Teachers:'T',Classes:'C',Attendance:'A',Fees:'F',Examinations:'E'};return prefixes[page]+String(Date.now()).slice(-6)}
+function selectOptions(type,extra){let vals=[];if(type==='selectClasses')vals=db.Classes.map(x=>x.name);if(type==='selectTeachers')vals=db.Teachers.map(x=>x.name);if(type==='selectStudents')vals=db.Students.map(x=>x.name);if(type==='select')vals=(extra||'').split('|');return vals.map(v=>`<option value="${esc(v)}">${esc(v)}</option>`).join('')}
+function inputField(f){let [key,label,type,extra]=f,control='';if(type.startsWith('select'))control=`<select name="${key}" required>${selectOptions(type,extra)}</select>`;else control=`<input name="${key}" type="${type}" ${type==='number'?'min="0" step="any"':''} ${type==='date'?'': ''} required ${type==='date'?`value="${new Date().toISOString().slice(0,10)}"`:''}>`;return `<div class="field"><label>${label.toUpperCase()}</label>${control}</div>`}
+function displayValue(page,row,key){let v=row[key];if(key==='balance')v=money(Math.max(0,Number(row.amount)-Number(row.paid)));if(key==='amount'||key==='paid')v=money(v);if(key==='grade'){let p=Number(row.outOf)?Number(row.score)/Number(row.outOf)*100:0;v=p>=80?'A':p>=70?'B':p>=60?'C':p>=50?'D':'E'}if(key==='status')return `<span class="badge ${v==='Absent'?'warn':''}">${esc(v)}</span>`;return esc(v??'—')}
+function tableHtml(page,rows){const c=configs[page];if(!rows.length)return '<div class="empty">No records found. Click “Add Record” to create one.</div>';return `<div class="tablewrap"><table><thead><tr>${c.cols.map(x=>`<th>${x[1]}</th>`).join('')}<th>Action</th></tr></thead><tbody>${rows.map(r=>`<tr>${c.cols.map(x=>`<td>${displayValue(page,r,x[0])}</td>`).join('')}<td><button class="danger" style="padding:6px 9px;font-size:11px" data-delete="${esc(r.id)}" data-page="${page}">Delete</button></td></tr>`).join('')}</tbody></table></div>`}
+function modulePage(page){let c=configs[page],rows=db[page]||[];return `<div class="panel"><div class="sectionhead"><h2>${page} Records <span class="badge blue">${rows.length}</span></h2><div class="tools"><input id="searchBox" placeholder="Search ${page.toLowerCase()}..." aria-label="Search records"><button id="addBtn">＋ Add Record</button></div></div><div id="tableArea">${tableHtml(page,rows)}</div></div><div id="formArea"></div>`}
+function reports(){let due=db.Fees.reduce((s,x)=>s+Math.max(0,+x.amount-+x.paid),0),paid=db.Fees.reduce((s,x)=>s+(+x.paid||0),0),today=new Date().toISOString().slice(0,10),att=db.Attendance.filter(x=>x.date===today),present=att.filter(x=>x.status==='Present').length;return `<div class="cards">${stat('Students',db.Students.length,'🎓')}${stat('Teachers',db.Teachers.length,'👩‍🏫')}${stat('Fees Collected',money(paid),'💰')}${stat('Outstanding',money(due),'📌')}</div><div class="panel"><div class="sectionhead"><h2>School Summary Report</h2><button id="printBtn">Print / Save PDF</button></div><table><tbody><tr><th>Metric</th><th>Value</th></tr><tr><td>Total students</td><td>${db.Students.length}</td></tr><tr><td>Total teachers</td><td>${db.Teachers.length}</td></tr><tr><td>Total classes</td><td>${db.Classes.length}</td></tr><tr><td>Attendance records today</td><td>${att.length}</td></tr><tr><td>Present today</td><td>${present}</td></tr><tr><td>Fees collected</td><td>${money(paid)}</td></tr><tr><td>Fees outstanding</td><td>${money(due)}</td></tr><tr><td>Examination results</td><td>${db.Examinations.length}</td></tr></tbody></table></div><div class="panel"><h2>Attendance Status (All Records)</h2>${['Present','Absent','Late','Excused'].map(s=>{let n=db.Attendance.filter(x=>x.status===s).length,p=db.Attendance.length?Math.round(n/db.Attendance.length*100):0;return `<div class="barrow"><span>${s}</span><div class="bar"><i style="width:${p}%"></i></div><b>${n}</b></div>`}).join('')}</div><div class="notice">For a paper or PDF copy, choose “Print / Save PDF” and select “Save as PDF” in the print dialog.</div>`}
+function render(){document.getElementById('pageTitle').textContent=currentPage;let html=currentPage==='Dashboard'?dashboard():currentPage==='Reports'?reports():modulePage(currentPage);document.getElementById('content').innerHTML=html;bindPage()}
+function bindPage(){document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));const add=document.getElementById('addBtn');if(add)add.addEventListener('click',showAddForm);const search=document.getElementById('searchBox');if(search)search.addEventListener('input',()=>{let q=search.value.toLowerCase(),rows=db[currentPage].filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q)));document.getElementById('tableArea').innerHTML=tableHtml(currentPage,rows);bindDeletes()});bindDeletes();const print=document.getElementById('printBtn');if(print)print.addEventListener('click',()=>window.print())}
+function bindDeletes(){document.querySelectorAll('[data-delete]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Delete this record?')){db[b.dataset.page]=db[b.dataset.page].filter(x=>x.id!==b.dataset.delete);saveDB();render()}}))}
+function showAddForm(){const c=configs[currentPage];if(['Attendance','Fees','Examinations'].includes(currentPage)&&!db.Students.length){alert('Add a student first.');return}if(currentPage==='Classes'&&!db.Teachers.length){alert('Add a teacher first, or add one after creating your first class.');return}document.getElementById('formArea').innerHTML=`<div class="panel"><h2>Add ${c.singular}</h2><form id="recordForm"><div class="formgrid">${c.fields.map(inputField).join('')}</div><div class="form-actions"><button type="button" class="secondary" id="cancelForm">Cancel</button><button>Save Record</button></div></form></div>`;document.getElementById('cancelForm').addEventListener('click',()=>document.getElementById('formArea').innerHTML='');document.getElementById('recordForm').addEventListener('submit',e=>{e.preventDefault();let row=Object.fromEntries(new FormData(e.target).entries());row.id=idFor(currentPage);db[currentPage].unshift(row);saveDB();render()});document.getElementById('formArea').scrollIntoView({behavior:'smooth',block:'start'})}
+function go(page){currentPage=page;document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));render();window.scrollTo(0,0)}
+if(sessionStorage.getItem('edumanage_login')==='1')showApp();
+</script>
+
+<!-- MULTI-SCHOOL ACADEMIC UPGRADE -->
+<style>
+.ms-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ms-field{display:flex;flex-direction:column;gap:6px;margin:8px 0}.ms-field label{font-size:12px;color:#64748b;font-weight:700}.ms-field input,.ms-field select,.ms-field textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:8px;background:white}.ms-table{overflow:auto}.ms-table table{min-width:640px}.ms-pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#dbeafe;color:#1d4ed8;font-size:11px;font-weight:700}.ms-school{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.ms-school select{padding:9px;border:1px solid #cbd5e1;border-radius:8px;background:#fff}.ms-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:15px}.ms-tabs button{background:#e8eef9;color:#14213d}.ms-tabs button.active{background:#2563eb;color:white}.ms-note{font-size:12px;color:#64748b;line-height:1.5}.ms-grade{font-weight:800}.ms-grade.A{color:#15803d}.ms-grade.E{color:#b91c1c}
+@media(max-width:650px){.ms-wrap{grid-template-columns:1fr}}
+</style>
+<script>
+/* Multi-school academic extension. Existing prototype remains available. */
+const MS_KEY='edumanage_multischool_v2';
+const msSeed={
+ schools:[{id:'SCH001',name:'Demo Academy',code:'DA001',year:'2026',term:'Term 1',grading:'A:80,B:70,C:60,D:50,E:0',passMark:50,head:'School Administrator',address:'Eldoret, Kenya',phone:'',subjects:'English, Kiswahili, Mathematics, Science, Social Studies'}],
+ students:[
+  {id:'ST001',schoolId:'SCH001',name:'Amina Wanjiku',gender:'Female',className:'Grade 7',admissionDate:'2026-01-05',guardian:'',phone:'',status:'Active'},
+  {id:'ST002',schoolId:'SCH001',name:'Brian Otieno',gender:'Male',className:'Grade 8',admissionDate:'2026-01-05',guardian:'',phone:'',status:'Active'},
+  {id:'ST003',schoolId:'SCH001',name:'Faith Chebet',gender:'Female',className:'Grade 7',admissionDate:'2026-01-05',guardian:'',phone:'',status:'Active'}
+ ],
+ exams:[{id:'EX001',schoolId:'SCH001',name:'Term 1 Mid-Term',year:'2026',term:'Term 1',date:'2026-03-15',className:'Grade 7',outOf:100}],
+ marks:[
+  {id:'M001',schoolId:'SCH001',examId:'EX001',studentId:'ST001',subject:'Mathematics',score:82,outOf:100},
+  {id:'M002',schoolId:'SCH001',examId:'EX001',studentId:'ST001',subject:'English',score:76,outOf:100},
+  {id:'M003',schoolId:'SCH001',examId:'EX001',studentId:'ST001',subject:'Science',score:88,outOf:100},
+  {id:'M004',schoolId:'SCH001',examId:'EX001',studentId:'ST002',subject:'Mathematics',score:71,outOf:100},
+  {id:'M005',schoolId:'SCH001',examId:'EX001',studentId:'ST002',subject:'English',score:68,outOf:100},
+  {id:'M006',schoolId:'SCH001',examId:'EX001',studentId:'ST002',subject:'Science',score:73,outOf:100},
+  {id:'M007',schoolId:'SCH001',examId:'EX001',studentId:'ST003',subject:'Mathematics',score:91,outOf:100},
+  {id:'M008',schoolId:'SCH001',examId:'EX001',studentId:'ST003',subject:'English',score:85,outOf:100},
+  {id:'M009',schoolId:'SCH001',examId:'EX001',studentId:'ST003',subject:'Science',score:89,outOf:100}
+ ],
+ activities:[{id:'ACT001',schoolId:'SCH001',date:'2026-01-10',title:'Opening Day',category:'Academic',description:'Term opening and student orientation'}],
+ settings:{}
+};
+let ms=(()=>{try{return JSON.parse(localStorage.getItem(MS_KEY))||JSON.parse(JSON.stringify(msSeed))}catch(e){return JSON.parse(JSON.stringify(msSeed))}})();
+if(!ms.schools)ms=JSON.parse(JSON.stringify(msSeed));
+if(!ms.students)ms.students=msSeed.students.map(x=>({...x}));
+if(!ms.exams)ms.exams=[];
+if(!ms.marks)ms.marks=[];
+if(!ms.activities)ms.activities=[];
+let msSchoolId=ms.schools[0]?.id||'SCH001';
+function msSave(){localStorage.setItem(MS_KEY,JSON.stringify(ms))}
+function msEsc(x){return esc(x)}
+function msSchool(){return ms.schools.find(s=>s.id===msSchoolId)||ms.schools[0]}
+function msList(){return ms.schools.filter(s=>s.id===msSchoolId)}
+function msStudents(){return ms.students.filter(s=>s.schoolId===msSchoolId)}
+function msExams(){return ms.exams.filter(s=>s.schoolId===msSchoolId)}
+function msMarks(){return ms.marks.filter(s=>s.schoolId===msSchoolId)}
+function msActivities(){return ms.activities.filter(s=>s.schoolId===msSchoolId)}
+function msId(prefix){return prefix+Date.now().toString().slice(-7)}
+function msGrade(pct){let g=String(msSchool()?.grading||'A:80,B:70,C:60,D:50,E:0').split(',').map(x=>x.split(':')).filter(x=>x.length===2).map(x=>({g:x[0].trim(),n:Number(x[1])})).sort((a,b)=>b.n-a.n);return (g.find(x=>pct>=x.n)||g[g.length-1]||{g:'E'}).g}
+function msStudent(id){return msStudents().find(s=>s.id===id)}
+function msExam(id){return msExams().find(e=>e.id===id)}
+function msStudentSummary(studentId,examId){let rows=msMarks().filter(m=>m.studentId===studentId&&m.examId===examId),total=rows.reduce((a,m)=>a+Number(m.score||0),0),out=rows.reduce((a,m)=>a+Number(m.outOf||100),0),avg=out?total/out*100:0;return {rows,total,out,avg:rows.length?avg:0,grade:rows.length?msGrade(avg):'—'}}
+function msExamSummaries(examId,className){let st=msStudents().filter(s=>(!className||s.className===className)&&s.status!=='Inactive');let arr=st.map(s=>({student:s,...msStudentSummary(s.id,examId)})).filter(x=>x.rows.length);arr.sort((a,b)=>b.avg-a.avg||a.student.name.localeCompare(b.student.name));arr.forEach((x,i)=>x.rank=i+1);return arr}
+function msTopBar(){return `<div class="panel"><div class="sectionhead"><div><h2>School workspace</h2><p class="ms-note">Switch between independent school workspaces. Each school has its own settings, students, exams, marks and activities.</p></div><div class="ms-school"><select id="msSchoolSelect" aria-label="Current school">${ms.schools.map(s=>`<option value="${msEsc(s.id)}" ${s.id===msSchoolId?'selected':''}>${msEsc(s.name)}</option>`).join('')}</select><button id="msSwitchBtn" class="secondary">Open</button></div></div><div class="ms-pill">${msEsc(msSchool()?.year||'')} · ${msEsc(msSchool()?.term||'')}</div></div>`}
+function msHome(){let s=msSchool(),students=msStudents(),exams=msExams(),marks=msMarks(),acts=msActivities();let latest=exams[exams.length-1];let summaries=latest?msExamSummaries(latest.id):[];return `${msTopBar()}<div class="cards">${stat('Students',students.length,'🎓')}${stat('Examinations',exams.length,'📝')}${stat('Recorded marks',marks.length,'📊')}${stat('School activities',acts.length,'📅')}</div><div class="panel"><div class="sectionhead"><h2>${msEsc(s?.name||'School')} academic overview</h2><span class="badge blue">Multi-school workspace</span></div><p class="ms-note">School code: ${msEsc(s?.code)} · Head: ${msEsc(s?.head||'Not set')} · ${msEsc(s?.address||'')}</p><div class="quick"><button data-ms="settings">School settings</button><button data-ms="academics">Exams & marks</button><button data-ms="report">Academic reports</button><button data-ms="activities">School activities</button></div></div><div class="panel"><h2>${latest?'Latest exam: '+msEsc(latest.name):'No examination created yet'}</h2>${summaries.length?`<div class="ms-table"><table><thead><tr><th>Rank</th><th>Student</th><th>Class</th><th>Total</th><th>Average</th><th>Grade</th></tr></thead><tbody>${summaries.slice(0,5).map(x=>`<tr><td>${x.rank}</td><td>${msEsc(x.student.name)}</td><td>${msEsc(x.student.className)}</td><td>${x.total}/${x.out}</td><td>${x.avg.toFixed(2)}%</td><td><b>${msEsc(x.grade)}</b></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty">Create an exam and record marks to see class rankings and analysis.</div>'}</div>`}
+function msSettings(){let s=msSchool();return `${msTopBar()}<div class="panel"><div class="sectionhead"><h2>School settings</h2><button id="msNewSchool">＋ Add school</button></div><form id="msSettingsForm"><div class="ms-wrap">${[['name','School name',s.name],['code','School code',s.code],['year','Academic year',s.year],['term','Current term',s.term],['head','Head teacher / principal',s.head],['phone','School phone',s.phone],['address','Address / location',s.address],['passMark','Pass mark (%)',s.passMark]].map(([k,l,v])=>`<div class="ms-field"><label>${l.toUpperCase()}</label><input name="${k}" value="${msEsc(v??'')}" ${k==='passMark'?'type="number" min="0" max="100"':'required'}></div>`).join('')}<div class="ms-field"><label>GRADING SCALE (grade:minimum %, comma-separated)</label><input name="grading" value="${msEsc(s.grading||'A:80,B:70,C:60,D:50,E:0')}" required></div><div class="ms-field"><label>SUBJECTS (comma-separated)</label><input name="subjects" value="${msEsc(s.subjects||'')}" placeholder="Mathematics, English, Science"></div></div><button>Save school settings</button></form></div><div class="panel"><h2>Schools in this system</h2><div class="ms-table"><table><thead><tr><th>School</th><th>Code</th><th>Year</th><th>Term</th><th>Students</th></tr></thead><tbody>${ms.schools.map(s=>`<tr><td>${msEsc(s.name)}</td><td>${msEsc(s.code)}</td><td>${msEsc(s.year)}</td><td>${msEsc(s.term)}</td><td>${ms.students.filter(x=>x.schoolId===s.id).length}</td></tr>`).join('')}</tbody></table></div><p class="ms-note">Records are partitioned by school in this browser-based prototype. This is not a secure hosted multi-tenant database.</p></div>`}
+function msAddSchool(){let name=prompt('School name?');if(!name?.trim())return;let code=prompt('School code?',name.trim().toUpperCase().replace(/[^A-Z0-9]/g,'').slice(0,8)+'01')||msId('SCH');let s={id:msId('SCH'),name:name.trim(),code,year:String(new Date().getFullYear()),term:'Term 1',grading:'A:80,B:70,C:60,D:50,E:0',passMark:50,head:'',address:'',phone:'',subjects:'Mathematics, English, Science'};ms.schools.push(s);msSchoolId=s.id;msSave();msRender('settings')}
+function msAcademic(){let s=msSchool();return `${msTopBar()}<div class="panel"><div class="sectionhead"><h2>Examinations & marks</h2><button id="msNewExam">＋ Create examination</button></div><p class="ms-note">Create an exam for a class, then add one mark per student and subject. Rankings are calculated within the selected exam and class using average percentage.</p><div class="ms-table"><table><thead><tr><th>Exam</th><th>Year</th><th>Term</th><th>Class</th><th>Date</th><th>Marks</th><th>Action</th></tr></thead><tbody>${msExams().map(e=>`<tr><td>${msEsc(e.name)}</td><td>${msEsc(e.year)}</td><td>${msEsc(e.term)}</td><td>${msEsc(e.className)}</td><td>${msEsc(e.date)}</td><td>${msMarks().filter(m=>m.examId===e.id).length}</td><td><button class="secondary" data-ms-exam="${e.id}">Enter marks</button></td></tr>`).join('')||'<tr><td colspan="7">No exams yet.</td></tr>'}</tbody></table></div></div><div class="panel" id="msMarksPanel"><h2>Enter marks</h2><div class="ms-wrap"><div class="ms-field"><label>EXAM</label><select id="msMarkExam">${msExams().map(e=>`<option value="${e.id}">${msEsc(e.name)} — ${msEsc(e.className)}</option>`).join('')}</select></div><div class="ms-field"><label>STUDENT</label><select id="msMarkStudent">${msStudents().map(st=>`<option value="${st.id}">${msEsc(st.name)} (${msEsc(st.className)})</option>`).join('')}</select></div><div class="ms-field"><label>SUBJECT</label><input id="msMarkSubject" placeholder="e.g. Mathematics"></div><div class="ms-field"><label>SCORE</label><input id="msMarkScore" type="number" min="0" step="any"></div><div class="ms-field"><label>OUT OF</label><input id="msMarkOutOf" type="number" min="1" value="100"></div></div><button id="msSaveMark">Save mark</button><p class="ms-note">If no exams or students are available, create/add them first.</p></div><div class="panel"><h2>Marks already entered</h2><div class="ms-table"><table><thead><tr><th>Exam</th><th>Student</th><th>Subject</th><th>Score</th><th>Percentage</th><th>Action</th></tr></thead><tbody>${msMarks().map(m=>`<tr><td>${msEsc(msExam(m.examId)?.name||'Exam removed')}</td><td>${msEsc(msStudent(m.studentId)?.name||'Student')}</td><td>${msEsc(m.subject)}</td><td>${m.score}/${m.outOf}</td><td>${(Number(m.score)/Number(m.outOf)*100).toFixed(1)}%</td><td><button class="danger" data-ms-delmark="${m.id}">Delete</button></td></tr>`).join('')||'<tr><td colspan="6">No marks recorded.</td></tr>'}</tbody></table></div></div>`}
+function msNewExam(){let classes=[...new Set(msStudents().map(s=>s.className))];let name=prompt('Examination name (e.g. Term 1 End-Term):');if(!name?.trim())return;let className=prompt('Class name exactly as shown: '+classes.join(', '),classes[0]||'Grade 7');if(!className)return;let e={id:msId('EX'),schoolId:msSchoolId,name:name.trim(),year:msSchool().year,term:msSchool().term,date:new Date().toISOString().slice(0,10),className,outOf:100};ms.exams.push(e);msSave();msRender('academics')}
+function msEnterMark(){let examId=document.getElementById('msMarkExam')?.value,studentId=document.getElementById('msMarkStudent')?.value,subject=document.getElementById('msMarkSubject')?.value.trim(),score=Number(document.getElementById('msMarkScore')?.value),outOf=Number(document.getElementById('msMarkOutOf')?.value);let exam=msExam(examId),student=msStudent(studentId);if(!exam||!student||!subject||!Number.isFinite(score)||!outOf||score<0||score>outOf){alert('Please select an exam/student, enter a subject and a valid score not exceeding the maximum.');return}if(student.className!==exam.className&&!confirm('This student is in '+student.className+', while this exam is for '+exam.className+'. Save anyway?'))return;let existing=msMarks().find(m=>m.examId===examId&&m.studentId===studentId&&m.subject.toLowerCase()===subject.toLowerCase());if(existing){existing.score=score;existing.outOf=outOf}else ms.marks.push({id:msId('M'),schoolId:msSchoolId,examId,studentId,subject,score,outOf});msSave();msRender('academics')}
+function msReports(){let exams=msExams(),students=msStudents();let examId=exams[exams.length-1]?.id||'',classes=[...new Set(students.map(s=>s.className))];return `${msTopBar()}<div class="panel"><div class="sectionhead"><h2>Academic reports & exam analysis</h2><button id="msPrint">Print / Save PDF</button></div><div class="ms-wrap"><div class="ms-field"><label>EXAMINATION</label><select id="msReportExam">${exams.map(e=>`<option value="${e.id}" ${e.id===examId?'selected':''}>${msEsc(e.name)} — ${msEsc(e.className)}</option>`).join('')}</select></div><div class="ms-field"><label>CLASS FILTER</label><select id="msReportClass"><option value="">All classes</option>${classes.map(c=>`<option>${msEsc(c)}</option>`).join('')}</select></div></div><div id="msReportResults"></div></div><div class="panel"><h2>Individual student report card</h2><div class="ms-wrap"><div class="ms-field"><label>STUDENT</label><select id="msReportStudent">${students.map(s=>`<option value="${s.id}">${msEsc(s.name)} — ${msEsc(s.className)}</option>`).join('')}</select></div><div class="ms-field"><label>EXAMINATION</label><select id="msIndividualExam">${exams.map(e=>`<option value="${e.id}">${msEsc(e.name)}</option>`).join('')}</select></div></div><button id="msIndividualBtn">Generate student report</button><div id="msIndividualResult"></div></div>`}
+function msDrawReport(){let exId=document.getElementById('msReportExam')?.value,cls=document.getElementById('msReportClass')?.value,ex=msExam(exId),target=document.getElementById('msReportResults');if(!target)return;if(!ex){target.innerHTML='<div class="empty">Create an examination and enter marks first.</div>';return}let rows=msExamSummaries(exId,cls),marked=rows.length,avg=marked?rows.reduce((a,x)=>a+x.avg,0)/marked:0,pass=rows.filter(x=>x.avg>=Number(msSchool().passMark||50)).length,subjectMap={};rows.forEach(x=>x.rows.forEach(m=>{let p=Number(m.score)/Number(m.outOf)*100;(subjectMap[m.subject]??=[]).push(p)}));let subjects=Object.entries(subjectMap).map(([name,vals])=>({name,avg:vals.reduce((a,b)=>a+b,0)/vals.length,high:Math.max(...vals),low:Math.min(...vals),count:vals.length})).sort((a,b)=>b.avg-a.avg);target.innerHTML=`<h3>${msEsc(ex.name)} · ${msEsc(cls||'All classes')}</h3><div class="cards">${stat('Students with marks',marked,'🎓')}${stat('Class average',avg.toFixed(2)+'%','📊')}${stat('Pass rate',marked?(pass/marked*100).toFixed(1)+'%':'0%','✓')}${stat('Highest average',rows.length?rows[0].avg.toFixed(2)+'%':'—','🏆')}</div><h3>Student ranking</h3><div class="ms-table"><table><thead><tr><th>Rank</th><th>Student</th><th>Class</th><th>Total score</th><th>Average</th><th>Grade</th><th>Result</th><th>Subjects</th></tr></thead><tbody>${rows.map(x=>`<tr><td>${x.rank}</td><td>${msEsc(x.student.name)}</td><td>${msEsc(x.student.className)}</td><td>${x.total}/${x.out}</td><td>${x.avg.toFixed(2)}%</td><td class="ms-grade">${msEsc(x.grade)}</td><td><span class="badge ${x.avg>=Number(msSchool().passMark||50)?'':'warn'}">${x.avg>=Number(msSchool().passMark||50)?'PASS':'NEEDS SUPPORT'}</span></td><td>${x.rows.length}</td></tr>`).join('')||'<tr><td colspan="8">No marks recorded for this exam/class.</td></tr>'}</tbody></table></div><h3 style="margin-top:22px">Subject analysis</h3><div class="ms-table"><table><thead><tr><th>Subject</th><th>Students</th><th>Average</th><th>Highest</th><th>Lowest</th></tr></thead><tbody>${subjects.map(s=>`<tr><td>${msEsc(s.name)}</td><td>${s.count}</td><td>${s.avg.toFixed(2)}%</td><td>${s.high.toFixed(2)}%</td><td>${s.low.toFixed(2)}%</td></tr>`).join('')||'<tr><td colspan="5">No subject marks yet.</td></tr>'}</tbody></table></div><p class="ms-note">Average is total earned marks divided by total available marks across recorded subjects. Rank is within the selected class/exam and includes students with at least one mark. For fair final ranking, enter all required subject marks for every student.</p>`}
+function msIndividual(){let sid=document.getElementById('msReportStudent')?.value,eid=document.getElementById('msIndividualExam')?.value,s=msStudent(sid),e=msExam(eid),out=document.getElementById('msIndividualResult');if(!out)return;if(!s||!e){out.innerHTML='<p class="ms-note">Add a student and an exam first.</p>';return}let sum=msStudentSummary(sid,eid),rank=msExamSummaries(eid,s.className).find(x=>x.student.id===sid)?.rank||'—';out.innerHTML=`<div class="panel" style="margin-top:15px"><div style="text-align:center"><h2>${msEsc(msSchool().name)}</h2><h3>STUDENT ACADEMIC REPORT</h3><p>${msEsc(e.name)} · ${msEsc(msSchool().year)} · ${msEsc(msSchool().term)}</p></div><div class="ms-wrap"><p><b>Student:</b> ${msEsc(s.name)}</p><p><b>Admission no.:</b> ${msEsc(s.id)}</p><p><b>Class:</b> ${msEsc(s.className)}</p><p><b>Gender:</b> ${msEsc(s.gender||'—')}</p></div><div class="cards">${stat('Total marks',sum.total+'/'+sum.out,'📝')}${stat('Average',sum.rows.length?sum.avg.toFixed(2)+'%':'—','📊')}${stat('Grade',sum.grade,'🏅')}${stat('Class rank',rank,'🏆')}</div><div class="ms-table"><table><thead><tr><th>Subject</th><th>Score</th><th>Out of</th><th>Percentage</th><th>Grade</th><th>Remark</th></tr></thead><tbody>${sum.rows.map(m=>{let pct=Number(m.score)/Number(m.outOf)*100;return `<tr><td>${msEsc(m.subject)}</td><td>${m.score}</td><td>${m.outOf}</td><td>${pct.toFixed(2)}%</td><td>${msEsc(msGrade(pct))}</td><td>${pct>=Number(msSchool().passMark||50)?'Pass':'Needs support'}</td></tr>`}).join('')||'<tr><td colspan="6">No marks entered for this student in this exam.</td></tr>'}</tbody></table></div><p><b>Class teacher comment:</b> ______________________________________________</p><p><b>Head teacher comment:</b> ______________________________________________</p><p><b>Parent/guardian signature:</b> ____________________ &nbsp; <b>Date:</b> ______________</p><p class="ms-note">Automatically generated summary. Verify marks and ranking before issuing official results.</p><button id="msPrintCard">Print / Save report card</button></div>`;document.getElementById('msPrintCard').addEventListener('click',()=>window.print())}
+function msActivitiesPage(){return `${msTopBar()}<div class="panel"><div class="sectionhead"><h2>School activities & calendar</h2><button id="msAddActivity">＋ Add activity</button></div><div class="ms-table"><table><thead><tr><th>Date</th><th>Activity</th><th>Category</th><th>Description</th><th>Action</th></tr></thead><tbody>${msActivities().sort((a,b)=>a.date.localeCompare(b.date)).map(a=>`<tr><td>${msEsc(a.date)}</td><td>${msEsc(a.title)}</td><td>${msEsc(a.category)}</td><td>${msEsc(a.description)}</td><td><button class="danger" data-ms-delactivity="${a.id}">Delete</button></td></tr>`).join('')||'<tr><td colspan="5">No activities.</td></tr>'}</tbody></table></div></div>`}
+function msAddActivity(){let title=prompt('Activity title?');if(!title?.trim())return;let date=prompt('Date (YYYY-MM-DD)',new Date().toISOString().slice(0,10))||new Date().toISOString().slice(0,10);let category=prompt('Category (Academic, Sports, Meeting, Holiday, Other)','Academic')||'Other';let description=prompt('Description (optional)','')||'';ms.activities.push({id:msId('ACT'),schoolId:msSchoolId,date,title:title.trim(),category,description});msSave();msRender('activities')}
+function msRender(page='home'){currentPage='MS:'+page;document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.remove('active'));document.getElementById('pageTitle').textContent=({'home':'School Workspace','settings':'School Settings','academics':'Exams & Marks','report':'Academic Reports','activities':'School Activities'})[page]||'School Workspace';let target=document.getElementById('content');target.innerHTML=page==='settings'?msSettings():page==='academics'?msAcademic():page==='report'?msReports():page==='activities'?msActivitiesPage():msHome();msBind(page)}
+function msBind(page){document.getElementById('msSwitchBtn')?.addEventListener('click',()=>{msSchoolId=document.getElementById('msSchoolSelect').value;msRender('home')});document.querySelectorAll('[data-ms]').forEach(b=>b.addEventListener('click',()=>msRender(b.dataset.ms)));document.getElementById('msNewSchool')?.addEventListener('click',msAddSchool);document.getElementById('msSettingsForm')?.addEventListener('submit',e=>{e.preventDefault();let s=msSchool(),v=Object.fromEntries(new FormData(e.target).entries());Object.assign(s,v,{passMark:Number(v.passMark)});msSave();msRender('settings');alert('School settings saved.')});document.getElementById('msNewExam')?.addEventListener('click',msNewExam);document.querySelectorAll('[data-ms-exam]').forEach(b=>b.addEventListener('click',()=>{let sel=document.getElementById('msMarkExam');if(sel)sel.value=b.dataset.msExam;document.getElementById('msMarksPanel')?.scrollIntoView({behavior:'smooth'})}));document.getElementById('msSaveMark')?.addEventListener('click',msEnterMark);document.querySelectorAll('[data-ms-delmark]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Delete this mark?')){ms.marks=ms.marks.filter(m=>m.id!==b.dataset.msDelmark);msSave();msRender('academics')}}));document.getElementById('msReportExam')?.addEventListener('change',msDrawReport);document.getElementById('msReportClass')?.addEventListener('change',msDrawReport);document.getElementById('msIndividualBtn')?.addEventListener('click',msIndividual);document.getElementById('msPrint')?.addEventListener('click',()=>window.print());document.getElementById('msAddActivity')?.addEventListener('click',msAddActivity);document.querySelectorAll('[data-ms-delactivity]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Delete this activity?')){ms.activities=ms.activities.filter(a=>a.id!==b.dataset.msDelactivity);msSave();msRender('activities')}}));if(page==='report'){msDrawReport();msIndividual()}}
+const msOriginalRender=render;
+render=function(){msOriginalRender();let content=document.getElementById('content');let nav=document.createElement('div');nav.className='panel';nav.style.padding='12px';nav.innerHTML=`<div class="sectionhead" style="margin:0"><div><b>Multi-school & Academic Suite</b><p class="ms-note" style="margin:4px 0 0">School-specific settings, exams, marks, rankings and report cards</p></div><button id="msOpenSuite">Open Academic Suite →</button></div>`;content.prepend(nav);document.getElementById('msOpenSuite').addEventListener('click',()=>msRender('home'))};
+
+// === Role-based login and dashboard routing (prototype build) ===
+let activeUser = null;
+const demoAccounts = {
+  developer:{password:'demo123',role:'super_admin',name:'Platform Developer',label:'Developer Portal'},
+  admin:{password:'admin123',role:'principal',name:'School Administrator',label:'Administrator Dashboard'},
+  teacher:{password:'demo123',role:'teacher',name:'Demo Teacher',label:'Teacher Dashboard'},
+  bursar:{password:'demo123',role:'bursar',name:'Demo Bursar',label:'Bursar Dashboard'},
+  parent:{password:'demo123',role:'parent',name:'Demo Parent',label:'Parent Portal'},
+  student:{password:'demo123',role:'student',name:'Demo Student',label:'Student Portal'}
+};
+const roleMenus = {
+ super_admin:[['Dashboard','▦'],['School Settings','🏫'],['Reports','▥']],
+ principal:[['Dashboard','▦'],['Students','♟'],['Teachers','♙'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],['School Settings','⚙']],
+ teacher:[['Dashboard','▦'],['My Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Reports','▥']],
+ bursar:[['Dashboard','▦'],['Fees','＄'],['Reports','▥']],
+ parent:[['Dashboard','▦'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']],
+ student:[['Dashboard','▦'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']]
+};
+const roleNames={super_admin:'Developer',principal:'Administrator',teacher:'Teacher',bursar:'Bursar',parent:'Parent',student:'Student'};
+const originalForm=document.getElementById('loginForm');
+const freshForm=originalForm.cloneNode(true); originalForm.parentNode.replaceChild(freshForm,originalForm);
+// Supabase client uses only the project's public publishable key. Never put a service-role key in browser code.
+const SUPABASE_URL='https://emdmnimxeoifgobzuglx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_ewvNnOPh_pGROM_f_rp1Sg_bWGi5OAV';
+let supabaseClient=null;
+try { if(window.supabase?.createClient) supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY); } catch(err) { console.warn('Supabase client initialization failed',err); }
+freshForm.addEventListener('submit',async e=>{
+ e.preventDefault(); const email=document.getElementById('username').value.trim(), password=document.getElementById('password').value;
+ const err=document.getElementById('loginError'); const submit=freshForm.querySelector('button[type="submit"],button:not([type])');
+ err.textContent='';
+ if(!supabaseClient){err.textContent='Supabase client did not load. Check your internet connection and reload.';return;}
+ if(submit){submit.disabled=true;submit.textContent='Signing in…';}
+ try {
+   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+   if(error) throw error;
+   const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('id,school_id,full_name,role').eq('id',data.user.id).single();
+   if(profileError||!profile){await supabaseClient.auth.signOut();throw new Error('This account has no assigned profile. Ask the platform administrator to configure it.');}
+   if(!roleNames[profile.role]){await supabaseClient.auth.signOut();throw new Error('This account has an unsupported role. Contact the platform administrator.');}
+   activeUser={username:email,role:profile.role,name:profile.full_name||email,school_id:profile.school_id,authUserId:data.user.id,authMode:'supabase'};
+   sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.setItem('edumanage_auth_mode','supabase');currentPage='Dashboard';showApp();
+ } catch(ex) {err.textContent=ex.message||'Unable to sign in. Check your email and password.';}
+ finally {if(submit){submit.disabled=false;submit.textContent='Sign in →';}}
+});
+function roleHome(){
+ const role=activeUser?.role;
+ if(role==='super_admin') return developerHome();
+ if(role==='teacher') return teacherHome();
+ if(role==='bursar') return bursarHome();
+ if(role==='parent') return familyHome(false);
+ if(role==='student') return familyHome(true);
+ return legacyDashboard();
+}
+function tile(title,value,desc,icon){return `<div class="portal-tile"><div style="font-size:22px">${icon}</div><div class="big">${value}</div><b>${title}</b><p>${desc}</p></div>`}
+function hero(title,desc){return `<div class="portal-hero"><span class="role-tag">${esc(roleNames[activeUser.role])} workspace</span><h2 style="margin-top:12px">${title}</h2><p>${desc}</p></div>`}
+function legacyDashboard(){return dashboard()}
+function developerHome(){
+ const schools=(ms?.schools||[]); const countStudents=(ms?.students||[]).length;
+ return `${hero('Platform control centre','Manage school workspaces, monitor the platform, and maintain the service.')}<div class="portal-grid">${tile('School workspaces',schools.length,'Registered in this prototype','🏫')}${tile('Sample student records',countStudents,'Across local demo workspaces','🎓')}${tile('Platform status','Demo','Local browser prototype; hosting not connected','🛠️')}${tile('Security','Review','Set up server-enforced roles before production','🔐')}</div><div class="panel"><div class="sectionhead"><h2>Developer actions</h2><span class="badge blue">Platform owner</span></div><div class="quick"><button data-goto="School Settings">Manage school settings</button><button class="secondary" data-goto="Reports">View system summary</button></div><div class="demo-warning"><b>Production note:</b> this developer portal is a front-end prototype. Real school creation, account administration, audit logs, backups and cross-school access must be implemented with secure Supabase policies and server-side checks.</div><h3>Registered workspaces (demo data)</h3><div class="tablewrap"><table><thead><tr><th>School</th><th>Code</th><th>Academic year</th><th>Term</th></tr></thead><tbody>${schools.map(x=>`<tr><td>${esc(x.name)}</td><td>${esc(x.code)}</td><td>${esc(x.year)}</td><td>${esc(x.term)}</td></tr>`).join('')||'<tr><td colspan="4">No workspaces configured.</td></tr>'}</tbody></table></div></div>`;
+}
+function teacherHome(){
+ const myClasses=db.Classes.slice(0,2), today=new Date().toISOString().slice(0,10), attendance=db.Attendance.filter(x=>x.date===today).length;
+ return `${hero('Welcome, '+activeUser.name,'Your workspace for teaching, attendance, classwork and student assessment.')}<div class="portal-grid">${tile('Assigned classes',myClasses.length,'Demo assignments','🏫')}${tile('Students in sample register',db.Students.length,'Illustrative data only','🎓')}${tile('Attendance records today',attendance,'Across the sample register','✓')}${tile('Assessment records',db.Examinations.length,'Sample marks available','📝')}</div><div class="panel"><h2>Teaching shortcuts</h2><div class="quick"><button data-goto="My Classes">View my classes</button><button class="secondary" data-goto="Attendance">Take attendance</button><button class="secondary" data-goto="Examinations">Enter assessment marks</button><button class="secondary" data-goto="Reports">View class reports</button></div></div><div class="demo-warning">Teachers should only access assigned classes and permitted student records. This demo uses local sample data and does not enforce real school permissions.</div>`;
+}
+function bursarHome(){let due=db.Fees.reduce((s,x)=>s+Math.max(0,+x.amount-+x.paid),0),paid=db.Fees.reduce((s,x)=>s+(+x.paid||0),0);return `${hero('Finance and fee collection','Record payments, review balances and prepare school finance summaries.')}<div class="portal-grid">${tile('Fees collected',money(paid),'Sample payment records','💳')}${tile('Outstanding balances',money(due),'Sample outstanding fees','⏳')}${tile('Fee accounts',db.Fees.length,'Student fee records','🧾')}</div><div class="panel"><h2>Finance shortcuts</h2><div class="quick"><button data-goto="Fees">Manage fees</button><button class="secondary" data-goto="Reports">Finance summary</button></div></div><div class="demo-warning">The production bursar role should be limited to finance functions. Payment verification and receipts need server-side controls.</div>`}
+function familyHome(isStudent){let label=isStudent?'Student':'Parent';return `${hero(isStudent?'Your learning dashboard':'Your child’s school dashboard',isStudent?'View your own results, attendance and fee status.':'View linked children’s results, attendance and fee information.')}<div class="portal-grid">${tile('Latest average','78%','Illustrative sample result','📊')}${tile('Attendance','92%','Illustrative sample attendance','✓')}${tile('Fee balance','KES 5,000','Illustrative sample balance','🧾')}</div><div class="panel"><h2>${isStudent?'My learning':'Family access'}</h2><div class="quick"><button data-goto="My Results">View results</button><button class="secondary" data-goto="My Attendance">View attendance</button><button class="secondary" data-goto="My Fees">View fee balance</button></div><div class="demo-warning">These are sample figures, not real records. In the live system, parents will only see children linked to their account; students will only see their own records.</div></div>`}
+function simpleRolePage(page){
+ const role=activeUser.role;
+ if(page==='School Settings'&&role==='super_admin') return `${hero('School workspace administration','Review and configure demo school workspaces.')}<div class="panel"><div class="sectionhead"><h2>Academic workspace</h2><button id="msOpenSuite">Open workspace settings →</button></div><p class="ms-note">Use the existing academic suite to manage school settings, examinations, marks, report cards and activities.</p></div>`;
+ if(page==='School Settings'&&role==='principal') return msSettings();
+ if(page==='My Classes') return `${hero('My classes','Example class assignments for the signed-in teacher.')}<div class="panel"><div class="tablewrap"><table><thead><tr><th>Class</th><th>Subject / class teacher</th><th>Room</th><th>Capacity</th></tr></thead><tbody>${db.Classes.slice(0,2).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.teacher)}</td><td>${esc(c.room)}</td><td>${esc(c.capacity)}</td></tr>`).join('')}</tbody></table></div></div>`;
+ if(page==='My Results') return `${hero('My results','Illustrative results view; live results will load from your authorized account.')}<div class="panel"><div class="tablewrap"><table><thead><tr><th>Term</th><th>Subject</th><th>Score</th><th>Grade</th></tr></thead><tbody><tr><td>Term 1</td><td>Mathematics</td><td>82/100</td><td>B</td></tr><tr><td>Term 1</td><td>English</td><td>74/100</td><td>B</td></tr></tbody></table></div></div>`;
+ if(page==='My Attendance') return `${hero('My attendance','Illustrative attendance summary.')}<div class="portal-grid">${tile('Present','23 days','Sample term attendance','✓')}${tile('Absent','2 days','Sample term attendance','—')}${tile('Attendance rate','92%','Illustrative only','📅')}</div>`;
+ if(page==='My Fees') return `${hero('My fees','Illustrative fees and balance view.')}<div class="portal-grid">${tile('Total fees','KES 15,000','Sample fee structure','🧾')}${tile('Paid','KES 10,000','Sample payments','✓')}${tile('Balance','KES 5,000','Sample balance','⏳')}</div>`;
+ if(page==='Reports'&&role==='super_admin') return `${hero('Platform reports','High-level demo overview.')}<div class="portal-grid">${tile('Schools',(ms.schools||[]).length,'Local sample workspaces','🏫')}${tile('Students',db.Students.length,'Sample register only','🎓')}${tile('Status','Prototype','Supabase not connected to this UI yet','🛠️')}</div>`;
+ if(page==='Reports'&&role==='teacher') return `${hero('Teaching reports','Class and assessment summaries.')}<div class="panel"><div class="quick"><button data-goto="Examinations">Review assessment records</button><button class="secondary" data-goto="Attendance">Review attendance</button></div></div>`;
+ if(page==='Reports'&&role==='bursar') return reports();
+ return null;
+}
+function drawRoleNav(){const nav=document.querySelector('.sidebar');const items=roleMenus[activeUser.role]||roleMenus.principal;nav.innerHTML=`<div class="brand">Edu<span>Manage</span></div><div style="padding:10px 12px 16px;color:#cbd5e1;font-size:12px">${esc(activeUser.name)}<br><b style="color:white">${esc(roleNames[activeUser.role])}</b></div>${items.map(([p,i])=>`<button class="navbtn ${p===currentPage?'active':''}" data-page="${esc(p)}"><small>${i}</small> ${esc(p)}</button>`).join('')}<div style="height:20px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>`;nav.querySelectorAll('.navbtn[data-page]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));document.getElementById('logoutBtn').addEventListener('click',logout)}
+const oldShowApp=showApp;
+showApp=function(){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';drawRoleNav();document.getElementById('userPill').innerHTML=`● Signed in as <b>${esc(activeUser.name)}</b> · ${esc(roleNames[activeUser.role])}`;setToday();render()};
+logout=async function(){try{if(supabaseClient) await supabaseClient.auth.signOut()}catch(e){console.warn('Sign-out request failed',e)}sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.removeItem('edumanage_auth_mode');activeUser=null;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='grid';document.getElementById('password').value=''};
+go=function(page){currentPage=page;document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));document.getElementById('pageTitle').textContent=page;render();window.scrollTo(0,0)};
+const previousRender=render;
+render=function(){
+ if(!activeUser){return}
+ document.getElementById('pageTitle').textContent=currentPage;
+ let content=document.getElementById('content'), custom=null;
+ if(currentPage==='Dashboard') custom=roleHome();
+ else custom=simpleRolePage(currentPage);
+ if(custom!==null){content.innerHTML=custom;content.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));document.getElementById('msOpenSuite')?.addEventListener('click',()=>msRender('settings'));return;}
+ if(activeUser.role==='principal') { previousRender(); return; }
+ if(activeUser.role==='teacher' && ['Attendance','Examinations'].includes(currentPage)){previousRender();return;}
+ if(activeUser.role==='bursar' && currentPage==='Fees'){previousRender();return;}
+ content.innerHTML=`<div class="panel"><h2>Page unavailable</h2><p>Your account role does not have access to this section.</p><button id="backDash">Return to dashboard</button></div>`;document.getElementById('backDash').onclick=()=>go('Dashboard');
+};
+// Restore only a valid Supabase Auth session; never restore a demo role from browser storage.
+(async function restoreSupabaseSession(){
+ if(!supabaseClient)return;
+ try{
+  const {data:{session},error}=await supabaseClient.auth.getSession();
+  if(error||!session?.user)return;
+  const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('id,school_id,full_name,role').eq('id',session.user.id).single();
+  if(profileError||!profile||!roleNames[profile.role]){await supabaseClient.auth.signOut();return;}
+  activeUser={username:session.user.email,role:profile.role,name:profile.full_name||session.user.email,school_id:profile.school_id,authUserId:session.user.id,authMode:'supabase'};
+  currentPage='Dashboard';showApp();
+ }catch(e){console.warn('Could not restore Supabase session',e)}
+})();
+
+</script>
+
+</body>
+</html>
