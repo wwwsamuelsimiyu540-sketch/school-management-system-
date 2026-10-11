@@ -227,7 +227,7 @@ const freshForm=originalForm.cloneNode(true); originalForm.parentNode.replaceChi
 const SUPABASE_URL='https://emdmnimxeoifgobzuglx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_ewvNnOPh_pGROM_f_rp1Sg_bWGi5OAV';
 let supabaseClient=null;
-try { if(window.supabase?.createClient) supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY); } catch(err) { console.warn('Supabase client initialization failed',err); }
+try { if(window.supabase?.createClient) supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}); } catch(err) { console.warn('Supabase client initialization failed',err); }
 freshForm.addEventListener('submit',async e=>{
  e.preventDefault(); const email=document.getElementById('username').value.trim(), password=document.getElementById('password').value;
  const err=document.getElementById('loginError'); const submit=freshForm.querySelector('button[type="submit"],button:not([type])');
@@ -318,18 +318,7 @@ render=function(){
 };
 function previewPanel(role){if(!activeUser||activeUser.role!=='super_admin'||!roleNames[role]||role==='super_admin')return;if(!previewOriginalUser)previewOriginalUser={...activeUser};activeUser={...previewOriginalUser,role,name:'Test '+roleNames[role]};currentPage='Dashboard';drawRoleNav();document.getElementById('userPill').innerHTML='🧪 <b>TEST PREVIEW</b> · '+esc(roleNames[role]);render();window.scrollTo(0,0)}
 function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOriginalUser;previewOriginalUser=null;currentPage='Dashboard';drawRoleNav();document.getElementById('userPill').innerHTML=`● Signed in as <b>${esc(activeUser.name)}</b> · ${esc(roleNames[activeUser.role])}`;render()}
-// Restore only a valid Supabase Auth session; never restore a demo role from browser storage.
-(async function restoreSupabaseSession(){
- if(!supabaseClient)return;
- try{
-  const {data:{session},error}=await supabaseClient.auth.getSession();
-  if(error||!session?.user)return;
-  const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('id,school_id,full_name,role').eq('id',session.user.id).single();
-  if(profileError||!profile||!roleNames[profile.role]){await supabaseClient.auth.signOut();return;}
-  activeUser={username:session.user.email,role:profile.role,name:profile.full_name||session.user.email,school_id:profile.school_id,authUserId:session.user.id,authMode:'supabase'};
-  currentPage='Dashboard';showApp();
- }catch(e){console.warn('Could not restore Supabase session',e)}
-})();
+// Auto-restore is intentionally disabled: every visit must start at the login screen.
 
 
 </script>
