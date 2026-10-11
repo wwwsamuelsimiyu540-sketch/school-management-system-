@@ -5,7 +5,8 @@ A mobile-friendly school management system with role-based panels and Supabase A
 ## Start here
 - `index.html` — login, dashboards and live school modules.
 - `SYSTEM_STRUCTURE.md` — agreed system roles, panels and modules.
-- `supabase/migrations/20261011160000_school_management_core_modules.sql` — database additions and row-level security policies.
+- `supabase/migrations/20261011160000_school_management_core_modules.sql` — core school modules and row-level security policies.
+- `supabase/migrations/20261011190000_school_registration_requests.sql` — school registration requests and approval access policies.
 
 ## Roles
 - `super_admin`: platform overview, schools, users/roles, activity monitor, communications and reports.
