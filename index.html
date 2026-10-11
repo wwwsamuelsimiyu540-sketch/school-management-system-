@@ -227,7 +227,7 @@ const freshForm=originalForm.cloneNode(true); originalForm.parentNode.replaceChi
 const SUPABASE_URL='https://emdmnimxeoifgobzuglx.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY='sb_publishable_ewvNnOPh_pGROM_f_rp1Sg_bWGi5OAV';
 let supabaseClient=null;
-try { if(window.supabase?.createClient) supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}}); } catch(err) { console.warn('Supabase client initialization failed',err); }
+try { if(window.supabase?.createClient) supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}}); } catch(err) { console.warn('Supabase client initialization failed',err); }
 freshForm.addEventListener('submit',async e=>{
  e.preventDefault(); const email=document.getElementById('username').value.trim(), password=document.getElementById('password').value;
  const err=document.getElementById('loginError'); const submit=freshForm.querySelector('button[type="submit"],button:not([type])');
@@ -241,7 +241,7 @@ freshForm.addEventListener('submit',async e=>{
    if(profileError||!profile){await supabaseClient.auth.signOut();throw new Error('This account has no assigned profile. Ask the platform administrator to configure it.');}
    if(!roleNames[profile.role]){await supabaseClient.auth.signOut();throw new Error('This account has an unsupported role. Contact the platform administrator.');}
    activeUser={username:email,role:profile.role,name:profile.full_name||email,school_id:profile.school_id,authUserId:data.user.id,authMode:'supabase'};
-   sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.setItem('edumanage_auth_mode','supabase');currentPage='Dashboard';showApp();
+   sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.setItem('edumanage_auth_mode','supabase');if(profile.role==='super_admin'){window.location.replace('./developer-portal.html');return;}currentPage='Dashboard';showApp();
  } catch(ex) {err.textContent=ex.message||'Unable to sign in. Check your email and password.';}
  finally {if(submit){submit.disabled=false;submit.textContent='Sign in →';}}
 });
