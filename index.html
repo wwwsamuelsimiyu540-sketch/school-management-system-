@@ -242,7 +242,7 @@ freshForm.addEventListener('submit',async e=>{
    if(profileError||!profile){await supabaseClient.auth.signOut();throw new Error('This account has no assigned profile. Ask the platform administrator to configure it.');}
    if(!roleNames[profile.role]){await supabaseClient.auth.signOut();throw new Error('This account has an unsupported role. Contact the platform administrator.');}
    activeUser={username:email,role:profile.role,name:profile.full_name||email,school_id:profile.school_id,authUserId:data.user.id,authMode:'supabase'};
-   sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.setItem('edumanage_auth_mode','supabase');if(profile.role==='super_admin'){window.location.replace('./developer-portal.html');return;}currentPage='Dashboard';showApp();
+   sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.setItem('edumanage_auth_mode','supabase');currentPage=profile.role==='super_admin'?'Feature Directory':'Dashboard';showApp();
  } catch(ex) {err.textContent=ex.message||'Unable to sign in. Check your email and password.';}
  finally {if(submit){submit.disabled=false;submit.textContent='Sign in →';}}
 });
