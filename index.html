@@ -252,7 +252,11 @@ function roleHome(){
  if(role==='bursar') return bursarHome();
  if(role==='parent') return familyHome(false);
  if(role==='student') return familyHome(true);
- return legacyDashboard();
+ if(role==='principal') return principalHome();
+ return principalHome();
+}
+function principalHome(){
+ return `<div class="portal-hero"><span class="role-tag">SCHOOL ADMINISTRATOR</span><h2 style="margin-top:12px">School Management Portal</h2><p>Manage your school's learners, staff, classes, attendance, fees and reports from one workspace.</p></div><div class="portal-grid">${tile('Students',db.Students?.length??0,'Student records','🎓')}${tile('Teachers',db.Teachers?.length??0,'Teaching staff','👩‍🏫')}${tile('Classes',db.Classes?.length??0,'School classes','🏫')}${tile('Fee records',db.Fees?.length??0,'Fee entries','💳')}</div><div class="panel"><h2>School services</h2><p>Choose a service from the navigation menu to manage records and review school reports.</p><div class="quick-actions"><button onclick="go('Students')">Manage students</button><button onclick="go('Teachers')">Manage teachers</button><button onclick="go('Attendance')">Take attendance</button><button onclick="go('Fees')">Manage fees</button><button onclick="go('Reports')">View reports</button></div></div>`;
 }
 function tile(title,value,desc,icon){return `<div class="portal-tile"><div style="font-size:22px">${icon}</div><div class="big">${value}</div><b>${title}</b><p>${desc}</p></div>`}
 function hero(title,desc){return `<div class="portal-hero"><span class="role-tag">${esc(roleNames[activeUser.role])} workspace</span><h2 style="margin-top:12px">${title}</h2><p>${desc}</p></div>`}
