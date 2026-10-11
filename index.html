@@ -307,6 +307,183 @@ render=function(){
  }catch(e){console.warn('Could not restore Supabase session',e)}
 })();
 
+
+<!-- Live Supabase school-management modules -->
+<style>
+.live-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.live-toolbar input,.live-toolbar select,.live-form input,.live-form select,.live-form textarea{font:inherit;border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;background:#fff}.live-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}.live-form .field{margin:4px 0}.live-form textarea{min-height:88px}.live-actions{display:flex;gap:8px;flex-wrap:wrap}.live-table td{white-space:normal}.live-muted{color:var(--muted);font-size:13px}.live-error{padding:12px;background:#fff1f2;color:#9f1239;border-radius:8px}.live-good{padding:12px;background:#ecfdf5;color:#166534;border-radius:8px}
+@media(max-width:600px){.live-form{grid-template-columns:1fr}}
+</style>
+<script>
+(function(){
+ const liveSchoolId=()=>activeUser?.school_id||'51c2b858-76f7-4dfa-8c31-5ffc1eccddb5';
+ const isSuper=()=>activeUser?.role==='super_admin';
+ const fmtTime=v=>v?new Date(v).toLocaleString('en-KE'):'—';
+ const liveTable=(headers,rows)=>rows.length?'<div class="tablewrap"><table class="live-table"><thead><tr>'+headers.map(h=>'<th>'+esc(h[1])+'</th>').join('')+'<th>Actions</th></tr></thead><tbody>'+rows.map(r=>'<tr>'+headers.map(h=>'<td>'+esc(r[h[0]]??'—')+'</td>').join('')+'<td><button class="danger" data-live-delete="'+esc(r.__id||'')+'" style="padding:6px 9px;font-size:11px">Delete</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No live records yet. Use “Add record” to create the first record.</div>';
+ const adminPages=['Schools','Users & Roles','Activity Monitor','Communication Centre','System Reports'];
+ const liveTables={
+  Students:{table:'students',select:'id,admission_no,full_name,grade_level,pathway,created_at',headers:[['admission_no','Admission No.'],['full_name','Student'],['grade_level','Grade'],['pathway','Pathway'],['created_at','Created']],fields:[['admission_no','Admission number','text'],['full_name','Full name','text'],['grade_level','Grade level','select','PP1|PP2|Grade 1|Grade 2|Grade 3|Grade 4|Grade 5|Grade 6|Grade 7|Grade 8|Grade 9|Grade 10|Grade 11|Grade 12'],['pathway','Pathway','text']]},
+  Teachers:{table:'teachers',select:'id,staff_no,full_name,subject,phone,email,created_at',headers:[['staff_no','Staff No.'],['full_name','Teacher'],['subject','Subject'],['phone','Phone'],['email','Email']],fields:[['staff_no','Staff number','text'],['full_name','Full name','text'],['subject','Subject','text'],['phone','Phone','tel'],['email','Email','email']]},
+  Classes:{table:'school_classes',select:'id,name,grade_level,room,capacity,academic_year,created_at',headers:[['name','Class'],['grade_level','Grade'],['room','Room'],['capacity','Capacity'],['academic_year','Academic year']],fields:[['name','Class name','text'],['grade_level','Grade level','text'],['room','Room','text'],['capacity','Capacity','number'],['academic_year','Academic year','text']]},
+  Attendance:{table:'attendance_records',select:'id,student_id,attendance_date,status,note,created_at',headers:[['student_name','Student'],['attendance_date','Date'],['status','Status'],['note','Note']],fields:[['student_id','Student','student'],['attendance_date','Date','date'],['status','Status','select','present|absent|late|excused'],['note','Note','text']]},
+  Fees:{table:'fee_payments',select:'id,student_id,term,academic_year,amount_due,amount_paid,payment_date,receipt_no,created_at',headers:[['student_name','Student'],['term','Term'],['academic_year','Academic year'],['amount_due','Amount due (KES)'],['amount_paid','Paid (KES)'],['payment_date','Payment date'],['receipt_no','Receipt']],fields:[['student_id','Student','student'],['term','Term','select','Term 1|Term 2|Term 3'],['academic_year','Academic year','text'],['amount_due','Amount due (KES)','number'],['amount_paid','Amount paid (KES)','number'],['payment_date','Payment date','date'],['receipt_no','Receipt number','text']]},
+  Examinations:{table:'exam_marks',select:'id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks,created_at',headers:[['student_name','Student'],['term','Term'],['subject','Subject'],['cat_marks','CAT marks'],['exam_marks','Exam marks'],['total_percentage','Total'],['grade_letter','Grade'],['remarks','Remarks']],fields:[['student_id','Student','student'],['term','Term','select','Term 1|Term 2|Term 3'],['subject','Subject','text'],['cat_marks','CAT marks','number'],['exam_marks','Exam marks','number'],['grade_letter','Grade','text'],['remarks','Remarks','text']]}
+ };
+ const moduleTitle={Students:'Student register',Teachers:'Teacher register',Classes:'Classes and streams',Attendance:'Attendance register',Fees:'Fees and payments',Examinations:'Examinations and marks'};
+ const moduleDescription={Students:'Student records are read from Supabase and scoped to the signed-in school.',Teachers:'Maintain staff records in the school database.',Classes:'Maintain class, room, capacity and academic-year records.',Attendance:'Record daily student attendance.',Fees:'Track fee amounts, payments and balances. Fee changes are restricted to bursars and principals by database policy.',Examinations:'Store marks in the existing Supabase exam_marks table.'};
+ function moduleShell(page){return hero(moduleTitle[page],moduleDescription[page])+'<div class="panel"><div class="sectionhead"><h2>Live database records</h2><button id="liveToggleForm">＋ Add record</button></div><div id="liveFormWrap" style="display:none"><form class="live-form" id="liveRecordForm"></form><div class="form-actions"><button class="secondary" type="button" id="liveCancel">Cancel</button><button type="submit" form="liveRecordForm">Save to Supabase</button></div><p id="liveFormMsg" class="live-muted"></p></div><div id="liveModuleData" class="live-muted">Loading live records…</div></div>'}
+ const oldSimpleRolePage=simpleRolePage;
+ simpleRolePage=function(page){
+   if(isSuper() && adminPages.includes(page)) return adminPageShell(page);
+   if(liveTables[page] && ['principal','teacher','bursar'].includes(activeUser?.role)){
+     if(activeUser.role==='teacher' && !['Attendance','Examinations'].includes(page)) return null;
+     if(activeUser.role==='bursar' && page!=='Fees') return null;
+     if(activeUser.role==='principal' || (activeUser.role==='teacher'&&['Attendance','Examinations'].includes(page)) || (activeUser.role==='bursar'&&page==='Fees')) return moduleShell(page);
+   }
+   return oldSimpleRolePage(page);
+ };
+ roleMenus.super_admin=[['Dashboard','▦'],['Schools','🏫'],['Users & Roles','♙'],['Activity Monitor','◷'],['Communication Centre','✉'],['System Reports','▥'],['School Settings','⚙']];
+ function developerHome(){
+   return hero('Platform control centre','Live overview from your connected Supabase project. School data remains in the database; no demo records are counted.')+
+   '<div class="portal-grid" id="liveAdminStats">'+tile('School workspaces','…','Loading Supabase','🏫')+tile('Registered users','…','Loading profiles','👥')+tile('Students','…','Database records','🎓')+tile('Active users','…','Seen in last 5 minutes','🟢')+'</div>'+
+   '<div class="panel"><div class="sectionhead"><h2>Recent system activity</h2><span class="badge blue">Live</span></div><div id="liveAdminActivity" class="live-muted">Loading activity log…</div></div>'+
+   '<div class="panel"><div class="sectionhead"><h2>System health</h2></div><div id="liveAdminHealth" class="live-muted">Checking Supabase connection…</div><div class="quick" style="margin-top:12px"><button data-goto="Schools">Manage schools</button><button class="secondary" data-goto="Users & Roles">Users & roles</button><button class="secondary" data-goto="Activity Monitor">Activity monitor</button><button class="secondary" data-goto="Communication Centre">Open communication centre</button></div></div>';
+ }
+ function adminPageShell(page){
+   const map={
+    'Schools':['Registered schools','School records from Supabase.'],
+    'Users & Roles':['Users and role assignments','Review profiles and their database-assigned roles.'],
+    'Activity Monitor':['System activity monitor','Recent audit events and active-user presence.'],
+    'Communication Centre':['Communication centre','Prepare internal messages, email drafts and WhatsApp messages.'],
+    'System Reports':['System reports','Live totals from your school-management database.']
+   };
+   return hero(map[page][0],map[page][1])+'<div class="panel"><div id="liveAdminPageData" class="live-muted">Loading live data…</div></div>';
+ }
+ async function safeCount(table,schoolScoped){
+   let q=supabaseClient.from(table).select('*',{count:'exact',head:true});
+   if(schoolScoped && !isSuper() && liveSchoolId()) q=q.eq('school_id',liveSchoolId());
+   const {count,error}=await q; if(error) throw error; return count||0;
+ }
+ async function refreshAdmin(){
+   if(!supabaseClient||!isSuper()||currentPage!=='Dashboard')return;
+   const health=document.getElementById('liveAdminHealth'), stats=document.getElementById('liveAdminStats'), act=document.getElementById('liveAdminActivity');
+   if(!health||!stats||!act)return;
+   try{
+    const results=await Promise.all([
+      safeCount('schools',false),safeCount('profiles',false),safeCount('students',false),
+      supabaseClient.from('platform_user_presence').select('user_id,last_seen_at,current_page').gte('last_seen_at',new Date(Date.now()-5*60*1000).toISOString()),
+      supabaseClient.from('platform_activity_log').select('actor_name,action,details,created_at').order('created_at',{ascending:false}).limit(8)
+    ]);
+    const [schools,users,students,presence,activity]=results;
+    stats.innerHTML=tile('School workspaces',schools,'Registered schools','🏫')+tile('Registered users',users,'Assigned user profiles','👥')+tile('Students',students,'Saved student records','🎓')+tile('Active users',presence.error?'—':(presence.data||[]).length,'Seen in last 5 minutes','🟢');
+    health.innerHTML='<div class="live-good">Supabase API reachable. Authenticated dashboard active. Public client key only.</div>';
+    if(activity.error) act.innerHTML='<div class="live-muted">Activity log unavailable: '+esc(activity.error.message)+'</div>';
+    else act.innerHTML=(activity.data||[]).length?'<div class="tablewrap"><table><thead><tr><th>When</th><th>User</th><th>Activity</th><th>Details</th></tr></thead><tbody>'+(activity.data||[]).map(a=>'<tr><td>'+esc(fmtTime(a.created_at))+'</td><td>'+esc(a.actor_name||'User')+'</td><td>'+esc(a.action||'Activity')+'</td><td>'+esc(JSON.stringify(a.details||{}))+'</td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No activity has been logged yet. New sign-ins and navigation will appear here.</div>';
+   }catch(e){health.innerHTML='<div class="live-error">Could not load platform metrics: '+esc(e.message||e)+'</div>';stats.innerHTML=tile('School workspaces','—','Connection error','🏫')+tile('Registered users','—','Connection error','👥')+tile('Students','—','Connection error','🎓')+tile('Active users','—','Connection error','🟢');}
+ }
+ async function logActivity(action,details){
+   if(!supabaseClient||!activeUser?.authUserId)return;
+   try{await supabaseClient.from('platform_activity_log').insert({school_id:activeUser.school_id||null,actor_id:activeUser.authUserId,actor_name:activeUser.name,action,details:details||{page:currentPage}})}catch(e){console.warn('Activity log not saved',e.message)}
+ }
+ async function trackPresence(){
+   if(!supabaseClient||!activeUser?.authUserId||activeUser.authMode!=='supabase')return;
+   try{await supabaseClient.from('platform_user_presence').upsert({user_id:activeUser.authUserId,school_id:activeUser.school_id||null,last_seen_at:new Date().toISOString(),current_page:currentPage,user_agent:navigator.userAgent},{onConflict:'user_id'})}catch(e){console.warn('Presence not updated',e.message)}
+ }
+ async function studentsOptions(){
+   const {data,error}=await supabaseClient.from('students').select('id,full_name,admission_no').order('full_name');
+   if(error)throw error;return data||[];
+ }
+ function renderForm(page,students){
+   const cfg=liveTables[page];
+   document.getElementById('liveRecordForm').innerHTML=cfg.fields.map(([key,label,type,options])=>{
+     let control='';
+     if(type==='student')control='<select name="'+key+'" required><option value="">Select student</option>'+students.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.full_name)+' ('+esc(s.admission_no||'')+')</option>').join('')+'</select>';
+     else if(type==='select')control='<select name="'+key+'" required>'+options.split('|').map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('')+'</select>';
+     else control='<input name="'+key+'" type="'+type+'" '+(type==='number'?'min="0" step="any"':'')+' '+(['date'].includes(type)?'value="'+new Date().toISOString().slice(0,10)+'"':'')+' '+(['number','text','email','tel'].includes(type)?'':'')+' '+(['full_name','admission_no','name','term','subject','amount_due','amount_paid'].includes(key)?'required':'')+'>';
+     return '<div class="field"><label>'+esc(label.toUpperCase())+'</label>'+control+'</div>';
+   }).join('');
+ }
+ async function loadLiveModule(page){
+   const cfg=liveTables[page], target=document.getElementById('liveModuleData'); if(!cfg||!target||!supabaseClient)return;
+   try{
+     let q=supabaseClient.from(cfg.table).select(cfg.select).order('created_at',{ascending:false}).limit(200);
+     if(!isSuper() && liveSchoolId())q=q.eq('school_id',liveSchoolId());
+     const {data,error}=await q;if(error)throw error;
+     let rows=data||[], students=[];
+     if(['Attendance','Fees','Examinations'].includes(page)){
+       students=await studentsOptions();const names=Object.fromEntries(students.map(s=>[s.id,s.full_name+' ('+(s.admission_no||'')+')']));
+       rows=rows.map(r=>({...r,student_name:names[r.student_id]||'Unlinked student'}));
+     }
+     if(page==='Fees')rows=rows.map(r=>({...r,amount_due:Number(r.amount_due||0).toLocaleString('en-KE'),amount_paid:Number(r.amount_paid||0).toLocaleString('en-KE')}));
+     if(page==='Examinations')rows=rows.map(r=>({...r,total_percentage:r.total_percentage??(Number(r.cat_marks||0)+Number(r.exam_marks||0))}));
+     rows=rows.map(r=>({...r,__id:r.id}));
+     target.innerHTML='<div class="live-toolbar"><span class="badge blue">'+rows.length+' record(s) loaded from Supabase</span><span class="live-muted">Showing up to 200 recent records</span></div>'+liveTable(cfg.headers,rows);
+     const form=document.getElementById('liveRecordForm');
+     if(form){
+       renderForm(page,students);
+       document.getElementById('liveToggleForm').onclick=()=>{document.getElementById('liveFormWrap').style.display=document.getElementById('liveFormWrap').style.display==='none'?'block':'none'};
+       document.getElementById('liveCancel').onclick=()=>{document.getElementById('liveFormWrap').style.display='none';form.reset()};
+       form.onsubmit=async e=>{
+         e.preventDefault();const msg=document.getElementById('liveFormMsg');msg.textContent='Saving…';
+         const raw=Object.fromEntries(new FormData(form).entries());
+         const record={...raw,school_id:liveSchoolId()};
+         if(page==='Attendance'){record.marked_by=activeUser.authUserId;}
+         if(page==='Fees'){record.recorded_by=activeUser.authUserId;for(const k of ['amount_due','amount_paid'])record[k]=Number(record[k]||0);if(!record.payment_date)record.payment_date=null;}
+         if(page==='Examinations'){for(const k of ['cat_marks','exam_marks'])record[k]=Number(record[k]||0);record.grade_letter=record.grade_letter||null;}
+         if(page==='Classes')record.capacity=Number(record.capacity||40);
+         if(page==='Students')record.grade_level=record.grade_level||'Grade 7';
+         for(const [k,v] of Object.entries(record))if(v==='')record[k]=null;
+         const {error:saveError}=await supabaseClient.from(cfg.table).insert(record);
+         if(saveError){msg.textContent='Save failed: '+saveError.message;return;}
+         msg.textContent='Saved to Supabase.';await logActivity('created_'+page.toLowerCase(),{table:cfg.table});await loadLiveModule(page);
+       };
+       target.querySelectorAll('[data-live-delete]').forEach(btn=>btn.addEventListener('click',async()=>{
+         if(!confirm('Delete this record from Supabase? This cannot be undone.'))return;
+         const {error:deleteError}=await supabaseClient.from(cfg.table).delete().eq('id',btn.dataset.liveDelete);
+         if(deleteError){alert('Delete failed: '+deleteError.message);return;}
+         await logActivity('deleted_'+page.toLowerCase(),{table:cfg.table});await loadLiveModule(page);
+       }));
+     }
+   }catch(e){target.innerHTML='<div class="live-error">Could not load '+esc(page)+' from Supabase: '+esc(e.message||e)+'. Check the database migration, permissions and internet connection.</div>'}
+ }
+ async function refreshAdminPage(){
+   const target=document.getElementById('liveAdminPageData');if(!target||!isSuper()||!supabaseClient)return;
+   try{
+    if(currentPage==='Schools'){
+      const {data,error}=await supabaseClient.from('schools').select('id,name,code,county,created_at').order('created_at',{ascending:false});if(error)throw error;
+      target.innerHTML='<div class="tablewrap"><table><thead><tr><th>School</th><th>Code</th><th>County</th><th>Created</th></tr></thead><tbody>'+(data||[]).map(s=>'<tr><td>'+esc(s.name)+'</td><td>'+esc(s.code)+'</td><td>'+esc(s.county||'—')+'</td><td>'+esc(fmtTime(s.created_at))+'</td></tr>').join('')+'</tbody></table></div><p class="live-muted">School creation and tenant provisioning should be performed with controlled administrator workflows.</p>';
+    } else if(currentPage==='Users & Roles'){
+      const {data,error}=await supabaseClient.from('profiles').select('id,school_id,full_name,role,created_at').order('created_at',{ascending:false});if(error)throw error;
+      target.innerHTML='<div class="tablewrap"><table><thead><tr><th>Name</th><th>Role</th><th>School ID</th><th>Created</th></tr></thead><tbody>'+(data||[]).map(u=>'<tr><td>'+esc(u.full_name||'—')+'</td><td><span class="badge blue">'+esc(u.role)+'</span></td><td>'+esc(u.school_id||'—')+'</td><td>'+esc(fmtTime(u.created_at))+'</td></tr>').join('')+'</tbody></table></div><p class="live-muted">Roles are read from profiles.role. New Auth users must be created securely and linked to a profile; this page does not expose passwords.</p>';
+    } else if(currentPage==='Activity Monitor'){
+      const [a,p]=await Promise.all([supabaseClient.from('platform_activity_log').select('actor_name,action,details,created_at').order('created_at',{ascending:false}).limit(100),supabaseClient.from('platform_user_presence').select('user_id,school_id,last_seen_at,current_page').order('last_seen_at',{ascending:false}).limit(100)]);
+      if(a.error)throw a.error;if(p.error)throw p.error;
+      target.innerHTML='<h3>Active users (last 5 minutes)</h3><div class="tablewrap"><table><thead><tr><th>User ID</th><th>Current page</th><th>Last seen</th></tr></thead><tbody>'+(p.data||[]).filter(u=>Date.now()-new Date(u.last_seen_at).getTime()<300000).map(u=>'<tr><td>'+esc(u.user_id)+'</td><td>'+esc(u.current_page||'—')+'</td><td>'+esc(fmtTime(u.last_seen_at))+'</td></tr>').join('')+'</tbody></table></div><h3>Recent activity</h3><div class="tablewrap"><table><thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead><tbody>'+(a.data||[]).map(x=>'<tr><td>'+esc(fmtTime(x.created_at))+'</td><td>'+esc(x.actor_name||'—')+'</td><td>'+esc(x.action||'—')+'</td><td>'+esc(JSON.stringify(x.details||{}))+'</td></tr>').join('')+'</tbody></table></div>';
+    } else if(currentPage==='System Reports'){
+      const [s,u,st,t,c,a,f,e]=await Promise.all([safeCount('schools',false),safeCount('profiles',false),safeCount('students',false),safeCount('teachers',false),safeCount('school_classes',false),safeCount('attendance_records',false),safeCount('fee_payments',false),safeCount('exam_marks',false)]);
+      target.innerHTML='<div class="portal-grid">'+tile('Schools',s,'Registered schools','🏫')+tile('Users',u,'Profiles','👥')+tile('Students',st,'Student register','🎓')+tile('Teachers',t,'Staff register','👩‍🏫')+tile('Classes',c,'Classes and streams','🏷️')+tile('Attendance',a,'Attendance records','✓')+tile('Fee records',f,'Fee ledger entries','💰')+tile('Exam marks',e,'Assessment records','📝')+'</div>';
+    } else if(currentPage==='Communication Centre'){
+      const {data,error}=await supabaseClient.from('platform_messages').select('id,channel,recipient,subject,message,status,created_at').order('created_at',{ascending:false}).limit(20);if(error)throw error;
+      target.innerHTML='<div class="panel"><h3>Compose a message</h3><form id="platformMessageForm" class="live-form"><div class="field"><label>CHANNEL</label><select name="channel"><option value="internal">Internal message log</option><option value="email">Email draft</option><option value="whatsapp">WhatsApp draft</option></select></div><div class="field"><label>RECIPIENT EMAIL OR PHONE</label><input name="recipient" placeholder="Email or phone number"></div><div class="field"><label>SUBJECT</label><input name="subject" placeholder="Subject (optional)"></div><div class="field" style="grid-column:1/-1"><label>MESSAGE</label><textarea name="message" required></textarea></div><div><button type="submit">Prepare message</button></div></form><p class="live-muted">Email and WhatsApp open a pre-filled draft in your app. Nothing is sent automatically.</p><p id="platformMessageStatus" class="live-muted"></p></div><h3>Recent messages</h3><div class="tablewrap"><table><thead><tr><th>When</th><th>Channel</th><th>Recipient</th><th>Subject</th><th>Status</th></tr></thead><tbody>'+(data||[]).map(m=>'<tr><td>'+esc(fmtTime(m.created_at))+'</td><td>'+esc(m.channel)+'</td><td>'+esc(m.recipient||'—')+'</td><td>'+esc(m.subject||'—')+'</td><td>'+esc(m.status||'—')+'</td></tr>').join('')+'</tbody></table></div>';
+      document.getElementById('platformMessageForm').onsubmit=async ev=>{ev.preventDefault();const d=Object.fromEntries(new FormData(ev.currentTarget).entries()),status=document.getElementById('platformMessageStatus');status.textContent='Preparing…';const row={school_id:activeUser.school_id||null,sender_id:activeUser.authUserId,channel:d.channel,recipient:d.recipient||null,subject:d.subject||null,message:d.message,status:d.channel==='internal'?'sent':'prepared'};const {error:insErr}=await supabaseClient.from('platform_messages').insert(row);if(insErr){status.textContent='Could not save message: '+insErr.message;return;}if(d.channel==='email'){const url='mailto:'+encodeURIComponent(d.recipient||'')+'?subject='+encodeURIComponent(d.subject||'')+'&body='+encodeURIComponent(d.message);window.location.href=url;}else if(d.channel==='whatsapp'){const phone=(d.recipient||'').replace(/[^0-9]/g,'');const url='https://wa.me/'+phone+'?text='+encodeURIComponent(d.message);window.open(url,'_blank','noopener');}status.textContent='Message prepared and recorded.';await logActivity('prepared_message',{channel:d.channel});await refreshAdminPage();};
+    }
+   }catch(e){target.innerHTML='<div class="live-error">Could not load this page: '+esc(e.message||e)+'</div>'}
+ }
+ const oldRender=render;
+ render=function(){
+   oldRender();
+   if(activeUser?.authMode==='supabase'){
+     trackPresence();
+     if(isSuper()&&currentPage==='Dashboard')refreshAdmin();
+     else if(isSuper()&&adminPages.includes(currentPage))refreshAdminPage();
+     else if(liveTables[currentPage])loadLiveModule(currentPage);
+   }
+ };
+ const oldGo=go;
+ go=function(page){oldGo(page);if(activeUser?.authMode==='supabase')logActivity('viewed_page',{page});};
+ const oldShow=showApp;
+ showApp=function(){oldShow();if(activeUser?.authMode==='supabase'){logActivity('signed_in',{role:activeUser.role});trackPresence();}};
+})();
+</script>
 </script>
 
 </body>
