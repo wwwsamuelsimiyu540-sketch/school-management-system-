@@ -533,19 +533,19 @@ body{background:#f3f7fc;color:#102a56}
  ];
  function setupSuperNav(){
   const side=document.querySelector('.sidebar');if(!side||activeUser?.role!=='super_admin')return;
-  side.innerHTML='<div class="brand">🎓 School<br><span>Management System</span></div>'+
-   '<div class="admin-nav-heading">System management</div>'+
-   superNav.slice(0,5).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
+  side.innerHTML='<div class="brand">🛠️ Developer<br><span>Portal · School System</span></div>'+
+   '<div class="admin-nav-heading">Developer control centre</div>'+
+   superNav.slice(0,5).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+(p==='Feature Directory'?'Developer Services':p)+'</button>').join('')+
    '<div class="admin-nav-heading">School services</div>'+
    superNav.slice(5,12).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
-   '<div class="admin-nav-heading">Platform</div>'+
+   '<div class="admin-nav-heading">Monitoring & tools</div>'+
    superNav.slice(12).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
    '<div style="height:14px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>';
   side.querySelectorAll('[data-admin-page]').forEach(b=>b.addEventListener('click',()=>{currentPage=b.dataset.adminPage;render()}));
   const out=side.querySelector('#logoutBtn');if(out)out.addEventListener('click',logout);
  }
  function adminDashboard(){
-  return '<div class="portal-hero"><span class="role-tag">SUPER ADMIN · PLATFORM OWNER</span><h2 style="margin-top:12px">Super Admin Dashboard</h2><p>Manage all schools, user roles, school services, system activity and platform health from one control centre.</p></div>'+
+  return '<div class="portal-hero"><span class="role-tag">DEVELOPER · SYSTEM OWNER</span><h2 style="margin-top:12px">Developer Portal</h2><p>Manage the platform, schools, users, security, integrations, deployments and system health from one control centre.</p></div>'+
    '<div class="portal-grid" id="liveAdminStats">'+tile('School workspaces','…','Registered schools','🏫')+tile('Registered users','…','Database profiles','👥')+tile('Students','…','Saved student records','🎓')+tile('Active users','…','Seen in the last 5 minutes','🟢')+'</div>'+
    '<div class="admin-dashboard-grid"><div>'+
     '<div class="panel"><div class="sectionhead"><h2>Recent System Activity</h2><span class="badge blue">Live database</span></div><div id="liveAdminActivity" class="live-muted">Loading activity log…</div></div>'+
@@ -625,7 +625,7 @@ body{background:#f3f7fc;color:#102a56}
  render=function(){
   if(currentPage!=='Feature Directory'){priorRenderWithDirectory();return;}
   if(!activeUser)return;
-  document.getElementById('pageTitle').textContent='Feature Directory';
+  document.getElementById('pageTitle').textContent=activeUser?.role==='super_admin'?'Developer Services':'Feature Directory';
   const content=document.getElementById('content');content.innerHTML=featureDirectory();
   const search=document.getElementById('featureSearch');
   search.addEventListener('input',()=>{const q=search.value.trim().toLowerCase();content.querySelectorAll('[data-feature-group]').forEach(group=>{let shown=0;group.querySelectorAll('[data-feature-name]').forEach(btn=>{const yes=btn.dataset.featureName.toLowerCase().includes(q);btn.style.display=yes?'':'none';if(yes)shown++;});group.style.display=shown?'':'none';});});
