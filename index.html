@@ -356,6 +356,7 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
  const oldSimpleRolePage=simpleRolePage;
  simpleRolePage=function(page){
    if(isSuper() && adminPages.includes(page)) return adminPageShell(page);
+   if(previewOriginalUser && liveTables[page]) return null; // Demo previews use the local sample UI; never attach live Supabase write handlers.
    if(liveTables[page] && ['principal','teacher','bursar'].includes(activeUser?.role)){
      if(activeUser.role==='teacher' && !['Attendance','Examinations'].includes(page)) return null;
      if(activeUser.role==='bursar' && page!=='Fees') return null;
