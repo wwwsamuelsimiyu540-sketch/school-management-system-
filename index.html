@@ -490,6 +490,92 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
 })();
 </script>
 
+
+<!-- Super Admin interface refresh -->
+<style>
+:root{--navy:#07336c;--blue:#1769e8;--light:#f3f7fc;--ink:#102a56;--muted:#647da4;--line:#dce8f7}
+body{background:#f3f7fc;color:#102a56}
+.sidebar{background:linear-gradient(180deg,#07336c,#052957);box-shadow:4px 0 18px #082d5a12}
+.brand{font-size:18px;line-height:1.4;border-bottom:1px solid #ffffff20;margin-bottom:12px}
+.brand span{color:#8ec5ff}
+.navbtn{border-radius:9px;color:#d9e8ff;margin:4px 0;padding:11px 12px;transition:background .15s}
+.navbtn.active,.navbtn:hover{background:#1769e8;color:#fff}
+.main{max-width:none;padding:26px 28px}
+.topbar{background:linear-gradient(110deg,#083b7b,#0752a0);color:white;margin:-26px -28px 24px;padding:18px 28px}
+.topbar p{color:#d5e7ff}.userpill{background:#ffffff18;color:white;border-color:#ffffff35}
+.panel,.stat,.portal-tile{border:1px solid #dfebf9;border-radius:12px;box-shadow:0 4px 18px #1e4d8010}
+.portal-hero{background:linear-gradient(120deg,#eaf3ff,#fff);color:#102a56;border:1px solid #dce9fb}
+.portal-hero p{color:#55739d}
+.portal-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
+.portal-tile{position:relative;overflow:hidden;padding:19px}
+.portal-tile .big{color:#12396f}
+#liveAdminStats .portal-tile:nth-child(1){border-top:4px solid #1769e8}
+#liveAdminStats .portal-tile:nth-child(2){border-top:4px solid #18a66a}
+#liveAdminStats .portal-tile:nth-child(3){border-top:4px solid #7951e8}
+#liveAdminStats .portal-tile:nth-child(4){border-top:4px solid #0da6b7}
+.admin-dashboard-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(260px,1fr);gap:18px}
+.admin-dashboard-grid .panel{margin-bottom:18px}
+.admin-quick{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.admin-quick button{min-height:68px;white-space:normal}
+.live-good{background:#e9fbf2;border:1px solid #b6efd1;border-radius:9px;padding:13px;color:#087443}
+.live-error{background:#fff1f2;border-radius:9px;padding:13px;color:#b42335}
+.admin-nav-heading{font-size:10px;text-transform:uppercase;letter-spacing:1.2px;color:#90b6e8;padding:15px 12px 5px}
+@media(max-width:950px){.main{padding:17px}.topbar{margin:-17px -17px 20px;padding:16px 18px}.admin-dashboard-grid{grid-template-columns:1fr}.portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.main{padding:12px}.topbar{margin:-12px -12px 16px;padding:14px 12px}.portal-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.admin-quick{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+<script>
+(function(){
+ const superNav=[
+  ['Dashboard','▦'],['Schools','🏫'],['Users & Roles','♙'],['School Settings','⚙'],
+  ['Students','🎓'],['Teachers','♟'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],
+  ['Activity Monitor','◷'],['Communication Centre','✉'],['System Reports','▤']
+ ];
+ function setupSuperNav(){
+  const side=document.querySelector('.sidebar');if(!side||activeUser?.role!=='super_admin')return;
+  side.innerHTML='<div class="brand">🎓 School<br><span>Management System</span></div>'+
+   '<div class="admin-nav-heading">System management</div>'+
+   superNav.slice(0,4).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
+   '<div class="admin-nav-heading">School services</div>'+
+   superNav.slice(4,11).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
+   '<div class="admin-nav-heading">Platform</div>'+
+   superNav.slice(11).map(([p,i])=>'<button class="navbtn '+(currentPage===p?'active':'')+'" data-admin-page="'+p+'"><small>'+i+'</small> '+p+'</button>').join('')+
+   '<div style="height:14px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>';
+  side.querySelectorAll('[data-admin-page]').forEach(b=>b.addEventListener('click',()=>{currentPage=b.dataset.adminPage;render()}));
+  const out=side.querySelector('#logoutBtn');if(out)out.addEventListener('click',logout);
+ }
+ function adminDashboard(){
+  return '<div class="portal-hero"><span class="role-tag">SUPER ADMIN · PLATFORM OWNER</span><h2 style="margin-top:12px">Super Admin Dashboard</h2><p>Manage all schools, user roles, school services, system activity and platform health from one control centre.</p></div>'+
+   '<div class="portal-grid" id="liveAdminStats">'+tile('School workspaces','…','Registered schools','🏫')+tile('Registered users','…','Database profiles','👥')+tile('Students','…','Saved student records','🎓')+tile('Active users','…','Seen in the last 5 minutes','🟢')+'</div>'+
+   '<div class="admin-dashboard-grid"><div>'+
+    '<div class="panel"><div class="sectionhead"><h2>Recent System Activity</h2><span class="badge blue">Live database</span></div><div id="liveAdminActivity" class="live-muted">Loading activity log…</div></div>'+
+    '<div class="panel"><h2>Quick Actions</h2><div class="admin-quick"><button data-admin-goto="Schools">🏫 Manage Schools</button><button data-admin-goto="Users & Roles">👥 Users & Roles</button><button data-admin-goto="Students">🎓 Student Records</button><button data-admin-goto="Communication Centre">✉ Communication</button><button data-admin-goto="Activity Monitor">◷ Activity Monitor</button><button data-admin-goto="System Reports">▥ System Reports</button></div></div>'+
+   '</div><div>'+
+    '<div class="panel"><h2>System Performance</h2><div id="liveAdminHealth" class="live-muted">Checking Supabase connection…</div><p class="live-muted">Performance and record counts are based on database responses, not sample figures.</p></div>'+
+    '<div class="panel"><h2>Communication Centre</h2><p style="color:var(--muted);line-height:1.6">Prepare internal notices, email drafts and WhatsApp messages for school communication.</p><button data-admin-goto="Communication Centre">Open communication centre →</button></div>'+
+    '<div class="panel"><h2>Platform Tools</h2><div class="quick"><button class="secondary" data-admin-goto="School Settings">School Settings</button><button class="secondary" data-admin-goto="System Reports">View Reports</button><button class="secondary" data-admin-goto="Activity Monitor">Active Users</button></div></div>'+
+   '</div></div>';
+ }
+ const priorRender=render;
+ render=function(){
+  if(activeUser?.role!=='super_admin'){priorRender();return;}
+  setupSuperNav();
+  document.getElementById('pageTitle').textContent=currentPage;
+  document.getElementById('userPill').textContent='● '+(activeUser.name||'Super Admin')+' · Super Admin';
+  let html;
+  if(currentPage==='Dashboard')html=adminDashboard();
+  else if(['Schools','Users & Roles','Activity Monitor','Communication Centre','System Reports'].includes(currentPage))html=adminPageShell(currentPage);
+  else if(['Students','Teachers','Classes','Attendance','Fees','Examinations'].includes(currentPage))html=moduleShell(currentPage);
+  else if(currentPage==='Reports')html=adminPageShell('System Reports');
+  else html=hero('School Settings','Configure school-level academic and contact settings.')+'<div class="panel"><p>Choose a school service from the navigation to manage its records. Settings currently depend on the existing school configuration tools.</p><div class="quick"><button data-admin-goto="Schools">Manage Schools</button><button class="secondary" data-admin-goto="System Reports">System Reports</button></div></div>';
+  document.getElementById('content').innerHTML=html;
+  document.querySelectorAll('[data-admin-goto]').forEach(b=>b.addEventListener('click',()=>{currentPage=b.dataset.adminGoto;render()}));
+  if(currentPage==='Dashboard')refreshAdmin();
+  else if(['Schools','Users & Roles','Activity Monitor','Communication Centre','System Reports'].includes(currentPage))refreshAdminPage();
+  else if(['Students','Teachers','Classes','Attendance','Fees','Examinations'].includes(currentPage)&&activeUser.authMode==='supabase')loadLiveModule(currentPage);
+ };
+})();
+</script>
+
 </body>
 </html>
 <!-- ChatGPT GitHub write-access test: 2026-10-11 -->
