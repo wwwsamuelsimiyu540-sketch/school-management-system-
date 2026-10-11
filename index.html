@@ -308,6 +308,7 @@ render=function(){
 })();
 
 
+</script>
 <!-- Live Supabase school-management modules -->
 <style>
 .live-toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}.live-toolbar input,.live-toolbar select,.live-form input,.live-form select,.live-form textarea{font:inherit;border:1px solid var(--line);border-radius:8px;padding:10px;width:100%;background:#fff}.live-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}.live-form .field{margin:4px 0}.live-form textarea{min-height:88px}.live-actions{display:flex;gap:8px;flex-wrap:wrap}.live-table td{white-space:normal}.live-muted{color:var(--muted);font-size:13px}.live-error{padding:12px;background:#fff1f2;color:#9f1239;border-radius:8px}.live-good{padding:12px;background:#ecfdf5;color:#166534;border-radius:8px}
@@ -483,7 +484,6 @@ render=function(){
  const oldShow=showApp;
  showApp=function(){oldShow();if(activeUser?.authMode==='supabase'){logActivity('signed_in',{role:activeUser.role});trackPresence();}};
 })();
-</script>
 </script>
 
 </body>
