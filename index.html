@@ -246,6 +246,7 @@ freshForm.addEventListener('submit',async e=>{
    const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('id,school_id,full_name,role').eq('id',data.user.id).single();
    if(profileError||!profile){await supabaseClient.auth.signOut();throw new Error('This account has no assigned profile. Ask the platform administrator to configure it.');}
    if(!roleNames[profile.role]){await supabaseClient.auth.signOut();throw new Error('This account has an unsupported role. Contact the platform administrator.');}
+   if(profile.role!=='super_admin'&&profile.school_id){const {data:suspended,error:suspensionError}=await supabaseClient.rpc('current_school_suspended');if(suspensionError){await supabaseClient.auth.signOut();throw new Error('Unable to verify school subscription status. Please try again or contact the platform administrator.');}if(suspended){await supabaseClient.auth.signOut();throw new Error('School access is suspended because the subscription requires attention. Contact the platform administrator after payment is confirmed.');}}
    activeUser={username:email,role:profile.role,name:profile.full_name||email,school_id:profile.school_id,authUserId:data.user.id,authMode:'supabase'};
    sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.setItem('edumanage_auth_mode','supabase');currentPage=profile.role==='super_admin'?'Feature Directory':'Dashboard';showApp();
  } catch(ex) {err.textContent=ex.message||'Unable to sign in. Check your email and password.';}
