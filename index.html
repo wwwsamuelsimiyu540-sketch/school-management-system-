@@ -64,35 +64,8 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 </div>
 <script>
 const STORAGE_KEY='edumanage_school_v1';
-const starter={
- Students:[
-  {id:'ST001',name:'Amina Wanjiku',gender:'Female',className:'Grade 7',phone:'0712345678',status:'Active'},
-  {id:'ST002',name:'Brian Otieno',gender:'Male',className:'Grade 8',phone:'0723456789',status:'Active'},
-  {id:'ST003',name:'Faith Chebet',gender:'Female',className:'Grade 9',phone:'0734567890',status:'Active'}
- ],
- Teachers:[
-  {id:'T001',name:'Grace Njeri',subject:'Mathematics',phone:'0711223344',email:'grace@example.com'},
-  {id:'T002',name:'Peter Kiptoo',subject:'English',phone:'0722334455',email:'peter@example.com'}
- ],
- Classes:[
-  {id:'C001',name:'Grade 7',teacher:'Grace Njeri',room:'Room 1',capacity:'40'},
-  {id:'C002',name:'Grade 8',teacher:'Peter Kiptoo',room:'Room 2',capacity:'40'},
-  {id:'C003',name:'Grade 9',teacher:'Grace Njeri',room:'Room 3',capacity:'35'}
- ],
- Attendance:[
-  {id:'A001',date:new Date().toISOString().slice(0,10),student:'Amina Wanjiku',className:'Grade 7',status:'Present'},
-  {id:'A002',date:new Date().toISOString().slice(0,10),student:'Brian Otieno',className:'Grade 8',status:'Present'}
- ],
- Fees:[
-  {id:'F001',student:'Amina Wanjiku',term:'Term 1',amount:'15000',paid:'10000',date:new Date().toISOString().slice(0,10)},
-  {id:'F002',student:'Brian Otieno',term:'Term 1',amount:'15000',paid:'15000',date:new Date().toISOString().slice(0,10)},
-  {id:'F003',student:'Faith Chebet',term:'Term 1',amount:'15000',paid:'5000',date:new Date().toISOString().slice(0,10)}
- ],
- Examinations:[
-  {id:'E001',student:'Amina Wanjiku',subject:'Mathematics',exam:'Mid-term',score:'82',outOf:'100'},
-  {id:'E002',student:'Brian Otieno',subject:'English',exam:'Mid-term',score:'74',outOf:'100'}
- ]
-};
+try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem('edumanage_multischool_v2')}catch(_){}
+const starter={Students:[],Teachers:[],Classes:[],Attendance:[],Fees:[],Examinations:[]};
 let db=loadDB(), currentPage='Dashboard';
 function loadDB(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||structuredClone(starter)}catch(e){return JSON.parse(JSON.stringify(starter))}}
 function saveDB(){localStorage.setItem(STORAGE_KEY,JSON.stringify(db))}
@@ -114,7 +87,7 @@ function dashboard(){let due=db.Fees.reduce((s,x)=>s+Math.max(0,Number(x.amount)
 <div class="cards">${stat('Classes',db.Classes.length,'🏫')}${stat('Attendance Today',present,'✓')}${stat('Exam Records',db.Examinations.length,'📝')}${stat('Modules','8','▦')}</div>
 <div class="sectionhead"><h2>Visual Analytics</h2><span class="badge blue">Updates from current records</span></div>
 <div class="chart-grid">${chartCard('Student Enrollment by Class','Number of students in each class',classes)}${chartCard('Attendance Breakdown','All recorded attendance statuses',att)}${chartCard('Fee Collection','Collected versus outstanding (KES)',[{label:'Collected',value:paid,display:money(paid),color:'#16a34a'},{label:'Outstanding',value:due,display:money(due),color:'#f59e0b'}])}${chartCard('School Records Overview','Counts across key school modules',[{label:'Students',value:db.Students.length},{label:'Teachers',value:db.Teachers.length},{label:'Classes',value:db.Classes.length},{label:'Exams',value:db.Examinations.length}])}</div>
-<div class="notice">Demo note: included records are sample data. Replace them with your school's actual records before real use. This version stores records in this browser only; charts reflect the records currently saved here.</div>`}
+<div class="notice">This dashboard displays only records saved for the signed-in account.</div>`}
 
 const configs={
  Students:{singular:'Student',fields:[['name','Full name','text'],['gender','Gender','select','Female|Male|Other'],['className','Class','selectClasses'],['phone','Phone','tel'],['status','Status','select','Active|Inactive']],cols:[['id','Admission No.'],['name','Student Name'],['gender','Gender'],['className','Class'],['phone','Phone'],['status','Status']]},
@@ -147,28 +120,7 @@ function go(page){currentPage=page;document.querySelectorAll('.navbtn[data-page]
 <script>
 /* Multi-school academic extension. Existing prototype remains available. */
 const MS_KEY='edumanage_multischool_v2';
-const msSeed={
- schools:[{id:'SCH001',name:'Demo Academy',code:'DA001',year:'2026',term:'Term 1',grading:'A:80,B:70,C:60,D:50,E:0',passMark:50,head:'School Administrator',address:'Eldoret, Kenya',phone:'',subjects:'English, Kiswahili, Mathematics, Science, Social Studies'}],
- students:[
-  {id:'ST001',schoolId:'SCH001',name:'Amina Wanjiku',gender:'Female',className:'Grade 7',admissionDate:'2026-01-05',guardian:'',phone:'',status:'Active'},
-  {id:'ST002',schoolId:'SCH001',name:'Brian Otieno',gender:'Male',className:'Grade 8',admissionDate:'2026-01-05',guardian:'',phone:'',status:'Active'},
-  {id:'ST003',schoolId:'SCH001',name:'Faith Chebet',gender:'Female',className:'Grade 7',admissionDate:'2026-01-05',guardian:'',phone:'',status:'Active'}
- ],
- exams:[{id:'EX001',schoolId:'SCH001',name:'Term 1 Mid-Term',year:'2026',term:'Term 1',date:'2026-03-15',className:'Grade 7',outOf:100}],
- marks:[
-  {id:'M001',schoolId:'SCH001',examId:'EX001',studentId:'ST001',subject:'Mathematics',score:82,outOf:100},
-  {id:'M002',schoolId:'SCH001',examId:'EX001',studentId:'ST001',subject:'English',score:76,outOf:100},
-  {id:'M003',schoolId:'SCH001',examId:'EX001',studentId:'ST001',subject:'Science',score:88,outOf:100},
-  {id:'M004',schoolId:'SCH001',examId:'EX001',studentId:'ST002',subject:'Mathematics',score:71,outOf:100},
-  {id:'M005',schoolId:'SCH001',examId:'EX001',studentId:'ST002',subject:'English',score:68,outOf:100},
-  {id:'M006',schoolId:'SCH001',examId:'EX001',studentId:'ST002',subject:'Science',score:73,outOf:100},
-  {id:'M007',schoolId:'SCH001',examId:'EX001',studentId:'ST003',subject:'Mathematics',score:91,outOf:100},
-  {id:'M008',schoolId:'SCH001',examId:'EX001',studentId:'ST003',subject:'English',score:85,outOf:100},
-  {id:'M009',schoolId:'SCH001',examId:'EX001',studentId:'ST003',subject:'Science',score:89,outOf:100}
- ],
- activities:[{id:'ACT001',schoolId:'SCH001',date:'2026-01-10',title:'Opening Day',category:'Academic',description:'Term opening and student orientation'}],
- settings:{}
-};
+const msSeed={schools:[],students:[],exams:[],marks:[],activities:[],settings:{}};
 let ms=(()=>{try{return JSON.parse(localStorage.getItem(MS_KEY))||JSON.parse(JSON.stringify(msSeed))}catch(e){return JSON.parse(JSON.stringify(msSeed))}})();
 if(!ms.schools)ms=JSON.parse(JSON.stringify(msSeed));
 if(!ms.students)ms.students=msSeed.students.map(x=>({...x}));
@@ -210,14 +162,7 @@ render=function(){msOriginalRender();};
 // === Role-based login and dashboard routing (prototype build) ===
 let activeUser = null;
  let previewOriginalUser = null;
-const demoAccounts = {
-  super_admin:{password:'demo123',role:'super_admin',name:'Platform Super Admin',label:'Super Admin Portal'},
-  admin:{password:'admin123',role:'principal',name:'School Administrator',label:'Administrator Dashboard'},
-  teacher:{password:'demo123',role:'teacher',name:'Demo Teacher',label:'Teacher Dashboard'},
-  bursar:{password:'demo123',role:'bursar',name:'Demo Bursar',label:'Bursar Dashboard'},
-  parent:{password:'demo123',role:'parent',name:'Demo Parent',label:'Parent Portal'},
-  student:{password:'demo123',role:'student',name:'Demo Student',label:'Student Portal'}
-};
+const demoAccounts = {};
 const roleMenus = {
  super_admin:[['Dashboard','▦'],['Feature Directory','☷'],['School Approvals','✓'],['School Settings','🏫'],['Reports','▥']],
  principal:[['Dashboard','▦'],['Students','♟'],['Teachers','♙'],['Parents','👪'],['Bursars','💰'],['Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Student Reports','▥'],['Reports','▤'],['Communication Centre','✉'],['School Settings','⚙'],['More','☷']],
@@ -311,7 +256,7 @@ render=function(){
  if(!activeUser){return}
  document.getElementById('pageTitle').textContent=currentPage;
  let content=document.getElementById('content'), custom=null;
- if(previewOriginalUser&&activeUser.authMode==='supabase')activeUser.authMode='demo';
+ 
  if(currentPage==='Dashboard') custom=roleHome();
  else custom=simpleRolePage(currentPage);
  if(custom!==null){content.innerHTML=custom;
@@ -494,7 +439,7 @@ async function loadPersonalPage(page){
    if(page==='Student Reports'&&['principal','bursar'].includes(activeUser?.role)) return studentReportsShell();
    if(['Parents','Bursars'].includes(page)&&activeUser?.role==='principal') return moduleShell(page);
    if(isSuper() && adminPages.includes(page)) return adminPageShell(page);
-   if(previewOriginalUser && liveTables[page]) return null; // Demo previews use the local sample UI; never attach live Supabase write handlers.
+   if(previewOriginalUser && liveTables[page]) return null;
    if(liveTables[page] && (isSuper() || ['principal','teacher','bursar'].includes(activeUser?.role))){
      if(activeUser.role==='teacher' && !['Attendance','Examinations'].includes(page)) return null;
      if(activeUser.role==='bursar' && page!=='Fees') return null;
@@ -505,7 +450,7 @@ async function loadPersonalPage(page){
  roleMenus.super_admin=[['Dashboard','▦'],['Feature Directory','☷'],['Schools','🏫'],['Register School','＋'],['School Suspension','⛔'],['Users & Roles','♙'],['Activity Monitor','◷'],['Communication Centre','✉'],['System Reports','▥'],['Admin Tools','⚙']];
  roleMenus.developer=roleMenus.super_admin;
  function super_adminHome(){
-   return hero('Platform control centre','Live overview from your connected Supabase project. School data remains in the database; no demo records are counted.')+
+   return hero('Platform control centre','Live overview from your connected Supabase project. School data remains in the database; only saved records are counted.')+
    '<div class="portal-grid" id="liveAdminStats">'+tile('School workspaces','…','Loading Supabase','🏫')+tile('Registered users','…','Loading profiles','👥')+tile('Students','…','Database records','🎓')+tile('Active users','…','Seen in last 5 minutes','🟢')+'</div>'+
    '<div class="panel"><div class="sectionhead"><h2>Recent system activity</h2><span class="badge blue">Live</span></div><div id="liveAdminActivity" class="live-muted">Loading activity log…</div></div>'+
    '<div class="panel"><div class="sectionhead"><h2>System health</h2></div><div id="liveAdminHealth" class="live-muted">Checking Supabase connection…</div><div class="quick" style="margin-top:12px"><button data-goto="Schools">Manage schools</button><button class="secondary" data-goto="Users & Roles">Users & roles</button><button class="secondary" data-goto="Activity Monitor">Activity monitor</button><button class="secondary" data-goto="Communication Centre">Open communication centre</button></div></div>';
