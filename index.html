@@ -6,7 +6,7 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>EduManage | School Management System</title>
+<title>My School System Manager</title>
 <style>
 :root{--navy:#14213d;--blue:#2563eb;--light:#f4f7fb;--ink:#172033;--muted:#64748b;--line:#e2e8f0;--green:#15803d;--red:#b91c1c}
 *{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--light);color:var(--ink)}
@@ -33,7 +33,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 <div id="loginScreen">
   <form class="login-card" id="loginForm">
     <div style="font-size:34px">🎓</div>
-    <h1>Edu<span style="color:#2563eb">Manage</span></h1>
+    <h1>My School System Manager</h1>
     <p>School Management System<br>Sign in to open the dashboard assigned to your account role.</p>
     <div class="field"><label for="username">EMAIL ADDRESS</label><input id="username" type="email" required placeholder="Enter your account email" autocomplete="username"></div>
     <div class="field"><label for="password">PASSWORD</label><input id="password" type="password" required placeholder="Enter your password" autocomplete="current-password"></div>
@@ -44,7 +44,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 </div>
 <div id="app">
 <div class="menu-scrim" id="menuScrim" aria-hidden="true"></div><aside class="sidebar" id="appSidebar" aria-label="Main navigation">
-  <div class="brand">Edu<span>Manage</span></div>
+  <div class="brand">My School System Manager</div>
   <button class="navbtn active" data-page="Dashboard"><small>▦</small> Dashboard</button>
   <button class="navbtn" data-page="Students"><small>♟</small> Students</button>
   <button class="navbtn" data-page="Teachers"><small>♙</small> Teachers</button>
@@ -59,7 +59,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 <main class="main">
   <header class="topbar"><div class="topbar-start"><button type="button" class="menu-toggle" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false">☰ <span style="font-size:13px">Menu</span></button><div><h1 id="pageTitle">Dashboard</h1><p id="today"></p></div></div><div class="userpill" id="userPill">● Signed out</div></header>
   <div id="content"></div>
-  <div class="footer">EduManage School Management System · Demo edition · Data saved in this browser</div>
+  <div class="footer">My School System Manager · Demo edition · Data saved in this browser</div>
 </main>
 </div>
 <script>
@@ -110,7 +110,7 @@ function stat(label,value,icon){return `<div class="stat"><span class="icon">${i
 function chartCard(title,subtitle,items){const max=Math.max(1,...items.map(x=>Number(x.value)||0));if(!items.length||items.every(x=>!Number(x.value)))return `<div class="chart-card"><h2>${title}</h2><div class="chart-subtitle">${subtitle}</div><div class="chart-empty">No data available yet. Add records to see this analysis.</div></div>`;return `<div class="chart-card"><h2>${title}</h2><div class="chart-subtitle">${subtitle}</div><div class="chart-bars">${items.map(x=>{let v=Math.max(0,Number(x.value)||0),h=v?Math.max(5,Math.round(v/max*100)):0;return `<div class="chart-col"><span class="chart-value">${esc(x.display??v)}</span><div class="chart-bar" title="${esc(x.label)}: ${esc(v)}" style="height:${h}%;${x.color?`background:${x.color}`:''}"></div><span class="chart-label">${esc(x.label)}</span></div>`}).join('')}</div></div>`}
 function dashboard(){let due=db.Fees.reduce((s,x)=>s+Math.max(0,Number(x.amount)-Number(x.paid)),0),paid=db.Fees.reduce((s,x)=>s+Number(x.paid),0),today=new Date().toISOString().slice(0,10),present=db.Attendance.filter(x=>x.date===today&&x.status==='Present').length,feeTotal=paid+due;let classes=db.Classes.map(c=>({label:c.name,value:db.Students.filter(st=>st.className===c.name).length})).slice(0,7);if(!classes.length)classes=[{label:'Students',value:db.Students.length}];let att=['Present','Absent','Late','Excused'].map((x,i)=>({label:x,value:db.Attendance.filter(a=>a.status===x).length,color:['#16a34a','#dc2626','#f59e0b','#64748b'][i]}));return `
 <div class="cards">${stat('Total Students',db.Students.length,'🎓')}${stat('Total Teachers',db.Teachers.length,'👩‍🏫')}${stat('Fees Collected',money(paid),'💰')}${stat('Fees Outstanding',money(due),'📌')}</div>
-<div class="panel"><div class="sectionhead"><h2>Welcome to EduManage</h2><span class="badge blue">Academic overview</span></div><p style="color:#64748b;line-height:1.7;margin-top:0">Manage student records, staff, classes, attendance, fee payments, examinations and school reports from one place.</p><div class="quick"><button data-goto="Students">＋ Add Student</button><button class="secondary" data-goto="Attendance">✓ Take Attendance</button><button class="secondary" data-goto="Fees">＋ Record Fees</button><button class="secondary" data-goto="Reports">▥ View Reports</button></div></div>
+<div class="panel"><div class="sectionhead"><h2>Welcome to My School System Manager</h2><span class="badge blue">Academic overview</span></div><p style="color:#64748b;line-height:1.7;margin-top:0">Manage student records, staff, classes, attendance, fee payments, examinations and school reports from one place.</p><div class="quick"><button data-goto="Students">＋ Add Student</button><button class="secondary" data-goto="Attendance">✓ Take Attendance</button><button class="secondary" data-goto="Fees">＋ Record Fees</button><button class="secondary" data-goto="Reports">▥ View Reports</button></div></div>
 <div class="cards">${stat('Classes',db.Classes.length,'🏫')}${stat('Attendance Today',present,'✓')}${stat('Exam Records',db.Examinations.length,'📝')}${stat('Modules','8','▦')}</div>
 <div class="sectionhead"><h2>Visual Analytics</h2><span class="badge blue">Updates from current records</span></div>
 <div class="chart-grid">${chartCard('Student Enrollment by Class','Number of students in each class',classes)}${chartCard('Attendance Breakdown','All recorded attendance statuses',att)}${chartCard('Fee Collection','Collected versus outstanding (KES)',[{label:'Collected',value:paid,display:money(paid),color:'#16a34a'},{label:'Outstanding',value:due,display:money(due),color:'#f59e0b'}])}${chartCard('School Records Overview','Counts across key school modules',[{label:'Students',value:db.Students.length},{label:'Teachers',value:db.Teachers.length},{label:'Classes',value:db.Classes.length},{label:'Exams',value:db.Examinations.length}])}</div>
@@ -307,7 +307,7 @@ function simpleRolePage(page){
  if(page==='Reports'&&role==='bursar') return reports();
  return null;
 }
-function drawRoleNav(){const nav=document.querySelector('.sidebar');const items=roleMenus[activeUser.role]||roleMenus.principal;nav.innerHTML=`<div class="brand">Edu<span>Manage</span></div><div style="padding:10px 12px 16px;color:#cbd5e1;font-size:12px">${esc(activeUser.name)}<br><b style="color:white">${esc(roleNames[activeUser.role])}</b></div>${items.map(([p,i])=>`<button class="navbtn ${p===currentPage?'active':''}" data-page="${esc(p)}"><small>${i}</small> ${p==='Feature Directory'?'All Services (454)':esc(p)}</button>`).join('')}${activeUser.role==='developer'||previewOriginalUser?'<button class="navbtn" data-page="Demo"><small>🧪</small> Demo · Switch panel</button>':''}${previewOriginalUser?'<button class="navbtn" id="exitDemoNav"><small>↩</small> Exit Demo</button>':''}<div style="height:20px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>`;nav.querySelectorAll('.navbtn[data-page]').forEach(b=>b.addEventListener('click',()=>{go(b.dataset.page);setMenuOpen(false)}));document.getElementById('exitDemoNav')?.addEventListener('click',()=>{exitPanelPreview();setMenuOpen(false)});document.getElementById('logoutBtn').addEventListener('click',logout)}
+function drawRoleNav(){const nav=document.querySelector('.sidebar');const items=roleMenus[activeUser.role]||roleMenus.principal;nav.innerHTML=`<div class="brand">My School System Manager</div><div style="padding:10px 12px 16px;color:#cbd5e1;font-size:12px">${esc(activeUser.name)}<br><b style="color:white">${esc(roleNames[activeUser.role])}</b></div>${items.map(([p,i])=>`<button class="navbtn ${p===currentPage?'active':''}" data-page="${esc(p)}"><small>${i}</small> ${p==='Feature Directory'?'All Services (454)':esc(p)}</button>`).join('')}${activeUser.role==='developer'||previewOriginalUser?'<button class="navbtn" data-page="Demo"><small>🧪</small> Demo · Switch panel</button>':''}${previewOriginalUser?'<button class="navbtn" id="exitDemoNav"><small>↩</small> Exit Demo</button>':''}<div style="height:20px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>`;nav.querySelectorAll('.navbtn[data-page]').forEach(b=>b.addEventListener('click',()=>{go(b.dataset.page);setMenuOpen(false)}));document.getElementById('exitDemoNav')?.addEventListener('click',()=>{exitPanelPreview();setMenuOpen(false)});document.getElementById('logoutBtn').addEventListener('click',logout)}
 const oldShowApp=showApp;
 showApp=function(){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';drawRoleNav();document.getElementById('userPill').innerHTML=`● Signed in as <b>${esc(activeUser.name)}</b> · ${esc(roleNames[activeUser.role])}`;setToday();render()};
 logout=async function(){try{if(supabaseClient) await supabaseClient.auth.signOut()}catch(e){console.warn('Sign-out request failed',e)}sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.removeItem('edumanage_auth_mode');activeUser=null;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='grid';document.getElementById('password').value=''};
