@@ -94,7 +94,6 @@ Deno.serve(async (req) => {
   // The project's auth trigger may create the profile automatically; upsert handles either case.
   const { error: principalError } = await admin.from("profiles").upsert({
     id: createdUser.user.id,
-    email: adminEmail,
     full_name: adminName,
     role: "principal",
     school_id: school.id,
