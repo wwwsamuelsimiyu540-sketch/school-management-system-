@@ -54,9 +54,9 @@ async function decide(id,status){
  }catch(e){$('notice').textContent='Could not complete decision: '+e.message;if(btn)btn.disabled=false}
 }
 async function loadSchools(){
- const {data,error}=await sb.from('schools').select('id,name,code,county,status,created_at').order('name',{ascending:true}).limit(500);
+ const {data,error}=await sb.from('schools').select('id,name,code,county,status,curriculum,school_level,senior_pathways,created_at').order('name',{ascending:true}).limit(500);
  if(error){$('schoolsList').innerHTML='<p>'+esc(error.message)+'</p>';return}if(!data?.length){$('schoolsList').innerHTML='<p>No registered schools found.</p>';return}
- $('schoolsList').innerHTML='<table><thead><tr><th>School</th><th>Code / County</th><th>Status</th><th>Action</th></tr></thead><tbody>'+data.map(s=>{const suspended=s.status==='suspended';return '<tr><td><b>'+esc(s.name)+'</b></td><td>'+esc(s.code||'—')+'<div class="muted">'+esc(s.county||'—')+'</div></td><td>'+esc(s.status||'approved')+'</td><td>'+(suspended?'<button data-activate="'+s.id+'">Activate school</button>':'<button class="reject" data-suspend="'+s.id+'">Suspend school</button>')+'</td></tr>'}).join('')+'</tbody></table>';
+ $('schoolsList').innerHTML='<table><thead><tr><th>School</th><th>Code / County</th><th>Status</th><th>Action</th></tr></thead><tbody>'+data.map(s=>{const suspended=s.status==='suspended';return '<tr><td><b>'+esc(s.name)+'</b></td><td>'+esc(s.code||'—')+'<div class="muted">'+esc(s.county||'—')+'<br>'+esc(s.curriculum||'Kenya CBE (CBC) 2026')+'<br>'+esc(s.school_level||'Not set')+(s.senior_pathways?.length?'<br>Pathways: '+esc(s.senior_pathways.join(', ')):'')+'</div></td><td>'+esc(s.status||'approved')+'</td><td>'+(suspended?'<button data-activate="'+s.id+'">Activate school</button>':'<button class="reject" data-suspend="'+s.id+'">Suspend school</button>')+'</td></tr>'}).join('')+'</tbody></table>';
  $('schoolsList').querySelectorAll('[data-activate]').forEach(b=>b.onclick=()=>changeSchoolStatus(b.dataset.activate,'approved'));$('schoolsList').querySelectorAll('[data-suspend]').forEach(b=>b.onclick=()=>changeSchoolStatus(b.dataset.suspend,'suspended'))
 }
 async function changeSchoolStatus(id,status){
