@@ -1,5 +1,5 @@
-// Supabase Edge Function: developer-register-school
-// Deploy with: supabase functions deploy developer-register-school
+// Supabase Edge Function: super_admin-register-school
+// Deploy with: supabase functions deploy super_admin-register-school
 // Required secret: SUPABASE_SERVICE_ROLE_KEY (set in Supabase, never in browser code).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -51,6 +51,9 @@ Deno.serve(async (req) => {
   const schoolName = typeof input.school_name === "string" ? input.school_name.trim() : "";
   const schoolCode = typeof input.school_code === "string" ? input.school_code.trim().toUpperCase() : "";
   const county = typeof input.county === "string" ? input.county.trim() : null;
+  const curriculum = typeof input.curriculum === "string" ? input.curriculum.trim() : "Kenya CBE (CBC) 2026";
+  const schoolLevel = typeof input.school_level === "string" ? input.school_level.trim() : "Comprehensive (PP1–Grade 9)";
+  const seniorPathways = Array.isArray(input.senior_pathways) ? input.senior_pathways.filter((v) => typeof v === "string" && ["STEM", "Social Sciences", "Arts and Sports Science"].includes(v)) : [];
   const adminName = typeof input.admin_name === "string" ? input.admin_name.trim() : "";
   const adminEmail = typeof input.admin_email === "string" ? input.admin_email.trim().toLowerCase() : "";
   const adminPassword = typeof input.admin_password === "string" ? input.admin_password : "";
@@ -81,6 +84,9 @@ Deno.serve(async (req) => {
     name: schoolName,
     code: schoolCode,
     county: county || null,
+    curriculum: curriculum,
+    school_level: schoolLevel,
+    senior_pathways: seniorPathways,
     status: "approved",
     approved_at: new Date().toISOString(),
     approved_by: userData.user.id,
