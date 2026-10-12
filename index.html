@@ -912,58 +912,133 @@ body{background:radial-gradient(ellipse at 85% -10%,#e3eaff 0,transparent 34%),v
 .stat,.panel,.portal-tile{border:1px solid #e6ebf5;border-radius:18px;box-shadow:0 8px 28px #20345d08;transition:box-shadow .2s,transform .2s}.stat:hover,.portal-tile:hover{transform:translateY(-2px);box-shadow:0 12px 30px #20345d12}.stat{padding:20px;background:linear-gradient(145deg,#fff,#fbfcff)}.stat .icon{background:#eef2ff;color:#344bc7;border-radius:12px}.stat .number{letter-spacing:-.05em;font-size:clamp(24px,2.4vw,32px)}.panel{padding:clamp(16px,2vw,23px);margin-bottom:18px}.panel h2,.panel h3{font-weight:750;letter-spacing:-.025em}
 .portal-hero{border-radius:22px;padding:clamp(22px,3vw,34px);background:radial-gradient(circle at 90% 0%,#ffffff24,transparent 34%),linear-gradient(120deg,#111b36,#2448a5 72%,#5b6ff0);box-shadow:0 15px 38px #1d367b24}.portal-hero h2{letter-spacing:-.045em;font-size:clamp(22px,3vw,30px)}.portal-tile{padding:20px;background:linear-gradient(145deg,#fff,#fbfcff)}
 button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px 5px #10234b0c}button:hover{filter:brightness(1.04);transform:translateY(-1px)}button.secondary{background:#eef2ff;color:#243b86}input,select,textarea{border-radius:10px!important}table{border-spacing:0}th{background:#f3f6fc;color:#4d5b78}td,th{padding:13px 12px}tr:hover td{background:#fafbff}
-.visual-analytics{margin:20px 0 24px}.visual-analytics-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px}.visual-analytics-head h2{margin:0;font-size:20px;letter-spacing:-.04em}.visual-analytics-head p{margin:5px 0 0;color:var(--muted);font-size:13px}.visual-chart-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}.visual-chart-card{min-width:0;background:linear-gradient(150deg,#fff,#fcfdff);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 7px 24px #20345d08}.visual-chart-card.wide{grid-column:1/-1}.visual-chart-card h3{margin:0 0 5px;font-size:15px;letter-spacing:-.02em}.visual-chart-card .chart-caption{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.5}.visual-chart-canvas{position:relative;width:100%;height:250px}.visual-chart-canvas.short{height:220px}.visual-chart-empty{min-height:180px;display:grid;place-items:center;text-align:center;padding:20px;background:#f7f9fe;color:var(--muted);border-radius:12px;font-size:13px}.chart-chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.chart-chip{display:inline-flex;gap:7px;align-items:center;padding:7px 10px;border-radius:999px;background:#f2f5fc;color:#4b5874;font-size:11px}.chart-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-@media(max-width:760px){.visual-chart-grid{grid-template-columns:1fr}.visual-chart-card.wide{grid-column:auto}.visual-chart-canvas{height:225px}.stat{border-radius:15px}}@media(prefers-reduced-motion:reduce){.navbtn,.stat,.panel,.portal-tile,button{transition:none!important}}
+.visual-analytics{margin:20px 0 24px}.visual-analytics-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:0 0 14px}.visual-analytics-head h2{margin:0;font-size:20px;letter-spacing:-.04em}.visual-analytics-head p{margin:5px 0 0;color:var(--muted);font-size:13px}.visual-chart-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px}.visual-chart-card{min-width:0;background:linear-gradient(150deg,#fff,#fcfdff);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:0 7px 24px #20345d08}.visual-chart-card.wide{grid-column:span 2}.visual-chart-card h3{margin:0 0 5px;font-size:15px;letter-spacing:-.02em}.visual-chart-card .chart-caption{margin:0 0 14px;color:var(--muted);font-size:12px;line-height:1.5}.visual-chart-canvas{position:relative;width:100%;height:250px}.visual-chart-canvas.short{height:220px}.visual-chart-empty{min-height:180px;display:grid;place-items:center;text-align:center;padding:20px;background:#f7f9fe;color:var(--muted);border-radius:12px;font-size:13px}.chart-chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.chart-chip{display:inline-flex;gap:7px;align-items:center;padding:7px 10px;border-radius:999px;background:#f2f5fc;color:#4b5874;font-size:11px}.chart-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+@media(max-width:1100px){.visual-chart-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.visual-chart-card.wide{grid-column:1/-1}}@media(max-width:760px){.visual-chart-grid{grid-template-columns:1fr}.visual-chart-card.wide{grid-column:auto}.visual-chart-canvas{height:225px}.stat{border-radius:15px}}@media(prefers-reduced-motion:reduce){.navbtn,.stat,.panel,.portal-tile,button{transition:none!important}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 <script id="global-visual-analytics">
 (function(){
  const baseRender=render;let chartRequest=0,instances=[];
- const colors=['#4169f5','#16a7c7','#159a72','#f59e0b','#8257e5','#ec6484','#64748b','#8bbf63'];
+ const colors=['#4169f5','#16a7c7','#159a72','#f59e0b','#8257e5','#ec6484','#64748b','#8bbf63','#0ea5e9','#f97316'];
  function clear(){instances.forEach(c=>{try{c.destroy()}catch(_){}});instances=[]}
  function addMarkup(){
   if(!activeUser||!currentPage)return;
-  const content=document.getElementById('content');if(!content||document.getElementById('globalVisualAnalytics'))return;
-  const s=document.createElement('section');s.className='visual-analytics';s.id='globalVisualAnalytics';
-  s.innerHTML='<div class="visual-analytics-head"><div><h2>Insights & trends</h2><p>Interactive charts refreshed from records your account is allowed to view.</p></div><span class="badge blue">Live analytics</span></div><div class="visual-chart-grid"><div class="visual-chart-card"><h3>Record distribution</h3><p class="chart-caption">Breakdown of schools or student grade levels.</p><div class="visual-chart-canvas short"><canvas id="visualPieChart" aria-label="Record distribution pie chart"></canvas></div><div id="visualPieLegend" class="chart-chip-row"></div></div><div class="visual-chart-card"><h3>Records by category</h3><p class="chart-caption">Compare key modules in this workspace.</p><div class="visual-chart-canvas short"><canvas id="visualColumnChart" aria-label="Column chart of records by category"></canvas></div></div><div class="visual-chart-card wide"><h3>Attendance activity</h3><p class="chart-caption">Attendance records over the last 14 days, grouped by date.</p><div class="visual-chart-canvas"><canvas id="visualLineChart" aria-label="Line chart of attendance over time"></canvas></div></div></div>';
-  content.appendChild(s);
+  const content=document.getElementById('content');if(!content)return;
+  let section=document.getElementById('globalVisualAnalytics');
+  if(section){section.remove();clear()}
+  section=document.createElement('section');section.className='visual-analytics';section.id='globalVisualAnalytics';
+  section.innerHTML='<div class="visual-analytics-head"><div><h2>Insights &amp; trends</h2><p>Live Supabase analytics for the records this account is permitted to view.</p></div><span class="badge blue">Live analytics</span></div><div class="visual-chart-grid" id="visualChartGrid"></div>';
+  content.appendChild(section);
  }
  function draw(id,type,labels,datasets){
   const canvas=document.getElementById(id);if(!canvas||!window.Chart)return;
-  const pie=type==='pie';const config={type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,animation:{duration:400},plugins:{legend:{display:pie,position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:14,font:{size:11}}},tooltip:{padding:10,cornerRadius:8}},scales:pie?{}:{x:{grid:{display:false},ticks:{color:'#6b7690',font:{size:10},maxRotation:0,autoSkip:true}},y:{beginAtZero:true,grid:{color:'#edf1f8'},ticks:{color:'#6b7690',precision:0,font:{size:10}}}}}};
-  if(type==='line'){config.options.elements={line:{tension:.35,borderWidth:3},point:{radius:3,hoverRadius:5}};config.options.interaction={intersect:false,mode:'index'}}
+  const pie=type==='pie';
+  const config={type:type==='column'?'bar':type,data:{labels,datasets},options:{responsive:true,maintainAspectRatio:false,animation:{duration:350},plugins:{legend:{display:pie||datasets.length>1,position:'bottom',labels:{usePointStyle:true,boxWidth:8,padding:12,font:{size:11}}},tooltip:{padding:10,cornerRadius:8}},scales:pie?{}:{x:{grid:{display:false},ticks:{color:'#6b7690',font:{size:10},maxRotation:0,autoSkip:true}},y:{beginAtZero:true,grid:{color:'#edf1f8'},ticks:{color:'#6b7690',precision:0,font:{size:10}}}}}};
+  if(type==='line'){config.options.elements={line:{tension:.32,borderWidth:2.5},point:{radius:2,hoverRadius:5}};config.options.interaction={intersect:false,mode:'index'}}
+  if(type==='column')datasets.forEach(d=>{d.borderRadius=6;d.maxBarThickness=38});
   instances.push(new Chart(canvas.getContext('2d'),config));
  }
- function empty(msg){const s=document.getElementById('globalVisualAnalytics');if(s)s.querySelector('.visual-chart-grid').innerHTML='<div class="visual-chart-card wide"><div class="visual-chart-empty">'+esc(msg)+'</div></div>'}
+ function grouped(rows,key,fallback='Unassigned',valueFn=null){
+  const m={};rows.forEach(r=>{const k=String(r[key]||fallback);m[k]=(m[k]||0)+(valueFn?Number(valueFn(r)||0):1)});return {labels:Object.keys(m),values:Object.values(m)};
+ }
+ function sum(rows,key){return rows.reduce((n,r)=>n+Number(r[key]||0),0)}
+ function byDate(rows,key,dateKey,dates,transform=null){
+  return [{label:key,data:dates.map(d=>rows.filter(r=>String(r[dateKey]||'').slice(0,10)===d).reduce((n,r)=>n+(transform?Number(transform(r)||0):1),0)),borderColor:colors[0],backgroundColor:colors[0],fill:false}];
+ }
+ function empty(msg){const g=document.getElementById('visualChartGrid');if(g)g.innerHTML='<div class="visual-chart-card wide"><div class="visual-chart-empty">'+esc(msg)+'</div></div>'}
  async function load(){
-  const request=++chartRequest;if(!activeUser||!supabaseClient)return; if(!document.getElementById('globalVisualAnalytics'))return;clear();
+  const request=++chartRequest;if(!activeUser||!supabaseClient)return;
+  if(!document.getElementById('globalVisualAnalytics'))return;clear();
   try{
-   const role=activeUser.role,schoolId=activeUser.school_id,platform=['super_admin','developer'].includes(role);let students=[],teachers=[],classes=[],attendance=[],marks=[],fees=[],schools=[],profiles=[];
+   const role=activeUser.role,schoolId=activeUser.school_id,platform=['super_admin','developer'].includes(role),personal=['parent','student'].includes(role);
+   let students=[],teachers=[],classes=[],attendance=[],marks=[],fees=[],schools=[],profiles=[],links=[];
+   const since=new Date(Date.now()-13*86400000).toISOString().slice(0,10);
    if(platform){
-    const rs=await Promise.all([supabaseClient.from('schools').select('id,status').limit(5000),supabaseClient.from('profiles').select('id,role').limit(10000),supabaseClient.from('students').select('id,grade_level').limit(10000),supabaseClient.from('teachers').select('id').limit(10000),supabaseClient.from('school_classes').select('id').limit(10000),supabaseClient.from('attendance_records').select('attendance_date,status').gte('attendance_date',new Date(Date.now()-13*86400000).toISOString().slice(0,10)).limit(10000)]);
-    if(request!==chartRequest)return;const bad=rs.find(x=>x.error);if(bad)throw bad.error;[schools,profiles,students,teachers,classes,attendance]=rs.map(x=>x.data||[]);
-   }else if(['parent','student'].includes(role)){
+    const rs=await Promise.all([
+     supabaseClient.from('schools').select('id,status,created_at').limit(5000),
+     supabaseClient.from('profiles').select('id,role,school_id,created_at').limit(10000),
+     supabaseClient.from('students').select('id,grade_level,stream,created_at').limit(10000),
+     supabaseClient.from('teachers').select('id,subject,created_at').limit(10000),
+     supabaseClient.from('school_classes').select('id,grade_level,stream').limit(10000),
+     supabaseClient.from('attendance_records').select('id,attendance_date,status').gte('attendance_date',since).limit(10000),
+     supabaseClient.from('exam_marks').select('id,subject,total_percentage,grade_letter,created_at').limit(10000),
+     supabaseClient.from('fee_payments').select('id,amount_due,amount_paid,payment_date,created_at').limit(10000)
+    ]);
+    if(request!==chartRequest)return;const bad=rs.find(x=>x.error);if(bad)throw bad.error;
+    [schools,profiles,students,teachers,classes,attendance,marks,fees]=rs.map(x=>x.data||[]);
+   }else if(personal){
     const ids=await getMyStudentIds();if(request!==chartRequest)return;
-    if(ids.length){const rs=await Promise.all([supabaseClient.from('students').select('id,grade_level').in('id',ids),supabaseClient.from('attendance_records').select('attendance_date,status').in('student_id',ids).gte('attendance_date',new Date(Date.now()-13*86400000).toISOString().slice(0,10)).limit(5000),supabaseClient.from('exam_marks').select('id,subject,total_percentage').in('student_id',ids).limit(5000),supabaseClient.from('fee_payments').select('id,amount_due,amount_paid').in('student_id',ids).limit(5000)]);
-     if(request!==chartRequest)return;const bad=rs.find(x=>x.error);if(bad)throw bad.error;[students,attendance,marks,fees]=rs.map(x=>x.data||[])}
+    if(ids.length){
+     const rs=await Promise.all([
+      supabaseClient.from('students').select('id,grade_level,stream,created_at').in('id',ids),
+      supabaseClient.from('attendance_records').select('id,attendance_date,status').in('student_id',ids).gte('attendance_date',since).limit(5000),
+      supabaseClient.from('exam_marks').select('id,subject,total_percentage,grade_letter,created_at').in('student_id',ids).limit(5000),
+      supabaseClient.from('fee_payments').select('id,amount_due,amount_paid,payment_date,created_at').in('student_id',ids).limit(5000)
+     ]);
+     if(request!==chartRequest)return;const bad=rs.find(x=>x.error);if(bad)throw bad.error;
+     [students,attendance,marks,fees]=rs.map(x=>x.data||[]);
+    }
    }else{
     if(!schoolId)throw new Error('This account is not assigned to a school.');
-    const since=new Date(Date.now()-13*86400000).toISOString().slice(0,10);
-    const rs=await Promise.all([supabaseClient.from('students').select('id,grade_level').eq('school_id',schoolId).limit(10000),supabaseClient.from('teachers').select('id').eq('school_id',schoolId).limit(5000),supabaseClient.from('school_classes').select('id').eq('school_id',schoolId).limit(5000),supabaseClient.from('attendance_records').select('attendance_date,status').eq('school_id',schoolId).gte('attendance_date',since).limit(10000),supabaseClient.from('exam_marks').select('id,subject,total_percentage').eq('school_id',schoolId).limit(10000),supabaseClient.from('fee_payments').select('id,amount_due,amount_paid').eq('school_id',schoolId).limit(10000)]);
-    if(request!==chartRequest)return;const bad=rs.find(x=>x.error);if(bad)throw bad.error;[students,teachers,classes,attendance,marks,fees]=rs.map(x=>x.data||[]);
+    const rs=await Promise.all([
+     supabaseClient.from('students').select('id,grade_level,stream,created_at').eq('school_id',schoolId).limit(10000),
+     supabaseClient.from('teachers').select('id,subject,created_at').eq('school_id',schoolId).limit(5000),
+     supabaseClient.from('school_classes').select('id,grade_level,stream').eq('school_id',schoolId).limit(5000),
+     supabaseClient.from('attendance_records').select('id,attendance_date,status').eq('school_id',schoolId).gte('attendance_date',since).limit(10000),
+     supabaseClient.from('exam_marks').select('id,subject,total_percentage,grade_letter,created_at').eq('school_id',schoolId).limit(10000),
+     supabaseClient.from('fee_payments').select('id,amount_due,amount_paid,payment_date,created_at').eq('school_id',schoolId).limit(10000),
+     supabaseClient.from('profiles').select('id,role,created_at').eq('school_id',schoolId).limit(10000),
+     supabaseClient.from('parent_student_links').select('id').eq('school_id',schoolId).limit(10000)
+    ]);
+    if(request!==chartRequest)return;const bad=rs.find(x=>x.error);if(bad)throw bad.error;
+    [students,teachers,classes,attendance,marks,fees,profiles,links]=rs.map(x=>x.data||[]);
    }
-   if(request!==chartRequest||!document.getElementById('globalVisualAnalytics'))return;
-   let pieLabels=[],pieValues=[];
-   if(platform){const map={};schools.forEach(s=>{const k=String(s.status||'Unknown').replace(/_/g,' ');map[k]=(map[k]||0)+1});pieLabels=Object.keys(map);pieValues=pieLabels.map(k=>map[k])}
-   else{const map={};students.forEach(s=>{const k=String(s.grade_level||'Unassigned');map[k]=(map[k]||0)+1});pieLabels=Object.keys(map);pieValues=pieLabels.map(k=>map[k])}
-   draw('visualPieChart','pie',pieLabels.length?pieLabels:['No records'],[{label:platform?'Schools':'Students',data:pieLabels.length?pieValues:[1],backgroundColor:pieLabels.length?colors:['#e7ebf4'],borderWidth:0,hoverOffset:7}]);
-   const legend=document.getElementById('visualPieLegend');if(legend)legend.innerHTML=pieLabels.map((l,i)=>'<span class="chart-chip"><i class="chart-dot" style="background:'+colors[i%colors.length]+'"></i>'+esc(l)+': '+pieValues[i]+'</span>').join('');
-   const labels=platform?['Schools','Users','Students','Teachers','Classes','Attendance']:['Students','Teachers','Classes','Marks','Fee entries'];
-   const values=platform?[schools.length,profiles.length,students.length,teachers.length,classes.length,attendance.length]:[students.length,teachers.length,classes.length,marks.length,fees.length];
-   draw('visualColumnChart','bar',labels,[{label:'Records',data:values,backgroundColor:colors,borderRadius:7,maxBarThickness:42}]);
+   if(request!==chartRequest||!document.getElementById('visualChartGrid'))return;
    const dates=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dates.push(d.toISOString().slice(0,10))}
-   const norm=s=>String(s||'').toLowerCase(),statuses=['Present','Absent','Late','Excused'];
-   draw('visualLineChart','line',dates.map(d=>d.slice(5)),statuses.map((status,i)=>({label:status,data:dates.map(date=>attendance.filter(a=>a.attendance_date===date&&norm(a.status)===status.toLowerCase()).length),borderColor:colors[i],backgroundColor:colors[i],fill:false})));
+   const grade=grouped(students,'grade_level','Unassigned'),stream=grouped(students,'stream','Unassigned');
+   const attendanceStatus=grouped(attendance,'status','Unknown'),schoolStatus=grouped(schools,'status','Unknown'),roleCounts=grouped(profiles,'role','Unknown');
+   const subjectMarks={};marks.forEach(m=>{const k=m.subject||'Unassigned';(subjectMarks[k]||(subjectMarks[k]=[])).push(Number(m.total_percentage||0))});
+   const subjectLabels=Object.keys(subjectMarks),subjectAvgs=subjectLabels.map(k=>Math.round(subjectMarks[k].reduce((a,b)=>a+b,0)/Math.max(1,subjectMarks[k].length)));
+   const due=sum(fees,'amount_due'),paid=sum(fees,'amount_paid'),balance=Math.max(0,due-paid);
+   const feeLabels=['Paid','Outstanding'],feeValues=[paid,balance];
+   const recentStudents=byDate(students,'New students','created_at',dates);
+   const recentProfiles=byDate(profiles,'New accounts','created_at',dates);
+   const recentFees=byDate(fees,'Fees paid','payment_date',dates,r=>r.amount_paid);
+   const recentMarks=byDate(marks,'Marks entered','created_at',dates);
+   const attendanceLines=['present','absent','late','excused'].map((st,i)=>({label:st[0].toUpperCase()+st.slice(1),data:dates.map(d=>attendance.filter(r=>String(r.attendance_date).slice(0,10)===d&&String(r.status||'').toLowerCase()===st).length),borderColor:colors[i],backgroundColor:colors[i],fill:false}));
+   const common=[
+    {title:platform?'School status distribution':'Student grade distribution',type:'pie',labels:platform?schoolStatus.labels:grade.labels,values:platform?schoolStatus.values:grade.values},
+    {title:platform?'User roles':'Attendance status',type:'pie',labels:platform?roleCounts.labels:attendanceStatus.labels,values:platform?roleCounts.values:attendanceStatus.values},
+    {title:personal?'Your results by subject':'Marks by subject (average %)',type:'pie',labels:subjectLabels,values:subjectAvgs},
+    {title:'Records by module',type:'column',labels:platform?['Schools','Users','Students','Teachers','Classes','Attendance','Marks','Fee records']:['Students','Teachers','Classes','Attendance','Marks','Fee records','Parent links'],values:platform?[schools.length,profiles.length,students.length,teachers.length,classes.length,attendance.length,marks.length,fees.length]:[students.length,teachers.length,classes.length,attendance.length,marks.length,fees.length,links.length]},
+    {title:'Students by grade',type:'column',labels:grade.labels,values:grade.values},
+    {title:'Fee collection overview (KES)',type:'column',labels:feeLabels,values:feeValues},
+    {title:'Attendance trend · 14 days',type:'line',labels:dates.map(d=>d.slice(5)),datasets:attendanceLines}
+   ];
+   const developer=[
+    {title:'Schools by status',type:'pie',labels:schoolStatus.labels,values:schoolStatus.values},
+    {title:'Accounts by role',type:'pie',labels:roleCounts.labels,values:roleCounts.values},
+    {title:'Students by grade level',type:'pie',labels:grade.labels,values:grade.values},
+    {title:'Attendance status mix',type:'pie',labels:attendanceStatus.labels,values:attendanceStatus.values},
+    {title:'Fee balance distribution',type:'pie',labels:feeLabels,values:feeValues},
+    {title:'Records across platform',type:'column',labels:['Schools','Accounts','Students','Teachers','Classes','Attendance','Marks','Fee records'],values:[schools.length,profiles.length,students.length,teachers.length,classes.length,attendance.length,marks.length,fees.length]},
+    {title:'School registration status',type:'column',labels:schoolStatus.labels,values:schoolStatus.values},
+    {title:'Accounts by role',type:'column',labels:roleCounts.labels,values:roleCounts.values},
+    {title:'Students by grade',type:'column',labels:grade.labels,values:grade.values},
+    {title:'Average marks by subject (%)',type:'column',labels:subjectLabels,values:subjectAvgs},
+    {title:'Attendance activity · 14 days',type:'line',labels:dates.map(d=>d.slice(5)),datasets:attendanceLines},
+    {title:'New student registrations · 14 days',type:'line',labels:dates.map(d=>d.slice(5)),datasets:recentStudents},
+    {title:'New account registrations · 14 days',type:'line',labels:dates.map(d=>d.slice(5)),datasets:recentProfiles},
+    {title:'Fee collections · 14 days (KES)',type:'line',labels:dates.map(d=>d.slice(5)),datasets:recentFees},
+    {title:'Marks entered · 14 days',type:'line',labels:dates.map(d=>d.slice(5)),datasets:recentMarks}
+   ];
+   const configs=platform?developer:common,grid=document.getElementById('visualChartGrid');
+   grid.innerHTML=configs.map((c,i)=>'<article class="visual-chart-card '+(c.type==='line'?'wide':'')+'"><h3>'+esc(c.title)+'</h3><p class="chart-caption">'+(c.type==='pie'?'Distribution of current saved records.':c.type==='column'?'Comparison from saved records.':'Trend calculated from dated saved records.')+'</p><div class="visual-chart-canvas '+(c.type==='pie'?'short':'')+'"><canvas id="visualChart'+i+'" aria-label="'+esc(c.title)+'"></canvas></div></article>').join('');
+   configs.forEach((c,i)=>{
+    const labels=c.labels||[],values=c.values||[];
+    if(c.type==='line')draw('visualChart'+i,'line',c.labels,c.datasets||[]);
+    else draw('visualChart'+i,c.type,labels.length?labels:['No records'],[{label:c.title,data:labels.length?values:[0],backgroundColor:labels.length?colors:'#e7ebf4',borderWidth:0}]);
+   });
   }catch(e){if(request===chartRequest)empty('Charts could not be loaded from Supabase: '+(e.message||'Check database permissions and try again.'))}
  }
  render=function(){baseRender();addMarkup();load()};
