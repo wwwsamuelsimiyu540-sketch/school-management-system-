@@ -448,15 +448,14 @@ async function loadPersonalPage(page){
   }
   if(page==='Reports'){
    const schoolId=activeUser.school_id;if(!schoolId)throw new Error('This account is not assigned to a school.');
-   const [s,m,a,t,f]=await Promise.all([
+   const [s,m,a,t]=await Promise.all([
     supabaseClient.from('students').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
     supabaseClient.from('exam_marks').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
     supabaseClient.from('attendance_records').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
-    supabaseClient.from('teachers').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
-    supabaseClient.from('fee_payments').select('amount_due,amount_paid').eq('school_id',schoolId)
-   ]);for(const x of [s,m,a,t,f])if(x.error)throw x.error;
-   const feeBalance=(f.data||[]).reduce((sum,x)=>sum+Number(x.amount_due||0)-Number(x.amount_paid||0),0);
-   out.innerHTML='<div class="portal-grid">'+tile('Students',s.count||0,'Saved school records','🎓')+tile('Teachers',t.count||0,'Saved school records','👩‍🏫')+tile('Marks',m.count||0,'Saved assessment records','📊')+tile('Attendance',a.count||0,'Saved attendance records','✓')+tile('Outstanding fees','KES '+feeBalance.toLocaleString('en-KE'),'Calculated from saved fee records','🧾')+'</div>';return;
+    supabaseClient.from('teachers').select('id',{count:'exact',head:true}).eq('school_id',schoolId)
+   ]);for(const x of [s,m,a,t])if(x.error)throw x.error;
+   let feeBalance=null;if(['principal','bursar'].includes(activeUser.role)){const f=await supabaseClient.from('fee_payments').select('amount_due,amount_paid').eq('school_id',schoolId);if(f.error)throw f.error;feeBalance=(f.data||[]).reduce((sum,x)=>sum+Number(x.amount_due||0)-Number(x.amount_paid||0),0);}
+   out.innerHTML='<div class="portal-grid">'+tile('Students',s.count||0,'Saved school records','🎓')+tile('Teachers',t.count||0,'Saved school records','👩‍🏫')+tile('Marks',m.count||0,'Saved assessment records','📊')+tile('Attendance',a.count||0,'Saved attendance records','✓')+tile('Outstanding fees',feeBalance===null?'—':'KES '+feeBalance.toLocaleString('en-KE'),feeBalance===null?'Restricted for this role':'Calculated from saved fee records','🧾')+'</div>';return;
   }
   if(page==='System Reports'){
    const [s,u,m,a,f]=await Promise.all([
