@@ -205,7 +205,7 @@ function msAddActivity(){let title=prompt('Activity title?');if(!title?.trim())r
 function msRender(page='home'){currentPage='MS:'+page;document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.remove('active'));document.getElementById('pageTitle').textContent=({'home':'School Workspace','settings':'School Settings','academics':'Exams & Marks','report':'Academic Reports','activities':'School Activities'})[page]||'School Workspace';let target=document.getElementById('content');target.innerHTML=page==='settings'?msSettings():page==='academics'?msAcademic():page==='report'?msReports():page==='activities'?msActivitiesPage():msHome();msBind(page)}
 function msBind(page){document.getElementById('msSwitchBtn')?.addEventListener('click',()=>{msSchoolId=document.getElementById('msSchoolSelect').value;msRender('home')});document.querySelectorAll('[data-ms]').forEach(b=>b.addEventListener('click',()=>msRender(b.dataset.ms)));document.getElementById('msNewSchool')?.addEventListener('click',msAddSchool);document.getElementById('msSettingsForm')?.addEventListener('submit',e=>{e.preventDefault();let s=msSchool(),v=Object.fromEntries(new FormData(e.target).entries());Object.assign(s,v,{passMark:Number(v.passMark)});msSave();msRender('settings');alert('School settings saved.')});document.getElementById('msNewExam')?.addEventListener('click',msNewExam);document.querySelectorAll('[data-ms-exam]').forEach(b=>b.addEventListener('click',()=>{let sel=document.getElementById('msMarkExam');if(sel)sel.value=b.dataset.msExam;document.getElementById('msMarksPanel')?.scrollIntoView({behavior:'smooth'})}));document.getElementById('msMarkStudentSearch')?.addEventListener('input',e=>{const q=e.target.value.trim().toLowerCase(),sel=document.getElementById('msMarkStudent'),old=sel.value,found=msStudents().filter(st=>(st.name+' '+st.className+' '+st.id).toLowerCase().includes(q));sel.innerHTML=found.map(st=>`<option value="${st.id}">${msEsc(st.name)} (${msEsc(st.className)}) · ${msEsc(st.id)}</option>`).join('');if(found.some(st=>st.id===old))sel.value=old;});document.getElementById('msSaveMark')?.addEventListener('click',msEnterMark);document.querySelectorAll('[data-ms-delmark]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Delete this mark?')){ms.marks=ms.marks.filter(m=>m.id!==b.dataset.msDelmark);msSave();msRender('academics')}}));document.getElementById('msReportExam')?.addEventListener('change',msDrawReport);document.getElementById('msReportClass')?.addEventListener('change',msDrawReport);document.getElementById('msIndividualBtn')?.addEventListener('click',msIndividual);document.getElementById('msPrint')?.addEventListener('click',()=>window.print());document.getElementById('msAddActivity')?.addEventListener('click',msAddActivity);document.querySelectorAll('[data-ms-delactivity]').forEach(b=>b.addEventListener('click',()=>{if(confirm('Delete this activity?')){ms.activities=ms.activities.filter(a=>a.id!==b.dataset.msDelactivity);msSave();msRender('activities')}}));if(page==='report'){msDrawReport();msIndividual()}}
 const msOriginalRender=render;
-render=function(){msOriginalRender();let content=document.getElementById('content');let nav=document.createElement('div');nav.className='panel';nav.style.padding='12px';nav.innerHTML=`<div class="sectionhead" style="margin:0"><div><b>Multi-school & Academic Suite</b><p class="ms-note" style="margin:4px 0 0">School-specific settings, exams, marks, rankings and report cards</p></div><button id="msOpenSuite">Open Academic Suite →</button></div>`;content.prepend(nav);document.getElementById('msOpenSuite').addEventListener('click',()=>msRender('home'))};
+render=function(){msOriginalRender();};
 
 // === Role-based login and dashboard routing (prototype build) ===
 let activeUser = null;
@@ -256,25 +256,9 @@ freshForm.addEventListener('submit',async e=>{
 });
 function roleHome(){
  const role=activeUser?.role;
- if(role==='super_admin') return super_adminHome();
- if(role==='teacher') return teacherHome();
- if(role==='bursar') return bursarHome();
- if(role==='parent') return familyHome(false);
- if(role==='student') return familyHome(true);
- if(role==='principal') return principalHome();
- return principalHome();
-}
-function principalHome(){
- return `<div class="portal-hero"><span class="role-tag">SCHOOL ADMINISTRATOR</span><h2 style="margin-top:12px">School Management Dashboard</h2><p>Monitor your school's real records, academic performance, attendance and enrollment. Fee transactions and receipts remain under the assigned bursar.</p></div>
- <div class="portal-grid" id="principalLiveStats">${tile('Students','…','Loading school records','🎓')}${tile('Teachers','…','Teaching staff','👩‍🏫')}${tile('Classes','…','School classes','🏫')}${tile('Attendance today','…','Daily attendance','✓')}${tile('Exam marks','…','Recorded results','📝')}${tile('Fees outstanding','…','Bursar-managed balances','💰')}</div>
- <div class="panel"><div class="sectionhead"><h2>Administrator quick actions</h2><span class="badge blue">School workspace</span></div><div class="admin-quick">
- <button data-goto="Students">＋ Register / Search Student</button><button data-goto="Teachers">＋ Register Teacher</button><button data-goto="Classes">Manage Classes</button><button data-goto="Attendance">✓ Attendance Register</button><button data-goto="Examinations">Enter / Review Marks</button><button data-goto="Student Reports">▥ Class Reports & Report Cards</button><button data-goto="Student Reports">💳 Fee Summary (read-only)</button><button data-goto="Reports">📊 School Analytics</button><button data-goto="Parents">👪 Parent / Guardian Accounts</button><button data-goto="Bursars">💳 Manage Bursar Account</button><button data-goto="School Settings">⚙ School Profile & Settings</button><button data-goto="Communication Centre">✉ Communication Centre</button></div></div>
- <div class="sectionhead"><h2>School performance analytics</h2><span class="badge blue">Live Supabase records</span></div>
- <div class="admin-dashboard-grid"><div><div class="panel"><h2>Student enrollment by grade</h2><p class="live-muted">Learners grouped by grade level.</p><div id="principalEnrollmentChart" class="analytics-chart"><p class="live-muted">Loading enrollment data…</p></div></div>
- <div class="panel"><h2>Attendance breakdown</h2><p class="live-muted">Attendance records for the last 30 days.</p><div id="principalAttendanceChart" class="analytics-chart"><p class="live-muted">Loading attendance data…</p></div></div></div>
- <div><div class="panel"><h2>Academic performance by subject</h2><p class="live-muted">Average recorded percentage per subject.</p><div id="principalAcademicChart" class="analytics-chart"><p class="live-muted">Loading examination data…</p></div></div>
- <div class="panel"><h2>Fee collection overview</h2><p class="live-muted">Read-only financial summary; transactions are managed by the bursar.</p><div id="principalFeesChart" class="analytics-chart"><p class="live-muted">Loading fee summary…</p></div></div></div></div>
- <div class="notice">Charts use records returned for your assigned school only. If a chart shows an access or loading error, check the account's school assignment and Supabase permissions. The dashboard does not create sample figures.</div>`;
+ if(role==='super_admin'||role==='developer')return super_adminHome();
+ if(role==='principal')return principalHome();
+ return liveRoleDashboard();
 }
 function tile(title,value,desc,icon){return `<div class="portal-tile"><div style="font-size:22px">${icon}</div><div class="big">${value}</div><b>${title}</b><p>${desc}</p></div>`}
 function hero(title,desc){return `<div class="portal-hero"><span class="role-tag">${esc(roleNames[activeUser.role])} workspace</span><h2 style="margin-top:12px">${title}</h2><p>${desc}</p></div>`}
@@ -307,13 +291,13 @@ function simpleRolePage(page){
  if(page==='Demo'&&(role==='super_admin'||previewOriginalUser)) return hero('Demo mode · preview every panel','Switch between safe sample views for all five school-user roles. Demo mode does not create, update or delete Supabase records.')+'<div class="demo-warning"><b>Demo mode:</b> sample information only. Switching roles does not sign in as another real user or change account permissions.</div><div class="portal-grid">'+[['principal','Principal / Administrator','🏫'],['teacher','Teacher','📚'],['bursar','Bursar / Finance','💳'],['parent','Parent','👨‍👩‍👧'],['student','Student','🎓']].map(x=>'<div class="portal-tile"><div style="font-size:25px">'+x[2]+'</div><h3>'+esc(roleNames[x[0]])+'</h3><p>Preview the '+esc(x[1])+' panel and navigate its pages.</p><button data-preview-role="'+x[0]+'">Open demo panel →</button></div>').join('')+'</div><div class="panel"><h2>Return to super_admin controls</h2><button class="secondary" data-goto="Dashboard">Super Admin dashboard</button></div>';
  if(page==='School Registration'&&role==='principal') return `${hero('Register a school','Submit your school for Super Admin review. You will receive access after approval.')}<div class="panel"><p>Use this secure registration form to submit your school details. Requests remain pending until the Super Admin approves them.</p><iframe title="School registration" src="./school-registration.html" style="width:100%;height:760px;border:1px solid var(--line);border-radius:12px;background:white"></iframe></div>`;
  if(page==='School Approvals'&&role==='super_admin') return `${hero('School approvals & lifecycle','Review registration requests, then activate or suspend approved schools. Super Admin accounts are platform-wide and do not belong to a school.')}<div class="panel"><iframe title="School approvals and status management" src="./school-approvals.html" style="width:100%;height:850px;border:1px solid var(--line);border-radius:12px;background:white"></iframe></div>`;
-  if(page==='School Settings'&&role==='super_admin') return `${hero('School workspace administration','Review and configure demo school workspaces.')}<div class="panel"><div class="sectionhead"><h2>Academic workspace</h2><button id="msOpenSuite">Open workspace settings →</button></div><p class="ms-note">Use the existing academic suite to manage school settings, examinations, marks, report cards and activities.</p></div>`;
- if(page==='School Settings'&&role==='principal') return msSettings();
- if(page==='My Classes') return `${hero('My classes','Example class assignments for the signed-in teacher.')}<div class="panel"><div class="tablewrap"><table><thead><tr><th>Class</th><th>Subject / class teacher</th><th>Room</th><th>Capacity</th></tr></thead><tbody>${db.Classes.slice(0,2).map(c=>`<tr><td>${esc(c.name)}</td><td>${esc(c.teacher)}</td><td>${esc(c.room)}</td><td>${esc(c.capacity)}</td></tr>`).join('')}</tbody></table></div></div>`;
- if(page==='My Results') return `${hero('My results','Illustrative results view; live results will load from your authorized account.')}<div class="panel"><div class="tablewrap"><table><thead><tr><th>Term</th><th>Subject</th><th>Score</th><th>Grade</th></tr></thead><tbody><tr><td>Term 1</td><td>Mathematics</td><td>82/100</td><td>B</td></tr><tr><td>Term 1</td><td>English</td><td>74/100</td><td>B</td></tr></tbody></table></div></div>`;
- if(page==='My Attendance') return `${hero('My attendance','Illustrative attendance summary.')}<div class="portal-grid">${tile('Present','23 days','Sample term attendance','✓')}${tile('Absent','2 days','Sample term attendance','—')}${tile('Attendance rate','92%','Illustrative only','📅')}</div>`;
- if(page==='My Fees') return `${hero('My fees','Illustrative fees and balance view.')}<div class="portal-grid">${tile('Total fees','KES 15,000','Sample fee structure','🧾')}${tile('Paid','KES 10,000','Sample payments','✓')}${tile('Balance','KES 5,000','Sample balance','⏳')}</div>`;
- if(page==='Reports'&&role==='super_admin') return `${hero('Platform reports','High-level demo overview.')}<div class="portal-grid">${tile('Schools',(ms.schools||[]).length,'Local sample workspaces','🏫')}${tile('Students',db.Students.length,'Sample register only','🎓')}${tile('Status','Prototype','Supabase not connected to this UI yet','🛠️')}</div>`;
+if(page==='School Settings'&&role==='super_admin') return hero('Platform settings','Use the live platform settings workspace. No local demo settings are shown.')+'<div class="panel"><button data-goto="Admin Tools">Open live Admin Tools →</button></div>'; // legacy route redirected to live settings
+if(page==='School Settings'&&role==='principal') return livePersonalPage(page);
+if(page==='My Classes') return livePersonalPage(page); /* live query replaces the old sample table */ if(false)
+if(page==='My Results') return livePersonalPage(page); /* live query replaces sample results */ if(false)
+if(page==='My Attendance') return livePersonalPage(page); /* live query replaces sample attendance */ if(false)
+if(page==='My Fees') return livePersonalPage(page); /* live query replaces sample fees */ if(false)
+if(page==='Reports'&&role==='super_admin') return livePersonalPage('System Reports'); /* legacy reports route */ if(false)
  if(page==='Reports'&&role==='teacher') return `${hero('Teaching reports','Class and assessment summaries.')}<div class="panel"><div class="quick"><button data-goto="Examinations">Review assessment records</button><button class="secondary" data-goto="Attendance">Review attendance</button></div></div>`;
  if(page==='Reports'&&role==='bursar') return reports();
  return null;
@@ -404,6 +388,99 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
    return hero(moduleTitle[page],moduleDescription[page])+teacherRegistration+studentRegistration+'<div class="panel"><div class="sectionhead"><h2>Live database records</h2><button id="liveToggleForm" '+addRecordButton+'>＋ Add record</button></div><div id="liveFormWrap" style="display:none"><form class="live-form" id="liveRecordForm"></form><div class="form-actions"><button class="secondary" type="button" id="liveCancel">Cancel</button><button type="submit" form="liveRecordForm">Save to Supabase</button></div><p id="liveFormMsg" class="live-muted"></p></div><div id="liveModuleData" class="live-muted">Loading live records…</div></div>';
  }
  function studentReportsShell(){return hero('Class-based student report cards','Choose a class and term. The system calculates each learner’s average, ranks the class from highest to lowest, and prints one separate A4 report per student in one print job. Only marks saved in Supabase are included.')+'<div class="panel report-toolbar"><div class="formgrid"><div class="field"><label>CLASS / GRADE</label><select id="studentReportClass"><option value="">Load classes first</option></select></div><div class="field"><label>TERM</label><select id="studentReportTerm"><option value="">All recorded terms</option><option>Term 1</option><option>Term 2</option><option>Term 3</option></select></div></div><div class="live-actions"><button type="button" onclick="window.loadStudentReportClasses()">Load classes</button><button type="button" onclick="window.generateClassStudentReports()">Generate class reports</button><button type="button" class="secondary" onclick="window.print()">Print class / Save PDF</button></div><p id="studentReportStatus" class="live-muted" role="status"></p></div><div id="studentReportOutput"></div>'} const oldSimpleRolePage=simpleRolePage;
+function liveRoleDashboard(){return hero('Live school dashboard','This dashboard uses records belonging to your signed-in account and assigned school.')+'<div class="portal-grid" id="liveRoleStats">'+tile('Students','…','Loading live records','🎓')+tile('Attendance','…','Loading live records','✓')+tile('Marks / Results','…','Loading live records','📊')+tile('Fees / Balance','…','Loading live records','🧾')+'</div><div class="panel"><h3>Quick actions</h3><div class="quick"><button data-goto="My Classes">My Classes</button><button data-goto="My Results">My Results</button><button data-goto="My Attendance">My Attendance</button><button data-goto="My Fees">My Fees</button><button data-goto="Attendance">Attendance Register</button><button data-goto="Examinations">Examinations & Marks</button><button data-goto="Fees">Fees</button></div><p id="liveRoleStatus" class="live-muted">Loading account-scoped data from Supabase…</p></div>';}
+async function getMyStudentIds(){
+ if(!supabaseClient||!activeUser?.authUserId)return [];
+ if(activeUser.role==='student'){const {data,error}=await supabaseClient.from('students').select('id').eq('user_id',activeUser.authUserId);if(error)throw error;return (data||[]).map(x=>x.id);}
+ if(activeUser.role==='parent'){const {data,error}=await supabaseClient.from('parent_student_links').select('student_id').eq('parent_user_id',activeUser.authUserId);if(error)throw error;return [...new Set((data||[]).map(x=>x.student_id))];}
+ return [];
+}
+async function refreshRoleDashboard(){
+ const target=document.getElementById('liveRoleStats'),status=document.getElementById('liveRoleStatus');if(!target||!supabaseClient||!activeUser||activeUser.authMode!=='supabase')return;
+ try{
+  const schoolId=activeUser.school_id;if(!schoolId)throw new Error('This account is not assigned to a school.');
+  let studentsCount=0,attendanceCount=0,marksCount=0,feeBalance=0;
+  if(['parent','student'].includes(activeUser.role)){
+   const ids=await getMyStudentIds();
+   if(ids.length){
+    const [m,a,f]=await Promise.all([
+     supabaseClient.from('exam_marks').select('id',{count:'exact',head:true}).in('student_id',ids),
+     supabaseClient.from('attendance_records').select('id',{count:'exact',head:true}).in('student_id',ids),
+     supabaseClient.from('fee_payments').select('amount_due,amount_paid').in('student_id',ids)
+    ]);
+    if(m.error)throw m.error;if(a.error)throw a.error;if(f.error)throw f.error;
+    marksCount=m.count||0;attendanceCount=a.count||0;feeBalance=(f.data||[]).reduce((sum,x)=>sum+Number(x.amount_due||0)-Number(x.amount_paid||0),0);studentsCount=ids.length;
+   }
+  }else if(activeUser.role==='teacher'){
+   const [s,m,a,t]=await Promise.all([
+    supabaseClient.from('students').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('exam_marks').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('attendance_records').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('teachers').select('id').eq('user_id',activeUser.authUserId).maybeSingle()
+   ]);
+   if(s.error)throw s.error;if(m.error)throw m.error;if(a.error)throw a.error;if(t.error)throw t.error;
+   studentsCount=s.count||0;marksCount=m.count||0;attendanceCount=a.count||0;
+  }else if(activeUser.role==='bursar'){
+   const [s,f,a]=await Promise.all([
+    supabaseClient.from('students').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('fee_payments').select('amount_due,amount_paid').eq('school_id',schoolId),
+    supabaseClient.from('attendance_records').select('id',{count:'exact',head:true}).eq('school_id',schoolId)
+   ]);
+   if(s.error)throw s.error;if(f.error)throw f.error;if(a.error)throw a.error;
+   studentsCount=s.count||0;attendanceCount=a.count||0;feeBalance=(f.data||[]).reduce((sum,x)=>sum+Number(x.amount_due||0)-Number(x.amount_paid||0),0);
+  }
+  target.innerHTML=tile('Students',studentsCount,'Live authorized records','🎓')+tile('Attendance records',attendanceCount,'Live authorized records','✓')+tile('Marks / Results',marksCount,'Live authorized records','📊')+tile('Outstanding fees','KES '+feeBalance.toLocaleString('en-KE'),'Calculated from saved fee records','🧾');
+  if(status)status.textContent='Dashboard refreshed from Supabase.';
+ }catch(e){if(status)status.textContent='Could not load dashboard data: '+(e.message||e);target.innerHTML=tile('Students','—','Data unavailable','🎓')+tile('Attendance','—','Data unavailable','✓')+tile('Marks / Results','—','Data unavailable','📊')+tile('Outstanding fees','—','Data unavailable','🧾');}
+}
+function livePersonalPage(page){
+ const titles={'My Classes':'My assigned classes','My Results':'My academic results','My Attendance':'My attendance history','My Fees':'My fee account','School Settings':'School details','System Reports':'Live system reports'};
+ return hero(titles[page]||page,'Information is loaded from Supabase and restricted to your account and school.')+'<div class="panel"><div id="livePersonalPageData" class="live-muted">Loading authorized records from Supabase…</div></div>';
+}
+async function loadPersonalPage(page){
+ const out=document.getElementById('livePersonalPageData');if(!out||!supabaseClient||activeUser?.authMode!=='supabase')return;
+ const table=(heads,rows)=>rows.length?'<div class="tablewrap"><table><thead><tr>'+heads.map(h=>'<th>'+esc(h[1])+'</th>').join('')+'</tr></thead><tbody>'+rows.map(r=>'<tr>'+heads.map(h=>'<td>'+esc(r[h[0]]??'—')+'</td>').join('')+'</tr>').join('')+'</tbody></table></div>':'<div class="empty">No saved records are available for this account yet.</div>';
+ try{
+  if(page==='School Settings'){
+   if(!activeUser.school_id)throw new Error('This account is not assigned to a school.');
+   const {data,error}=await supabaseClient.from('schools').select('name,code,county,status,curriculum,school_level,senior_pathways').eq('id',activeUser.school_id).single();if(error)throw error;
+   out.innerHTML=table([['name','School'],['code','School code'],['county','County'],['status','Status'],['curriculum','Curriculum'],['school_level','School level'],['senior_pathways','Senior pathways']], [{...data,senior_pathways:(data.senior_pathways||[]).join(', ')||'—'}])+'<p class="live-muted">Official school status is controlled by the platform administrator.</p>';return;
+  }
+  if(page==='System Reports'){
+   const [s,u,m,a,f]=await Promise.all([
+    supabaseClient.from('schools').select('id',{count:'exact',head:true}),
+    supabaseClient.from('profiles').select('id',{count:'exact',head:true}),
+    supabaseClient.from('students').select('id',{count:'exact',head:true}),
+    supabaseClient.from('attendance_records').select('id',{count:'exact',head:true}),
+    supabaseClient.from('fee_payments').select('id',{count:'exact',head:true})
+   ]);for(const x of [s,u,m,a,f])if(x.error)throw x.error;
+   out.innerHTML='<div class="portal-grid">'+tile('Schools',s.count||0,'Registered in Supabase','🏫')+tile('User profiles',u.count||0,'Saved profiles','👥')+tile('Students',m.count||0,'Saved student records','🎓')+tile('Attendance records',a.count||0,'Saved attendance','✓')+tile('Fee entries',f.count||0,'Saved fee entries','🧾')+'</div>';return;
+  }
+  if(page==='My Classes'){
+   if(activeUser.role!=='teacher')throw new Error('This section is available to teacher accounts.');
+   const {data:t,error:te}=await supabaseClient.from('teachers').select('id').eq('user_id',activeUser.authUserId).maybeSingle();if(te)throw te;if(!t){out.textContent='No teacher record is linked to this login yet. Ask the school administrator to link your account.';return;}
+   const {data,error}=await supabaseClient.from('school_classes').select('name,grade_level,room,capacity,academic_year').eq('class_teacher_id',t.id).order('name');if(error)throw error;
+   out.innerHTML=table([['name','Class'],['grade_level','Grade'],['room','Room'],['capacity','Capacity'],['academic_year','Academic year']],data||[]);return;
+  }
+  const ids=await getMyStudentIds();if(!ids.length){out.textContent=activeUser.role==='parent'?'No child is linked to this parent account yet. Contact the school administrator.':'No student record is linked to this login yet. Contact the school administrator.';return;}
+  if(page==='My Results'){
+   const {data,error}=await supabaseClient.from('exam_marks').select('student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks,created_at').in('student_id',ids).order('created_at',{ascending:false});if(error)throw error;
+   const {data:students,error:se}=await supabaseClient.from('students').select('id,full_name,admission_no').in('id',ids);if(se)throw se;const names=Object.fromEntries((students||[]).map(s=>[s.id,s.full_name+' ('+s.admission_no+')']));
+   out.innerHTML=table([['student_name','Student'],['term','Term'],['subject','Subject'],['cat_marks','CAT'],['exam_marks','Exam'],['total_percentage','Total %'],['grade_letter','Grade'],['remarks','Remarks']],(data||[]).map(r=>({...r,student_name:names[r.student_id]||'Student'})));return;
+  }
+  if(page==='My Attendance'){
+   const {data,error}=await supabaseClient.from('attendance_records').select('student_id,attendance_date,status,note').in('student_id',ids).order('attendance_date',{ascending:false});if(error)throw error;
+   const {data:students,error:se}=await supabaseClient.from('students').select('id,full_name').in('id',ids);if(se)throw se;const names=Object.fromEntries((students||[]).map(s=>[s.id,s.full_name]));
+   out.innerHTML=table([['student_name','Student'],['attendance_date','Date'],['status','Status'],['note','Note']],(data||[]).map(r=>({...r,student_name:names[r.student_id]||'Student'})));return;
+  }
+  if(page==='My Fees'){
+   const {data,error}=await supabaseClient.from('fee_payments').select('student_id,term,academic_year,amount_due,amount_paid,payment_date,receipt_no').in('student_id',ids).order('payment_date',{ascending:false});if(error)throw error;
+   const {data:students,error:se}=await supabaseClient.from('students').select('id,full_name').in('id',ids);if(se)throw se;const names=Object.fromEntries((students||[]).map(s=>[s.id,s.full_name]));
+   out.innerHTML=table([['student_name','Student'],['term','Term'],['academic_year','Year'],['amount_due','Amount due (KES)'],['amount_paid','Paid (KES)'],['payment_date','Payment date'],['receipt_no','Receipt']],(data||[]).map(r=>({...r,student_name:names[r.student_id]||'Student'})));return;
+  }
+ }catch(e){out.innerHTML='<div class="live-error">Could not load '+esc(page)+' from Supabase: '+esc(e.message||e)+'</div>';}
+}
+
  simpleRolePage=function(page){
    if(page==='Fees'&&activeUser?.role!=='bursar') return hero('Bursar-only finance workspace','Financial transactions, fee account changes and receipts are handled by the school bursar. Use Student Reports to view the financial summary attached to a student report.')+'<div class="panel"><h2>Access restricted</h2><p>Only the assigned school bursar can open fee management.</p></div>';
    if(page==='Student Reports'&&['principal','bursar'].includes(activeUser?.role)) return studentReportsShell();
@@ -632,6 +709,8 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
      trackPresence();
      if(isSuper()&&currentPage==='Dashboard')refreshAdmin();
      else if(isSuper()&&adminPages.includes(currentPage))refreshAdminPage();
+     else if(currentPage==='Dashboard')refreshRoleDashboard();
+     else if(['My Classes','My Results','My Attendance','My Fees','School Settings','System Reports'].includes(currentPage))loadPersonalPage(currentPage);
      else if(liveTables[currentPage]||['Parents','Bursars'].includes(currentPage))loadLiveModule(currentPage);
    }
  };
