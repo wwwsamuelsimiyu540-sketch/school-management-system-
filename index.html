@@ -354,7 +354,7 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
 <script>
 (function(){
  const liveSchoolId=()=>activeUser?.school_id||null;
- const isSuper=()=>activeUser?.role==='super_admin';
+ const isSuper=()=>['super_admin','developer'].includes(activeUser?.role);
   let subscriptionLockActive=false,subscriptionCheckBusy=false;
   function applySubscriptionLock(message='This school is suspended or its subscription status cannot be verified. Changes and printing are disabled. Contact the platform administrator after payment is confirmed.'){
     subscriptionLockActive=true;document.body.classList.add('school-subscription-locked');
@@ -418,6 +418,7 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
    return oldSimpleRolePage(page);
  };
  roleMenus.super_admin=[['Dashboard','▦'],['Feature Directory','☷'],['Schools','🏫'],['Register School','＋'],['School Suspension','⛔'],['Users & Roles','♙'],['Activity Monitor','◷'],['Communication Centre','✉'],['System Reports','▥'],['Admin Tools','⚙']];
+ roleMenus.developer=roleMenus.super_admin;
  function super_adminHome(){
    return hero('Platform control centre','Live overview from your connected Supabase project. School data remains in the database; no demo records are counted.')+
    '<div class="portal-grid" id="liveAdminStats">'+tile('School workspaces','…','Loading Supabase','🏫')+tile('Registered users','…','Loading profiles','👥')+tile('Students','…','Database records','🎓')+tile('Active users','…','Seen in last 5 minutes','🟢')+'</div>'+
