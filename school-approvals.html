@@ -63,6 +63,12 @@ async function changeSchoolStatus(id,status){
  const label=status==='suspended'?'suspend':'activate';if(!confirm('Are you sure you want to '+label+' this school?'))return;
  try{const {error}=await sb.from('schools').update({status}).eq('id',id);if(error)throw error;$('notice').textContent='School '+(status==='suspended'?'suspended':'activated')+' successfully.';await loadSchools()}catch(e){$('notice').textContent='Could not '+label+' school: '+e.message}
 }
-function updatePathways(){const l=$('schoolLevel').value;$('pathwaysField').hidden=!(l.includes('Senior School')||l.includes('Grade 12'));} $('schoolLevel').addEventListener('change',updatePathways);updatePathways();
+function updatePathways(){const c=$('curriculum').value,l=$('schoolLevel').value;$('pathwaysField').hidden=!(c==='Kenya CBE (CBC) 2026'&&(l.includes('Senior School')||l.includes('Grade 12')));}
+function updateSchoolLevels(){const c=$('curriculum').value,sel=$('schoolLevel'),old=sel.value;let opts=[];
+if(c==='Kenya CBE (CBC) 2026')opts=[['Pre-primary (PP1–PP2)','Pre-primary (PP1–PP2)'],['Primary (Grade 1–6)','Primary (Grade 1–6)'],['Junior School (Grade 7–9)','Junior School (Grade 7–9)'],['Senior School (Grade 10–12)','Senior School (Grade 10–12)'],['Comprehensive (PP1–Grade 9)','Comprehensive (PP1–Grade 9)'],['Full Basic Education (PP1–Grade 12)','Full Basic Education (PP1–Grade 12)']];
+else if(c==='8-4-4 transition')opts=[['Primary (Standards 1–8)','Primary (Standards 1–8)'],['Secondary (Forms 1–4)','Secondary (Forms 1–4)'],['Combined 8-4-4 Primary and Secondary','Combined 8-4-4 Primary and Secondary']];
+else opts=[['Other / mixed level','Other / mixed level']];
+sel.innerHTML=opts.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join('');if(opts.some(o=>o[0]===old))sel.value=old;updatePathways();}
+$('curriculum').addEventListener('change',updateSchoolLevels);$('schoolLevel').addEventListener('change',updatePathways);updateSchoolLevels();
 init();
 </script></body></html>
