@@ -1,5 +1,5 @@
-// Supabase Edge Function: super_admin-register-school
-// Deploy with: supabase functions deploy super_admin-register-school
+// Supabase Edge Function: developer-register-school
+// Deploy with: supabase functions deploy developer-register-school
 // Required secret: SUPABASE_SERVICE_ROLE_KEY (set in Supabase, never in browser code).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
