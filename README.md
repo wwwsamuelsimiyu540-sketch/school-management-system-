@@ -20,11 +20,11 @@ A mobile-friendly school management system with role-based panels and Supabase A
 - `student`: personal school information.
 
 ## Secure school and administrator creation
-The Super Admin Panel calls the Supabase Edge Function `super_admin-register-school`. It creates an Auth account and school on the server, then assigns the new account the `principal` role and the new school's ID. The service-role key must remain a Supabase server secret and must never be put into browser code.
+The Super Admin Panel calls the Supabase Edge Function `developer-register-school`. It creates an Auth account and school on the server, then assigns the new account the `principal` role and the new school's ID. The service-role key must remain a Supabase server secret and must never be put into browser code.
 
 Before using the registration form:
 1. Apply the SQL migrations in `supabase/migrations/` to the configured Supabase project.
-2. Deploy the function: `supabase functions deploy super_admin-register-school`.
+2. Deploy the function: `supabase functions deploy developer-register-school`.
 3. Ensure the Supabase Edge Function has its standard `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` secrets.
 4. Verify the project profile schema supports `full_name`; adjust the function's profile upsert if your schema uses different column names.
 5. Test using a Super Admin account whose `school_id` is null.
