@@ -380,7 +380,11 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
  };
  const moduleTitle={Students:'Student register',Teachers:'Teacher register',Classes:'Classes and streams',Attendance:'Attendance register',Fees:'Fees and payments',Examinations:'Examinations and marks'};
  const moduleDescription={Students:'Student records are read from Supabase and scoped to the signed-in school.',Teachers:'Maintain staff records in the school database.',Classes:'Maintain class, room, capacity and academic-year records.',Attendance:'Record daily student attendance.',Fees:'Track fee amounts, payments and balances. Fee changes are restricted to bursars and principals by database policy.',Examinations:'Store marks in the existing Supabase exam_marks table.'};
- function moduleShell(page){return hero(moduleTitle[page],moduleDescription[page])+'<div class="panel"><div class="sectionhead"><h2>Live database records</h2><button id="liveToggleForm">＋ Add record</button></div><div id="liveFormWrap" style="display:none"><form class="live-form" id="liveRecordForm"></form><div class="form-actions"><button class="secondary" type="button" id="liveCancel">Cancel</button><button type="submit" form="liveRecordForm">Save to Supabase</button></div><p id="liveFormMsg" class="live-muted"></p></div><div id="liveModuleData" class="live-muted">Loading live records…</div></div>'}
+ function moduleShell(page){
+   const teacherRegistration=page==='Teachers'&&activeUser?.role==='principal'?'<div class="panel"><h2>Register teacher and create login</h2><p class="live-muted">Create a teacher account for this school. The teacher can sign in using the email and temporary password below.</p><form id="teacherAccountForm" class="live-form"><div class="formgrid"><div class="field"><label>STAFF NUMBER</label><input name="staff_no" maxlength="50" placeholder="e.g. TCH-001"></div><div class="field"><label>FULL NAME</label><input name="full_name" required minlength="2" maxlength="120"></div><div class="field"><label>EMAIL ADDRESS (LOGIN)</label><input name="email" type="email" required maxlength="254" autocomplete="off"></div><div class="field"><label>PHONE NUMBER</label><input name="phone" type="tel" maxlength="30"></div><div class="field"><label>SUBJECT</label><input name="subject" maxlength="120" placeholder="e.g. Mathematics"></div><div class="field"><label>TEMPORARY PASSWORD (MINIMUM 10 CHARACTERS)</label><input name="password" type="password" required minlength="10" maxlength="128" autocomplete="new-password"></div></div><div class="form-actions"><button type="submit">Register Teacher</button></div><p id="teacherAccountMsg" class="live-muted" role="status"></p></form></div>':'';
+   const addRecordButton=page==='Teachers'&&activeUser?.role==='principal'?'style="display:none"':'';
+   return hero(moduleTitle[page],moduleDescription[page])+teacherRegistration+'<div class="panel"><div class="sectionhead"><h2>Live database records</h2><button id="liveToggleForm" '+addRecordButton+'>＋ Add record</button></div><div id="liveFormWrap" style="display:none"><form class="live-form" id="liveRecordForm"></form><div class="form-actions"><button class="secondary" type="button" id="liveCancel">Cancel</button><button type="submit" form="liveRecordForm">Save to Supabase</button></div><p id="liveFormMsg" class="live-muted"></p></div><div id="liveModuleData" class="live-muted">Loading live records…</div></div>';
+ }
  const oldSimpleRolePage=simpleRolePage;
  simpleRolePage=function(page){
    if(isSuper() && adminPages.includes(page)) return adminPageShell(page);
@@ -463,6 +467,24 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
    const cfg=liveTables[page], target=document.getElementById('liveModuleData'); if(!cfg||!target||!supabaseClient)return;
    try{
      if(!isSuper()&&!liveSchoolId()){target.innerHTML='<div class="live-error">Your account is not assigned to a school. Ask the Super Admin to finish your school setup before editing records.</div>';return;}
+     const teacherForm=document.getElementById('teacherAccountForm');
+     if(teacherForm&&activeUser?.role==='principal'){
+       teacherForm.onsubmit=async ev=>{
+         ev.preventDefault();
+         const d=Object.fromEntries(new FormData(teacherForm).entries());
+         const msg=document.getElementById('teacherAccountMsg'), submit=teacherForm.querySelector('button[type="submit"]');
+         msg.textContent='Creating teacher login and saving staff record…'; if(submit)submit.disabled=true;
+         try{
+           const {data:created,error:createError}=await supabaseClient.functions.invoke('super-admin-create-user',{body:{full_name:d.full_name,email:d.email,password:d.password,role:'teacher',school_id:liveSchoolId(),staff_no:d.staff_no,subject:d.subject,phone:d.phone}});
+           if(createError||created?.error)throw new Error(created?.error||createError?.message||'Unknown account creation error');
+           msg.textContent='Teacher registered successfully. Login email: '+created.email+'. Share the temporary password securely.';
+           teacherForm.reset();
+           await logActivity('teacher_account_registered',{user_id:created.user_id,school_id:liveSchoolId(),email:created.email});
+           await loadLiveModule('Teachers');
+         }catch(err){msg.textContent='Teacher registration failed: '+(err.message||err);}
+         finally{if(submit)submit.disabled=false;}
+       };
+     }
      const earlyForm=document.getElementById('liveRecordForm'),earlyToggle=document.getElementById('liveToggleForm'),earlyCancel=document.getElementById('liveCancel');
      if(earlyToggle)earlyToggle.onclick=()=>{const wrap=document.getElementById('liveFormWrap');if(!wrap)return;const opening=wrap.style.display==='none';wrap.style.display=opening?'block':'none';if(opening){editingRecordId=null;earlyToggle.textContent='＋ Add record';document.getElementById('liveFormMsg').textContent='';earlyForm?.reset();}}
      if(earlyCancel)earlyCancel.onclick=()=>{editingRecordId=null;const wrap=document.getElementById('liveFormWrap');if(wrap)wrap.style.display='none';earlyForm?.reset();document.getElementById('liveFormMsg').textContent='';if(earlyToggle)earlyToggle.textContent='＋ Add record'};
