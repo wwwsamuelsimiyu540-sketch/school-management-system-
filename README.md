@@ -26,7 +26,7 @@ Before using the registration form:
 1. Apply the SQL migrations in `supabase/migrations/` to the configured Supabase project.
 2. Deploy the function: `supabase functions deploy developer-register-school`.
 3. Ensure the Supabase Edge Function has its standard `SUPABASE_URL`, `SUPABASE_ANON_KEY`, and `SUPABASE_SERVICE_ROLE_KEY` secrets.
-4. Verify the project profile schema supports `email` and `full_name`; adjust the function's profile upsert if your schema uses different column names.
+4. Verify the project profile schema supports `full_name`; adjust the function's profile upsert if your schema uses different column names.
 5. Test using a Developer account whose `school_id` is null.
 
 The browser only contains the public publishable key. Never expose the service-role key in GitHub Pages or frontend code.
