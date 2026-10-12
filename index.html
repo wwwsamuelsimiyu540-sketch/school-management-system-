@@ -297,7 +297,7 @@ if(page==='My Classes') return livePersonalPage(page); /* live query replaces th
 if(page==='My Results') return livePersonalPage(page); /* live query replaces sample results */ if(false)
 if(page==='My Attendance') return livePersonalPage(page); /* live query replaces sample attendance */ if(false)
 if(page==='My Fees') return livePersonalPage(page); /* live query replaces sample fees */ if(false)
-if(page==='Reports'&&role==='super_admin') return livePersonalPage('System Reports'); /* legacy reports route */ if(false)
+if(page==='Reports'&&role==='super_admin') return livePersonalPage('System Reports'); if(page==='Reports'&&['principal','teacher','bursar'].includes(role)) return livePersonalPage('Reports'); /* live reports for school roles */ if(false)
  if(page==='Reports'&&role==='teacher') return `${hero('Teaching reports','Class and assessment summaries.')}<div class="panel"><div class="quick"><button data-goto="Examinations">Review assessment records</button><button class="secondary" data-goto="Attendance">Review attendance</button></div></div>`;
  if(page==='Reports'&&role==='bursar') return reports();
  return null;
@@ -399,7 +399,7 @@ async function refreshRoleDashboard(){
  const target=document.getElementById('liveRoleStats'),status=document.getElementById('liveRoleStatus');if(!target||!supabaseClient||!activeUser||activeUser.authMode!=='supabase')return;
  try{
   const schoolId=activeUser.school_id;if(!schoolId)throw new Error('This account is not assigned to a school.');
-  let studentsCount=0,attendanceCount=0,marksCount=0,feeBalance=0;
+  let studentsCount=0,attendanceCount=0,marksCount=0,feeBalance=null;
   if(['parent','student'].includes(activeUser.role)){
    const ids=await getMyStudentIds();
    if(ids.length){
@@ -429,12 +429,12 @@ async function refreshRoleDashboard(){
    if(s.error)throw s.error;if(f.error)throw f.error;if(a.error)throw a.error;
    studentsCount=s.count||0;attendanceCount=a.count||0;feeBalance=(f.data||[]).reduce((sum,x)=>sum+Number(x.amount_due||0)-Number(x.amount_paid||0),0);
   }
-  target.innerHTML=tile('Students',studentsCount,'Live authorized records','🎓')+tile('Attendance records',attendanceCount,'Live authorized records','✓')+tile('Marks / Results',marksCount,'Live authorized records','📊')+tile('Outstanding fees','KES '+feeBalance.toLocaleString('en-KE'),'Calculated from saved fee records','🧾');
+  target.innerHTML=tile('Students',studentsCount,'Live authorized records','🎓')+tile('Attendance records',attendanceCount,'Live authorized records','✓')+tile('Marks / Results',marksCount,'Live authorized records','📊')+tile('Outstanding fees',feeBalance===null?'—':'KES '+feeBalance.toLocaleString('en-KE'),feeBalance===null?'Not available for this role':'Calculated from saved fee records','🧾');
   if(status)status.textContent='Dashboard refreshed from Supabase.';
  }catch(e){if(status)status.textContent='Could not load dashboard data: '+(e.message||e);target.innerHTML=tile('Students','—','Data unavailable','🎓')+tile('Attendance','—','Data unavailable','✓')+tile('Marks / Results','—','Data unavailable','📊')+tile('Outstanding fees','—','Data unavailable','🧾');}
 }
 function livePersonalPage(page){
- const titles={'My Classes':'My assigned classes','My Results':'My academic results','My Attendance':'My attendance history','My Fees':'My fee account','School Settings':'School details','System Reports':'Live system reports'};
+ const titles={'My Classes':'My assigned classes','My Results':'My academic results','My Attendance':'My attendance history','My Fees':'My fee account','School Settings':'School details','System Reports':'Live system reports','Reports':'Live school reports'};
  return hero(titles[page]||page,'Information is loaded from Supabase and restricted to your account and school.')+'<div class="panel"><div id="livePersonalPageData" class="live-muted">Loading authorized records from Supabase…</div></div>';
 }
 async function loadPersonalPage(page){
@@ -445,6 +445,18 @@ async function loadPersonalPage(page){
    if(!activeUser.school_id)throw new Error('This account is not assigned to a school.');
    const {data,error}=await supabaseClient.from('schools').select('name,code,county,status,curriculum,school_level,senior_pathways').eq('id',activeUser.school_id).single();if(error)throw error;
    out.innerHTML=table([['name','School'],['code','School code'],['county','County'],['status','Status'],['curriculum','Curriculum'],['school_level','School level'],['senior_pathways','Senior pathways']], [{...data,senior_pathways:(data.senior_pathways||[]).join(', ')||'—'}])+'<p class="live-muted">Official school status is controlled by the platform administrator.</p>';return;
+  }
+  if(page==='Reports'){
+   const schoolId=activeUser.school_id;if(!schoolId)throw new Error('This account is not assigned to a school.');
+   const [s,m,a,t,f]=await Promise.all([
+    supabaseClient.from('students').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('exam_marks').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('attendance_records').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('teachers').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+    supabaseClient.from('fee_payments').select('amount_due,amount_paid').eq('school_id',schoolId)
+   ]);for(const x of [s,m,a,t,f])if(x.error)throw x.error;
+   const feeBalance=(f.data||[]).reduce((sum,x)=>sum+Number(x.amount_due||0)-Number(x.amount_paid||0),0);
+   out.innerHTML='<div class="portal-grid">'+tile('Students',s.count||0,'Saved school records','🎓')+tile('Teachers',t.count||0,'Saved school records','👩‍🏫')+tile('Marks',m.count||0,'Saved assessment records','📊')+tile('Attendance',a.count||0,'Saved attendance records','✓')+tile('Outstanding fees','KES '+feeBalance.toLocaleString('en-KE'),'Calculated from saved fee records','🧾')+'</div>';return;
   }
   if(page==='System Reports'){
    const [s,u,m,a,f]=await Promise.all([
