@@ -24,7 +24,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 .portal-hero h2{margin:0 0 8px;font-size:24px}.portal-hero p{margin:0;color:#dbeafe;line-height:1.6}
 .portal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin:16px 0}
 .portal-tile{background:#fff;border:1px solid var(--line);border-radius:13px;padding:18px;box-shadow:0 2px 7px #17203308}.portal-tile .big{font-size:26px;font-weight:800;color:var(--navy);margin:8px 0}.portal-tile p{color:var(--muted);font-size:13px;margin:0}
-.demo-warning{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;padding:12px 14px;border-radius:10px;margin:14px 0;font-size:13px;line-height:1.5}
+.demo-warning{display:none!important}
 @media(max-width:650px){.portal-hero{padding:18px}.portal-hero h2{font-size:20px}}
 </style>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -59,7 +59,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 <main class="main">
   <header class="topbar"><div class="topbar-start"><button type="button" class="menu-toggle" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false">☰ <span style="font-size:13px">Menu</span></button><div><h1 id="pageTitle">Dashboard</h1><p id="today"></p></div></div><div class="userpill" id="userPill">● Signed out</div></header>
   <div id="content"></div>
-  <div class="footer">My School System Manager · Demo edition · Data saved in this browser</div>
+  <div class="footer">My School System Manager · Connected school workspace</div>
 </main>
 </div>
 <script>
@@ -257,7 +257,6 @@ freshForm.addEventListener('submit',async e=>{
 function roleHome(){
  const role=activeUser?.role;
  if(role==='super_admin'||role==='developer')return super_adminHome();
- if(role==='principal')return principalHome();
  return liveRoleDashboard();
 }
 function tile(title,value,desc,icon){return `<div class="portal-tile"><div style="font-size:22px">${icon}</div><div class="big">${value}</div><b>${title}</b><p>${desc}</p></div>`}
@@ -288,7 +287,7 @@ function familyHome(isStudent){let label=isStudent?'Student':'Parent';return `${
 function simpleRolePage(page){
  const role=activeUser.role;
  if(page==='Account Settings'&&role==='parent') return hero('Parent account settings','Change your login username and password. Usernames can contain letters and numbers only.')+'<div class="panel"><form id="parentAccountSettingsForm" class="live-form"><div class="field"><label>USERNAME</label><input name="username" required minlength="4" maxlength="30" pattern="[A-Za-z0-9]{4,30}" value="'+esc(activeUser.username||'')+'" autocomplete="username"><span class="hint">4–30 letters and/or numbers, no spaces.</span></div><div class="field"><label>'+(activeUser.must_change_password?'NEW PASSWORD (REQUIRED ON FIRST LOGIN)':'NEW PASSWORD (OPTIONAL)')+'</label><input name="password" type="password" minlength="10" maxlength="128" '+(activeUser.must_change_password?'required':'')+' autocomplete="new-password" placeholder="At least 10 characters"></div><div class="form-actions"><button type="submit">Save account settings</button></div><p id="parentAccountSettingsMsg" class="live-muted" role="status"></p></form></div>';
- if(page==='Demo'&&(role==='super_admin'||previewOriginalUser)) return hero('Demo mode · preview every panel','Switch between safe sample views for all five school-user roles. Demo mode does not create, update or delete Supabase records.')+'<div class="demo-warning"><b>Demo mode:</b> sample information only. Switching roles does not sign in as another real user or change account permissions.</div><div class="portal-grid">'+[['principal','Principal / Administrator','🏫'],['teacher','Teacher','📚'],['bursar','Bursar / Finance','💳'],['parent','Parent','👨‍👩‍👧'],['student','Student','🎓']].map(x=>'<div class="portal-tile"><div style="font-size:25px">'+x[2]+'</div><h3>'+esc(roleNames[x[0]])+'</h3><p>Preview the '+esc(x[1])+' panel and navigate its pages.</p><button data-preview-role="'+x[0]+'">Open demo panel →</button></div>').join('')+'</div><div class="panel"><h2>Return to super_admin controls</h2><button class="secondary" data-goto="Dashboard">Super Admin dashboard</button></div>';
+ if(page==='Demo') return hero('Panel previews removed','Sign in with a real account assigned to the panel you need to access.')+'<div class="panel"><p>For security, panel previews and sample accounts are disabled. Use a real account registered in Supabase.</p><button data-goto="Dashboard">Return to dashboard</button></div>';
  if(page==='School Registration'&&role==='principal') return `${hero('Register a school','Submit your school for Super Admin review. You will receive access after approval.')}<div class="panel"><p>Use this secure registration form to submit your school details. Requests remain pending until the Super Admin approves them.</p><iframe title="School registration" src="./school-registration.html" style="width:100%;height:760px;border:1px solid var(--line);border-radius:12px;background:white"></iframe></div>`;
  if(page==='School Approvals'&&role==='super_admin') return `${hero('School approvals & lifecycle','Review registration requests, then activate or suspend approved schools. Super Admin accounts are platform-wide and do not belong to a school.')}<div class="panel"><iframe title="School approvals and status management" src="./school-approvals.html" style="width:100%;height:850px;border:1px solid var(--line);border-radius:12px;background:white"></iframe></div>`;
 if(page==='School Settings'&&role==='super_admin') return hero('Platform settings','Use the live platform settings workspace. No local demo settings are shown.')+'<div class="panel"><button data-goto="Admin Tools">Open live Admin Tools →</button></div>'; // legacy route redirected to live settings
@@ -302,7 +301,7 @@ if(page==='Reports'&&role==='super_admin') return livePersonalPage('System Repor
  if(page==='Reports'&&role==='bursar') return reports();
  return null;
 }
-function drawRoleNav(){const nav=document.querySelector('.sidebar');const items=roleMenus[activeUser.role]||roleMenus.principal;nav.innerHTML=`<div class="brand">My School System Manager</div><div style="padding:10px 12px 16px;color:#cbd5e1;font-size:12px">${esc(activeUser.name)}<br><b style="color:white">${esc(roleNames[activeUser.role])}</b></div>${items.map(([p,i])=>`<button class="navbtn ${p===currentPage?'active':''}" data-page="${esc(p==='More'?'Feature Directory':p)}"><small>${i}</small> ${p==='Feature Directory'?'All Services (454)':esc(p)}</button>`).join('')}${activeUser.role==='super_admin'||previewOriginalUser?'<button class="navbtn" data-page="Demo"><small>🧪</small> Demo · Switch panel</button>':''}${previewOriginalUser?'<button class="navbtn" id="exitDemoNav"><small>↩</small> Exit Demo</button>':''}<div style="height:20px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>`;nav.querySelectorAll('.navbtn[data-page]').forEach(b=>b.addEventListener('click',()=>{go(b.dataset.page);setMenuOpen(false)}));document.getElementById('exitDemoNav')?.addEventListener('click',()=>{exitPanelPreview();setMenuOpen(false)});document.getElementById('logoutBtn').addEventListener('click',logout)}
+function drawRoleNav(){const nav=document.querySelector('.sidebar');const items=roleMenus[activeUser.role]||roleMenus.principal;nav.innerHTML=`<div class="brand">My School System Manager</div><div style="padding:10px 12px 16px;color:#cbd5e1;font-size:12px">${esc(activeUser.name)}<br><b style="color:white">${esc(roleNames[activeUser.role])}</b></div>${items.map(([p,i])=>`<button class="navbtn ${p===currentPage?'active':''}" data-page="${esc(p==='More'?'Feature Directory':p)}"><small>${i}</small> ${p==='Feature Directory'?'All Services (454)':esc(p)}</button>`).join('')}${''}${''}<div style="height:20px"></div><button class="navbtn" id="logoutBtn"><small>↪</small> Log out</button>`;nav.querySelectorAll('.navbtn[data-page]').forEach(b=>b.addEventListener('click',()=>{go(b.dataset.page);setMenuOpen(false)}));document.getElementById('exitDemoNav')?.addEventListener('click',()=>{exitPanelPreview();setMenuOpen(false)});document.getElementById('logoutBtn').addEventListener('click',logout)}
 const oldShowApp=showApp;
 showApp=function(){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';drawRoleNav();document.getElementById('userPill').innerHTML=`● Signed in as <b>${esc(activeUser.name)}</b> · ${esc(roleNames[activeUser.role])}`;setToday();render()};
 logout=async function(){try{if(supabaseClient) await supabaseClient.auth.signOut()}catch(e){console.warn('Sign-out request failed',e)}sessionStorage.removeItem('edumanage_demo_user');sessionStorage.removeItem('edumanage_login');sessionStorage.removeItem('edumanage_auth_mode');activeUser=null;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='grid';document.getElementById('password').value=''};
@@ -318,14 +317,12 @@ render=function(){
  if(custom!==null){content.innerHTML=custom;
    const parentSettingsForm=document.getElementById('parentAccountSettingsForm');
    if(parentSettingsForm)parentSettingsForm.addEventListener('submit',async ev=>{ev.preventDefault();const fd=new FormData(parentSettingsForm),msg=document.getElementById('parentAccountSettingsMsg'),btn=parentSettingsForm.querySelector('button[type="submit"]');const username=String(fd.get('username')||'').trim(),password=String(fd.get('password')||'');if(btn)btn.disabled=true;msg.textContent='Updating your account…';try{const {data,error}=await supabaseClient.functions.invoke('parent-account-update',{body:{username,password}});if(error||data?.error)throw new Error(data?.error||error?.message||'Could not update account');activeUser.username=data.username;activeUser.must_change_password=false;msg.textContent='Account updated. Your new username is '+data.username+'.';drawRoleNav();if(currentPage==='Account Settings')setTimeout(()=>{currentPage='Dashboard';drawRoleNav();render()},1200)}catch(err){msg.textContent='Update failed: '+(err.message||err)}finally{if(btn)btn.disabled=false}});
-   if(previewOriginalUser){const banner=document.createElement('div');banner.className='demo-warning';banner.innerHTML='<b>TEST PREVIEW — '+esc(roleNames[activeUser.role])+' dashboard.</b> Sample/illustrative content only. No account or permission changes are made. <button id="exitPanelPreview" class="secondary" style="margin-left:8px">Exit preview</button>';content.prepend(banner);banner.querySelector('#exitPanelPreview').onclick=exitPanelPreview;}content.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));content.querySelectorAll('[data-preview-role]').forEach(b=>b.addEventListener('click',()=>previewPanel(b.dataset.previewRole)));document.getElementById('msOpenSuite')?.addEventListener('click',()=>msRender('settings'));return;}
- if(activeUser.role==='principal') { previousRender(); return; }
- if(activeUser.role==='teacher' && ['Attendance','Examinations'].includes(currentPage)){previousRender();return;}
- if(activeUser.role==='bursar' && currentPage==='Fees'){previousRender();return;}
- content.innerHTML=`<div class="panel"><h2>Page unavailable</h2><p>Your account role does not have access to this section.</p><button id="backDash">Return to dashboard</button></div>`;document.getElementById('backDash').onclick=()=>go('Dashboard');
+   content.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));content.querySelectorAll('[data-preview-role]').forEach(b=>b.addEventListener('click',()=>previewPanel(b.dataset.previewRole)));document.getElementById('msOpenSuite')?.addEventListener('click',()=>msRender('settings'));return;}
+ if(liveTables[currentPage] && ['principal','teacher','bursar'].includes(activeUser.role)) {content.innerHTML=moduleShell(currentPage);loadLiveModule(currentPage);return;}
+ content.innerHTML=`<div class="panel"><h2>Live panel not configured</h2><p>This panel has no live Supabase view configured yet. Sample records are not shown.</p><button id="backDash">Return to dashboard</button></div>`;document.getElementById('backDash').onclick=()=>go('Dashboard');
 };
-function previewPanel(role){if(!activeUser||(!previewOriginalUser&&activeUser.role!=='super_admin')||!roleNames[role]||role==='super_admin')return;if(!previewOriginalUser)previewOriginalUser={...activeUser};activeUser={...previewOriginalUser,role,name:'Demo '+roleNames[role],authMode:'demo'};currentPage='Dashboard';drawRoleNav();document.getElementById('userPill').innerHTML='🧪 <b>TEST PREVIEW</b> · '+esc(roleNames[role]);render();window.scrollTo(0,0)}
-function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOriginalUser;previewOriginalUser=null;currentPage='Demo';drawRoleNav();document.getElementById('userPill').innerHTML=`● Signed in as <b>${esc(activeUser.name)}</b> · ${esc(roleNames[activeUser.role])}`;render()}
+function previewPanel(){return;}
+function exitPanelPreview(){return;}
 // Auto-restore is intentionally disabled: every visit must start at the login screen.
 
 
@@ -503,7 +500,7 @@ async function loadPersonalPage(page){
      if(activeUser.role==='bursar' && page!=='Fees') return null;
      if(activeUser.role==='principal' || (activeUser.role==='teacher'&&['Attendance','Examinations'].includes(page)) || (activeUser.role==='bursar'&&page==='Fees')) return moduleShell(page);
    }
-   return oldSimpleRolePage(page);
+   return null;
  };
  roleMenus.super_admin=[['Dashboard','▦'],['Feature Directory','☷'],['Schools','🏫'],['Register School','＋'],['School Suspension','⛔'],['Users & Roles','♙'],['Activity Monitor','◷'],['Communication Centre','✉'],['System Reports','▥'],['Admin Tools','⚙']];
  roleMenus.developer=roleMenus.super_admin;
