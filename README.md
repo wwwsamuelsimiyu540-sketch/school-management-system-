@@ -9,7 +9,7 @@ A mobile-friendly school management system with role-based panels and Supabase A
 - `supabase/migrations/20261011190000_school_registration_requests.sql` — school registration requests and approval access policies.
 
 ## Roles
-- `super_admin`: platform overview, schools, users/roles, activity monitor, communications and reports.
+- `developer`: platform-wide school approvals, school activation/suspension, users/roles, activity monitor, communications and reports; the developer profile must have `school_id = NULL`.
 - `principal`: school operations and school settings.
 - `teacher`: attendance and examinations.
 - `bursar`: fees and payments.
@@ -26,3 +26,11 @@ The migration keeps existing tables and data and adds teachers, classes, attenda
 - The communication centre records messages. Email and WhatsApp open a pre-filled draft in the user's app; the site does not send messages automatically.
 - Configure and verify parent/student account links before using those portals with real student records.
 - The application is a static HTML site; publish `index.html` with GitHub Pages or your existing static host.
+
+
+## School lifecycle
+- A school administrator submits a registration request while not assigned to a school.
+- The Developer approves or rejects each request. Approval creates the school and assigns the requesting principal to it.
+- The Developer can suspend an approved school or reactivate it later. Suspended school users are blocked at login by the school-status check.
+- School administrators manage their own teachers and students. In the Academic Suite, staff can search students by name, class or admission number before entering marks.
+- Note: the Academic Suite currently includes browser-local prototype data; production student/teacher/marks writes still need to be connected to Supabase tables and protected by RLS.
