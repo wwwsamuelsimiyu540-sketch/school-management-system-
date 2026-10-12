@@ -423,11 +423,12 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
    const cfg=liveTables[page];
    document.getElementById('liveRecordForm').innerHTML=cfg.fields.map(([key,label,type,options])=>{
      let control='';
-     if(type==='student')control='<select name="'+key+'" required><option value="">Select student</option>'+students.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.full_name)+' ('+esc(s.admission_no||'')+')</option>').join('')+'</select>';
+     if(type==='student')control='<input type="search" data-student-search placeholder="Search student by name or admission number…" aria-label="Search students"><select name="'+key+'" required><option value="">Select student</option>'+students.map(s=>'<option value="'+esc(s.id)+'">'+esc(s.full_name)+' ('+esc(s.admission_no||'')+')</option>').join('')+'</select>';
      else if(type==='select')control='<select name="'+key+'" required>'+options.split('|').map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('')+'</select>';
      else control='<input name="'+key+'" type="'+type+'" '+(type==='number'?'min="0" step="any"':'')+' '+(['date'].includes(type)?'value="'+new Date().toISOString().slice(0,10)+'"':'')+' '+(['number','text','email','tel'].includes(type)?'':'')+' '+(['full_name','admission_no','name','term','subject','amount_due','amount_paid'].includes(key)?'required':'')+'>';
      return '<div class="field"><label>'+esc(label.toUpperCase())+'</label>'+control+'</div>';
    }).join('');
+   document.querySelectorAll('[data-student-search]').forEach(input=>input.addEventListener('input',()=>{const select=input.parentElement.querySelector('select[name="student_id"]');if(!select)return;const q=input.value.trim().toLowerCase();for(const option of select.options){if(!option.value){option.hidden=false;continue;}option.hidden=!option.textContent.toLowerCase().includes(q);}if(select.selectedOptions[0]?.hidden)select.value='';}));
  }
  let editingRecordId=null, loadedLiveRows=[];
  async function loadLiveModule(page){
