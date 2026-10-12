@@ -609,7 +609,7 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
      trackPresence();
      if(isSuper()&&currentPage==='Dashboard')refreshAdmin();
      else if(isSuper()&&adminPages.includes(currentPage))refreshAdminPage();
-     else if(liveTables[currentPage])loadLiveModule(currentPage);
+     else if(liveTables[currentPage]||['Parents','Bursars'].includes(currentPage))loadLiveModule(currentPage);
    }
  };
  const oldGo=go;
