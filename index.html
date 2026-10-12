@@ -220,7 +220,7 @@ const demoAccounts = {
 };
 const roleMenus = {
  super_admin:[['Dashboard','▦'],['Feature Directory','☷'],['School Approvals','✓'],['School Settings','🏫'],['Reports','▥']],
- principal:[['Dashboard','▦'],['Feature Directory','☷'],['School Registration','🏫'],['Students','♟'],['Teachers','♙'],['Parents','👪'],['Bursars','💰'],['Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Student Reports','▥'],['Reports','▤'],['School Settings','⚙']],
+ principal:[['Dashboard','▦'],['Students','♟'],['Teachers','♙'],['Parents','👪'],['Bursars','💰'],['Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Student Reports','▥'],['Reports','▤'],['Communication Centre','✉'],['School Settings','⚙'],['Feature Directory','☷']],
  teacher:[['Dashboard','▦'],['Feature Directory','☷'],['My Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Reports','▥']],
  bursar:[['Dashboard','▦'],['Feature Directory','☷'],['Fees','＄'],['Student Reports','▥'],['Reports','▤']],
  parent:[['Dashboard','▦'],['Feature Directory','☷'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']],
@@ -264,7 +264,16 @@ function roleHome(){
  return principalHome();
 }
 function principalHome(){
- return `<div class="portal-hero"><span class="role-tag">SCHOOL ADMINISTRATOR</span><h2 style="margin-top:12px">School Management Portal</h2><p>Manage your school's learners, staff, classes, attendance and academic reports. Fee transactions are handled by the assigned bursar.</p></div><div class="portal-grid">${tile('Students',db.Students?.length??0,'Student records','🎓')}${tile('Teachers',db.Teachers?.length??0,'Teaching staff','👩‍🏫')}${tile('Classes',db.Classes?.length??0,'School classes','🏫')}</div><div class="panel"><h2>School services</h2><p>Choose a service from the navigation menu to manage records and review school reports.</p><div class="quick-actions"><button onclick="go('Students')">Manage students</button><button onclick="go('Teachers')">Manage teachers</button><button onclick="go('Attendance')">Take attendance</button><button onclick="go('Student Reports')">Print student reports</button><button onclick="go('Bursars')">Manage bursar account</button></div></div>`;
+ return `<div class="portal-hero"><span class="role-tag">SCHOOL ADMINISTRATOR</span><h2 style="margin-top:12px">School Management Dashboard</h2><p>Monitor your school's real records, academic performance, attendance and enrollment. Fee transactions and receipts remain under the assigned bursar.</p></div>
+ <div class="portal-grid" id="principalLiveStats">${tile('Students','…','Loading school records','🎓')}${tile('Teachers','…','Teaching staff','👩‍🏫')}${tile('Classes','…','School classes','🏫')}${tile('Attendance today','…','Daily attendance','✓')}${tile('Exam marks','…','Recorded results','📝')}${tile('Fees outstanding','…','Bursar-managed balances','💰')}</div>
+ <div class="panel"><div class="sectionhead"><h2>Administrator quick actions</h2><span class="badge blue">School workspace</span></div><div class="admin-quick">
+ <button data-goto="Students">＋ Register / Search Student</button><button data-goto="Teachers">＋ Register Teacher</button><button data-goto="Classes">Manage Classes</button><button data-goto="Attendance">✓ Attendance Register</button><button data-goto="Examinations">Enter / Review Marks</button><button data-goto="Student Reports">▥ Class Reports & Report Cards</button><button data-goto="Reports">📊 School Analytics</button><button data-goto="Parents">👪 Parent / Guardian Accounts</button><button data-goto="Bursars">💳 Manage Bursar Account</button><button data-goto="School Settings">⚙ School Profile & Settings</button><button data-goto="Communication Centre">✉ Communication Centre</button></div></div>
+ <div class="sectionhead"><h2>School performance analytics</h2><span class="badge blue">Live Supabase records</span></div>
+ <div class="admin-dashboard-grid"><div><div class="panel"><h2>Student enrollment by grade</h2><p class="live-muted">Learners grouped by grade level.</p><div id="principalEnrollmentChart" class="analytics-chart"><p class="live-muted">Loading enrollment data…</p></div></div>
+ <div class="panel"><h2>Attendance breakdown</h2><p class="live-muted">Attendance records for the last 30 days.</p><div id="principalAttendanceChart" class="analytics-chart"><p class="live-muted">Loading attendance data…</p></div></div></div>
+ <div><div class="panel"><h2>Academic performance by subject</h2><p class="live-muted">Average recorded percentage per subject.</p><div id="principalAcademicChart" class="analytics-chart"><p class="live-muted">Loading examination data…</p></div></div>
+ <div class="panel"><h2>Fee collection overview</h2><p class="live-muted">Read-only financial summary; transactions are managed by the bursar.</p><div id="principalFeesChart" class="analytics-chart"><p class="live-muted">Loading fee summary…</p></div></div></div></div>
+ <div class="notice">Charts use records returned for your assigned school only. If a chart shows an access or loading error, check the account's school assignment and Supabase permissions. The dashboard does not create sample figures.</div>`;
 }
 function tile(title,value,desc,icon){return `<div class="portal-tile"><div style="font-size:22px">${icon}</div><div class="big">${value}</div><b>${title}</b><p>${desc}</p></div>`}
 function hero(title,desc){return `<div class="portal-hero"><span class="role-tag">${esc(roleNames[activeUser.role])} workspace</span><h2 style="margin-top:12px">${title}</h2><p>${desc}</p></div>`}
@@ -770,6 +779,86 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
 .topbar{gap:8px}
 @media(prefers-reduced-motion:reduce){.sidebar{transition:none!important}}
 </style>
+
+<style id="school-admin-analytics-styles">
+.admin-quick{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.admin-quick button{min-height:48px;text-align:left;white-space:normal;line-height:1.35}
+.admin-dashboard-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:start}
+.analytics-chart{display:flex;flex-direction:column;gap:12px;min-height:70px}
+.analytics-row{display:grid;grid-template-columns:minmax(90px,130px) minmax(50px,1fr) 60px;gap:10px;align-items:center;font-size:12px}
+.analytics-label{overflow-wrap:anywhere;color:#475569}
+.analytics-track{height:12px;border-radius:99px;background:#e2e8f0;overflow:hidden}
+.analytics-fill{height:100%;border-radius:99px;background:#2563eb;min-width:0}
+.analytics-value{text-align:right;font-weight:700;font-variant-numeric:tabular-nums}
+.analytics-empty{padding:12px;border-radius:8px;background:#f8fafc;color:#64748b;font-size:13px;line-height:1.5}
+@media(max-width:760px){.admin-dashboard-grid{grid-template-columns:1fr}.analytics-row{grid-template-columns:minmax(72px,100px) minmax(40px,1fr) 54px;gap:7px}.admin-quick{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:420px){.admin-quick{grid-template-columns:1fr}}
+</style>
+
+<script id="school-admin-live-analytics">
+(function(){
+ const previousAdminAnalyticsRender=render;
+ let adminAnalyticsRequest=0;
+ function analyticsBars(rows,formatter){
+   if(!rows.length)return '<div class="analytics-empty">No records available yet for this chart.</div>';
+   const max=Math.max(1,...rows.map(r=>Number(r.value)||0));
+   return rows.map(r=>{const v=Math.max(0,Number(r.value)||0),w=v?Math.max(2,Math.round(v/max*100)):0;return '<div class="analytics-row"><span class="analytics-label">'+esc(r.label)+'</span><div class="analytics-track" role="img" aria-label="'+esc(r.label)+': '+esc(formatter?formatter(v):v)+'"><div class="analytics-fill" style="width:'+w+'%;background:'+(r.color||'#2563eb')+'"></div></div><span class="analytics-value">'+esc(formatter?formatter(v):v)+'</span></div>';}).join('');
+ }
+ function showAnalyticsError(id,message){const el=document.getElementById(id);if(el)el.innerHTML='<div class="analytics-empty">'+esc(message)+'</div>';}
+ async function loadPrincipalAnalytics(){
+   const request=++adminAnalyticsRequest;
+   const schoolId=activeUser?.school_id;
+   if(!schoolId){['principalEnrollmentChart','principalAttendanceChart','principalAcademicChart','principalFeesChart'].forEach(id=>showAnalyticsError(id,'This administrator account is not assigned to a school.'));return;}
+   if(!supabaseClient){['principalEnrollmentChart','principalAttendanceChart','principalAcademicChart','principalFeesChart'].forEach(id=>showAnalyticsError(id,'Supabase is not connected. Reload and sign in again.'));return;}
+   const ids=['principalEnrollmentChart','principalAttendanceChart','principalAcademicChart','principalFeesChart'];
+   try{
+     const since=new Date();since.setDate(since.getDate()-30);const sinceDate=since.toISOString().slice(0,10);
+     const results=await Promise.all([
+       supabaseClient.from('students').select('id,grade_level').eq('school_id',schoolId).limit(5000),
+       supabaseClient.from('attendance_records').select('status,attendance_date').eq('school_id',schoolId).gte('attendance_date',sinceDate).limit(10000),
+       supabaseClient.from('exam_marks').select('subject,total_percentage').eq('school_id',schoolId).limit(10000),
+       supabaseClient.from('fee_payments').select('amount_due,amount_paid').eq('school_id',schoolId).limit(10000),
+       supabaseClient.from('teachers').select('id',{count:'exact',head:true}).eq('school_id',schoolId),
+       supabaseClient.from('school_classes').select('id',{count:'exact',head:true}).eq('school_id',schoolId)
+     ]);
+     if(request!==adminAnalyticsRequest||currentPage!=='Dashboard'||activeUser?.role!=='principal')return;
+     const [studentsR,attendanceR,marksR,feesR,teachersR,classesR]=results;
+     const failed=results.find(r=>r.error);
+     if(failed)throw failed.error;
+     const students=studentsR.data||[],attendance=attendanceR.data||[],marks=marksR.data||[],fees=feesR.data||[];
+     const totalDue=fees.reduce((n,r)=>n+Math.max(0,Number(r.amount_due||0)-Number(r.amount_paid||0)),0);
+     const totalPaid=fees.reduce((n,r)=>n+Number(r.amount_paid||0),0);
+     const statRows=[
+       ['Students',students.length,'Student records','🎓'],
+       ['Teachers',teachersR.count??0,'Teaching staff','👩‍🏫'],
+       ['Classes',classesR.count??0,'School classes','🏫'],
+       ['Attendance today',attendance.filter(r=>r.attendance_date===new Date().toISOString().slice(0,10)).length,'Last 30 days loaded','✓'],
+       ['Exam marks',marks.length,'Recorded results','📝'],
+       ['Fees outstanding',totalDue.toLocaleString('en-KE',{maximumFractionDigits:0}),'KES · bursar-managed','💰']
+     ];
+     const statTarget=document.getElementById('principalLiveStats');
+     if(statTarget)statTarget.innerHTML=statRows.map(x=>tile(x[0],x[0]==='Fees outstanding'?'KES '+x[1]:x[1],x[2],x[3])).join('');
+     const gradeMap={};students.forEach(r=>{const g=(r.grade_level||'Unassigned').trim()||'Unassigned';gradeMap[g]=(gradeMap[g]||0)+1;});
+     const gradeRows=Object.entries(gradeMap).sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true})).map(([label,value])=>({label,value}));
+     const statusMap={present:0,absent:0,late:0,excused:0};attendance.forEach(r=>{const k=String(r.status||'other').toLowerCase();statusMap[k]=(statusMap[k]||0)+1;});
+     const attendanceRows=Object.entries(statusMap).filter(x=>x[1]>0).map(([label,value])=>({label:label.charAt(0).toUpperCase()+label.slice(1),value,color:label==='present'?'#16a34a':label==='absent'?'#dc2626':label==='late'?'#f59e0b':'#64748b'}));
+     const subjectMap={};marks.forEach(r=>{const subject=(r.subject||'Unlabelled').trim()||'Unlabelled',score=Number(r.total_percentage);if(Number.isFinite(score)){if(!subjectMap[subject])subjectMap[subject]={sum:0,count:0};subjectMap[subject].sum+=score;subjectMap[subject].count++;}});
+     const subjectRows=Object.entries(subjectMap).map(([label,v])=>({label,value:v.sum/v.count})).sort((a,b)=>b.value-a.value).slice(0,8);
+     const feeRows=[{label:'Collected',value:totalPaid,color:'#16a34a'},{label:'Outstanding',value:totalDue,color:'#f59e0b'}];
+     const e=document.getElementById('principalEnrollmentChart');if(e)e.innerHTML=analyticsBars(gradeRows);
+     const a=document.getElementById('principalAttendanceChart');if(a)a.innerHTML=analyticsBars(attendanceRows);
+     const m=document.getElementById('principalAcademicChart');if(m)m.innerHTML=analyticsBars(subjectRows,v=>v.toFixed(1)+'%');
+     const f=document.getElementById('principalFeesChart');if(f)f.innerHTML=analyticsBars(feeRows,v=>'KES '+v.toLocaleString('en-KE',{maximumFractionDigits:0}));
+   }catch(err){if(request!==adminAnalyticsRequest)return;ids.forEach(id=>showAnalyticsError(id,'Could not load chart data: '+(err?.message||'database request failed')));const statTarget=document.getElementById('principalLiveStats');if(statTarget)statTarget.innerHTML='<div class="analytics-empty">Live school statistics could not be loaded. Check Supabase access policies.</div>';}
+ }
+ render=function(){
+   previousAdminAnalyticsRender();
+   if(activeUser?.role==='principal'&&currentPage==='Dashboard')loadPrincipalAnalytics();
+   else adminAnalyticsRequest++;
+ };
+})();
+</script>
+
 </body>
 </html>
 <!-- ChatGPT GitHub write-access test: 2026-10-11 -->
