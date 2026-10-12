@@ -38,7 +38,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
     <div class="field"><label for="username">EMAIL OR PARENT USERNAME</label><input id="username" type="text" required placeholder="Email for staff, username for parents" autocomplete="username"></div>
     <div class="field"><label for="password">PASSWORD</label><input id="password" type="password" required placeholder="Enter your password" autocomplete="current-password"></div>
     <button style="width:100%;margin-top:8px">Sign in →</button>
-    <div class="hint" style="text-align:left;line-height:1.7;background:#f4f7fb;padding:10px;border-radius:9px">Staff and students sign in with their assigned email. Parents can sign in with their national ID as the initial username, then use a personal letters-and-numbers username after changing their temporary password.</div>
+    <div class="hint" style="text-align:left;line-height:1.7;background:#f4f7fb;padding:10px;border-radius:9px">School administrators and staff must sign in with the administrator email registered for their school (not the school name or school code). Parents can sign in with their national ID as the initial username, then use a personal letters-and-numbers username after changing their temporary password.</div>
     <p class="hint" id="loginError" style="color:#b91c1c"></p>
   </form>
 </div>
@@ -243,7 +243,7 @@ freshForm.addEventListener('submit',async e=>{
  if(submit){submit.disabled=true;submit.textContent='Signing in…';}
  try {
    const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
-   if(error) throw error;
+   if(error){if(error.message==='Invalid login credentials')throw new Error('Incorrect email or password. School administrators must use the administrator email entered during school registration, not the school name or school code.');throw error;}
    const {data:profile,error:profileError}=await supabaseClient.from('profiles').select('id,school_id,full_name,role,username,must_change_password').eq('id',data.user.id).single();
    if(profileError||!profile){await supabaseClient.auth.signOut();throw new Error('This account has no assigned profile. Ask the platform administrator to configure it.');}
    if(!roleNames[profile.role]){await supabaseClient.auth.signOut();throw new Error('This account has an unsupported role. Contact the platform administrator.');}
