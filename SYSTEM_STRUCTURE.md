@@ -1,4 +1,4 @@
-# Friends Day Senior School Lukhome — System Structure
+# My School System Manager — System Structure
 
 ## Platform
 - Front end: responsive HTML/CSS/JavaScript in `index.html`.
