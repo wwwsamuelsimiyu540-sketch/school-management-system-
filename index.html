@@ -389,8 +389,7 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
    const addRecordButton=(page==='Teachers'||page==='Students')&&activeUser?.role==='principal'?'style="display:none"':'';
    return hero(moduleTitle[page],moduleDescription[page])+teacherRegistration+studentRegistration+'<div class="panel"><div class="sectionhead"><h2>Live database records</h2><button id="liveToggleForm" '+addRecordButton+'>＋ Add record</button></div><div id="liveFormWrap" style="display:none"><form class="live-form" id="liveRecordForm"></form><div class="form-actions"><button class="secondary" type="button" id="liveCancel">Cancel</button><button type="submit" form="liveRecordForm">Save to Supabase</button></div><p id="liveFormMsg" class="live-muted"></p></div><div id="liveModuleData" class="live-muted">Loading live records…</div></div>';
  }
- function studentReportsShell(){return hero('Student academic & financial reports','Select a student to print one report combining academic marks with fee payments and the outstanding balance. Financial figures come from Supabase fee records.')+'<div class="panel"><div class="sectionhead student-report-controls"><h2>Student report</h2><div class="live-actions"><button type="button" onclick="window.loadStudentReportStudents()">Load students</button><button type="button" class="secondary" onclick="window.print()">Print / Save PDF</button></div></div><div class="field student-report-picker"><label>STUDENT</label><select id="studentReportStudent"><option value="">Select Load students first</option></select></div><button class="student-report-generate" type="button" onclick="window.generateStudentReport()">Generate report</button><p id="studentReportStatus" class="live-muted student-report-status" role="status"></p><div id="studentReportOutput"></div></div>'}
- const oldSimpleRolePage=simpleRolePage;
+ function studentReportsShell(){return hero('Class-based student report cards','Choose a class and term. The system calculates each learner’s average, ranks the class from highest to lowest, and prints one separate A4 report per student in one print job. Only marks saved in Supabase are included.')+'<div class="panel report-toolbar"><div class="formgrid"><div class="field"><label>CLASS / GRADE</label><select id="studentReportClass"><option value="">Load classes first</option></select></div><div class="field"><label>TERM</label><select id="studentReportTerm"><option value="">All recorded terms</option><option>Term 1</option><option>Term 2</option><option>Term 3</option></select></div></div><div class="live-actions"><button type="button" onclick="window.loadStudentReportClasses()">Load classes</button><button type="button" onclick="window.generateClassStudentReports()">Generate class reports</button><button type="button" class="secondary" onclick="window.print()">Print class / Save PDF</button></div><p id="studentReportStatus" class="live-muted" role="status"></p></div><div id="studentReportOutput"></div>'} const oldSimpleRolePage=simpleRolePage;
  simpleRolePage=function(page){
    if(page==='Fees'&&activeUser?.role!=='bursar') return hero('Bursar-only finance workspace','Financial transactions, fee account changes and receipts are handled by the school bursar. Use Student Reports to view the financial summary attached to a student report.')+'<div class="panel"><h2>Access restricted</h2><p>Only the assigned school bursar can open fee management.</p></div>';
    if(page==='Student Reports'&&['principal','bursar'].includes(activeUser?.role)) return studentReportsShell();
@@ -619,37 +618,68 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
  go=function(page){oldGo(page);if(activeUser?.authMode==='supabase')logActivity('viewed_page',{page});};
  const oldShow=showApp;
  showApp=function(){oldShow();if(activeUser?.authMode==='supabase'){logActivity('signed_in',{role:activeUser.role});trackPresence();}};
-  window.loadStudentReportStudents=async function(){
-    const status=document.getElementById('studentReportStatus'),select=document.getElementById('studentReportStudent');if(!status||!select)return;
-    status.textContent='Loading students from Supabase…';
-    try{if(!supabaseClient||!activeUser?.school_id)throw new Error('Your account is not assigned to a school.');
-      const {data,error}=await supabaseClient.from('students').select('id,admission_no,full_name,grade_level').eq('school_id',activeUser.school_id).order('full_name');if(error)throw error;
-      select.innerHTML='<option value="">Choose a student</option>'+(data||[]).map(st=>'<option value="'+esc(st.id)+'">'+esc(st.full_name)+' — '+esc(st.admission_no||'No admission number')+' — '+esc(st.grade_level||'')+'</option>').join('');
-      status.textContent=(data||[]).length+' student(s) loaded.';
-    }catch(err){status.textContent='Could not load students: '+(err.message||err);}
-  };
-  window.generateStudentReport=async function(){
-    const select=document.getElementById('studentReportStudent'),status=document.getElementById('studentReportStatus'),out=document.getElementById('studentReportOutput');if(!select||!status||!out)return;const studentId=select.value;if(!studentId){status.textContent='Choose a student first.';return;}
-    status.textContent='Loading academic and financial records…';out.innerHTML='';
+  window.loadStudentReportClasses=async function(){
+    const status=document.getElementById('studentReportStatus'),select=document.getElementById('studentReportClass');if(!status||!select)return;
+    status.textContent='Loading classes from Supabase…';
     try{
-      const [{data:student,error:studentError},{data:marks,error:marksError},{data:fees,error:feesError}]=await Promise.all([
-        supabaseClient.from('students').select('id,school_id,admission_no,full_name,grade_level,pathway').eq('id',studentId).eq('school_id',activeUser.school_id).single(),
-        supabaseClient.from('exam_marks').select('term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('student_id',studentId).eq('school_id',activeUser.school_id).order('term').order('subject'),
-        supabaseClient.from('fee_payments').select('term,academic_year,amount_due,amount_paid,payment_date,receipt_no').eq('student_id',studentId).eq('school_id',activeUser.school_id).order('term')
+      if(!supabaseClient||!activeUser?.school_id)throw new Error('Your account is not assigned to a school.');
+      const {data,error}=await supabaseClient.from('students').select('grade_level').eq('school_id',activeUser.school_id);
+      if(error)throw error;
+      const grades=[...new Set((data||[]).map(s=>(s.grade_level||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+      select.innerHTML='<option value="">Choose a class / grade</option>'+grades.map(g=>'<option value="'+esc(g)+'">'+esc(g)+'</option>').join('');
+      status.textContent=grades.length+' class/grade group(s) loaded from student records.';
+    }catch(err){status.textContent='Could not load classes: '+(err.message||err);}
+  };
+  window.generateClassStudentReports=async function(){
+    const classSelect=document.getElementById('studentReportClass'),termSelect=document.getElementById('studentReportTerm'),status=document.getElementById('studentReportStatus'),out=document.getElementById('studentReportOutput');
+    if(!classSelect||!status||!out)return;
+    const grade=classSelect.value,term=termSelect?.value||'';
+    if(!grade){status.textContent='Choose a class / grade first.';return;}
+    status.textContent='Loading class marks, school details and fee summaries…';out.innerHTML='';
+    try{
+      if(!supabaseClient||!activeUser?.school_id)throw new Error('Your account is not assigned to a school.');
+      const schoolId=activeUser.school_id;
+      const [{data:students,error:studentsError},{data:school,error:schoolError},{data:marks,error:marksError}]=await Promise.all([
+        supabaseClient.from('students').select('id,school_id,admission_no,full_name,grade_level,pathway').eq('school_id',schoolId).eq('grade_level',grade).order('full_name'),
+        supabaseClient.from('schools').select('name,code,county,curriculum,school_level').eq('id',schoolId).single(),
+        (function(){let q=supabaseClient.from('exam_marks').select('student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('school_id',schoolId);if(term)q=q.eq('term',term);return q.order('subject');})()
       ]);
-      if(studentError)throw studentError;if(marksError)throw marksError;if(feesError)throw feesError;
+      if(studentsError)throw studentsError;if(schoolError)throw schoolError;if(marksError)throw marksError;
+      const classStudents=students||[], ids=classStudents.map(st=>st.id);
+      if(!classStudents.length)throw new Error('No students were found in '+grade+'.');
+      let feeData=[];
+      if(ids.length){
+        const {data,error}=await supabaseClient.from('fee_payments').select('student_id,term,academic_year,amount_due,amount_paid').eq('school_id',schoolId).in('student_id',ids);
+        if(error)throw error;feeData=data||[];
+      }
+      const selectedMarks=(marks||[]).filter(m=>ids.includes(m.student_id));
       const cash=n=>'KES '+Number(n||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
-      const due=(fees||[]).reduce((a,x)=>a+Number(x.amount_due||0),0),paid=(fees||[]).reduce((a,x)=>a+Number(x.amount_paid||0),0),balance=Math.max(0,due-paid);
-      const academicRows=(marks||[]).map(m=>'<tr><td>'+esc(m.term||'—')+'</td><td>'+esc(m.subject||'—')+'</td><td>'+esc(m.cat_marks??'—')+'</td><td>'+esc(m.exam_marks??'—')+'</td><td>'+esc(m.total_percentage??'—')+'</td><td>'+esc(m.grade_letter||'—')+'</td><td>'+esc(m.remarks||'—')+'</td></tr>').join('')||'<tr><td colspan="7">No academic marks recorded.</td></tr>';
-      const feeRows=(fees||[]).map(f=>'<tr><td>'+esc(f.term||'—')+'</td><td>'+esc(f.academic_year||'—')+'</td><td>'+cash(f.amount_due)+'</td><td>'+cash(f.amount_paid)+'</td><td>'+cash(Math.max(0,Number(f.amount_due||0)-Number(f.amount_paid||0)))+'</td><td>'+esc(f.payment_date||'—')+'</td><td>'+esc(f.receipt_no||'—')+'</td></tr>').join('')||'<tr><td colspan="7">No fee account has been recorded for this student.</td></tr>';
-      out.innerHTML='<div class="panel" id="printableStudentReport"><div style="text-align:center;padding:10px 0 18px"><h2 style="margin:0">STUDENT REPORT</h2><p class="live-muted">My School System Manager · Generated '+esc(new Date().toLocaleDateString('en-KE'))+'</p></div><table><tbody><tr><th>Student name</th><td>'+esc(student.full_name)+'</td><th>Admission no.</th><td>'+esc(student.admission_no||'—')+'</td></tr><tr><th>Grade</th><td>'+esc(student.grade_level||'—')+'</td><th>Pathway</th><td>'+esc(student.pathway||'—')+'</td></tr></tbody></table><h3 style="margin-top:22px">Academic performance</h3><div class="tablewrap"><table><thead><tr><th>Term</th><th>Subject</th><th>CAT</th><th>Exam</th><th>Total %</th><th>Grade</th><th>Remarks</th></tr></thead><tbody>'+academicRows+'</tbody></table></div><h3 style="margin-top:22px">Financial summary</h3><div class="cards">'+stat('Fees charged',cash(due),'🧾')+stat('Payments received',cash(paid),'✓')+stat('Outstanding balance',cash(balance),'⏳')+'</div><div class="tablewrap"><table><thead><tr><th>Term</th><th>Academic year</th><th>Fees charged</th><th>Paid</th><th>Balance</th><th>Payment date</th><th>Receipt no.</th></tr></thead><tbody>'+feeRows+'</tbody></table></div><p class="live-muted">Financial balances are calculated from saved fee records. Contact the school bursar if a payment or balance needs correction.</p></div>';
-      status.textContent='Report generated from live Supabase records.';
-    }catch(err){status.textContent='Could not generate report: '+(err.message||err);}
+      const avgFor=studentId=>{const rows=selectedMarks.filter(m=>m.student_id===studentId&&m.total_percentage!==null&&m.total_percentage!==undefined&&Number.isFinite(Number(m.total_percentage)));return rows.length?rows.reduce((sum,m)=>sum+Number(m.total_percentage),0)/rows.length:null;};
+      const ranked=[...classStudents].map(st=>({...st,average:avgFor(st.id),subjectCount:selectedMarks.filter(m=>m.student_id===st.id).length})).sort((a,b)=>{if(a.average===null&&b.average!==null)return 1;if(b.average===null&&a.average!==null)return -1;if(a.average!==b.average)return (b.average||0)-(a.average||0);return (a.full_name||'').localeCompare(b.full_name||'');});
+      const rankById=new Map();let previousAvg=null,currentRank=0;
+      ranked.forEach((st,i)=>{if(st.average!==null){if(previousAvg===null||Math.abs(st.average-previousAvg)>0.000001)currentRank=i+1;rankById.set(st.id,currentRank);previousAvg=st.average;}else rankById.set(st.id,'—');});
+      const pages=ranked.map((st,i)=>{
+        const rows=selectedMarks.filter(m=>m.student_id===st.id).sort((a,b)=>(a.subject||'').localeCompare(b.subject||''));
+        const average=st.average===null?'—':st.average.toFixed(2)+'%';
+        const subjectRows=rows.map(m=>'<tr><td>'+esc(m.subject||'—')+'</td><td>'+esc(m.cat_marks??'—')+'</td><td>'+esc(m.exam_marks??'—')+'</td><td>'+esc(m.total_percentage===null||m.total_percentage===undefined?'—':Number(m.total_percentage).toFixed(2)+'%')+'</td><td>100%</td><td>'+esc(m.grade_letter||'—')+'</td><td>'+esc(m.remarks||'—')+'</td></tr>').join('')||'<tr><td colspan="7">No subject marks have been recorded for the selected term.</td></tr>';
+        const fees=feeData.filter(f=>f.student_id===st.id&&(!term||!f.term||f.term===term));
+        const due=fees.reduce((a,f)=>a+Number(f.amount_due||0),0),paid=fees.reduce((a,f)=>a+Number(f.amount_paid||0),0),balance=Math.max(0,due-paid);
+        const termLabel=term||'All recorded terms';
+        return '<article class="student-report-page"><header class="report-school-header"><div class="report-logo">🎓</div><div><h1>'+esc(school.name||'School')+'</h1><p>'+esc(school.county||'')+(school.code?' · School code: '+esc(school.code):'')+'</p><h2>STUDENT ACADEMIC REPORT</h2><p>'+esc(termLabel)+' · Generated '+esc(new Date().toLocaleDateString('en-KE'))+'</p></div></header><table class="report-student-details"><tbody><tr><th>Student name</th><td>'+esc(st.full_name||'—')+'</td><th>Admission number</th><td>'+esc(st.admission_no||'—')+'</td></tr><tr><th>Class / Grade</th><td>'+esc(st.grade_level||grade)+'</td><th>Pathway</th><td>'+esc(st.pathway||'Not applicable')+'</td></tr><tr><th>Class rank</th><td><strong>'+esc(rankById.get(st.id))+' of '+ranked.length+'</strong></td><th>Class average</th><td><strong>'+esc(average)+'</strong></td></tr></tbody></table><h3>Subject performance</h3><table class="report-subject-table"><thead><tr><th>Subject</th><th>CAT</th><th>Exam</th><th>Score / Average</th><th>Maximum</th><th>Grade</th><th>Teacher remarks</th></tr></thead><tbody>'+subjectRows+'</tbody></table><div class="report-summary"><div><span>Subjects recorded</span><strong>'+rows.length+'</strong></div><div><span>Average score</span><strong>'+esc(average)+'</strong></div><div><span>Class position</span><strong>'+esc(rankById.get(st.id))+' / '+ranked.length+'</strong></div></div><h3>Fee summary '+(term?'— '+esc(term):'— all recorded terms')+'</h3><table class="report-fees"><tbody><tr><th>Fees charged</th><td>'+cash(due)+'</td><th>Paid</th><td>'+cash(paid)+'</td><th>Balance</th><td>'+cash(balance)+'</td></tr></tbody></table><h3>Teacher / class teacher comment</h3><div class="report-comment">'+(rows.map(m=>m.remarks).filter(Boolean).length?esc(rows.map(m=>m.remarks).filter(Boolean).join(' · ')):'To be completed by the class teacher.')+'</div><div class="report-signatures"><span>Class teacher: ____________________</span><span>Headteacher: ____________________</span><span>Parent / guardian: ____________________</span></div><footer>Official learner report · Please contact the school for clarification of marks or fee balances.</footer></article>';
+      }).join('');
+      out.innerHTML=pages;
+      status.textContent=ranked.length+' individual report(s) generated for '+grade+'. Reports are ranked by average total percentage, highest first. Each student report prints on its own page.';
+    }catch(err){status.textContent='Could not generate class reports: '+(err.message||err);}
   };
 })();
 </script>
 
 
+
+<style id="classStudentReportPrintStyles">
+.report-toolbar .formgrid{margin-bottom:8px}.student-report-page{background:#fff;border:1px solid #dbe2ea;border-radius:10px;padding:26px;margin:18px 0;color:#172033}.report-school-header{display:flex;gap:16px;align-items:center;border-bottom:2px solid #14213d;padding-bottom:16px;text-align:left}.report-logo{font-size:34px}.report-school-header h1{margin:0;font-size:22px}.report-school-header h2{margin:8px 0 3px;font-size:17px}.report-school-header p{margin:4px 0;color:#475569;font-size:12px}.student-report-page h3{font-size:14px;margin:20px 0 8px;color:#14213d}.student-report-page table{width:100%;white-space:normal;font-size:11px;border-collapse:collapse}.student-report-page th,.student-report-page td{border:1px solid #cbd5e1;padding:7px 6px;vertical-align:top}.student-report-page th{background:#f1f5f9;color:#172033}.report-student-details{margin-top:16px}.report-subject-table td:nth-child(2),.report-subject-table td:nth-child(3),.report-subject-table td:nth-child(4),.report-subject-table td:nth-child(5),.report-subject-table td:nth-child(6){text-align:center}.report-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.report-summary div{border:1px solid #cbd5e1;padding:10px;text-align:center}.report-summary span,.report-summary strong{display:block}.report-summary span{font-size:10px;color:#475569}.report-summary strong{font-size:17px;margin-top:5px}.report-comment{min-height:42px;border:1px solid #cbd5e1;padding:10px;font-size:11px}.report-signatures{display:flex;justify-content:space-between;gap:12px;margin:28px 0 12px;font-size:10px;flex-wrap:wrap}.student-report-page footer{border-top:1px solid #cbd5e1;padding-top:8px;color:#64748b;font-size:9px}.student-report-page{break-after:page;page-break-after:always}.student-report-page:last-child{break-after:auto;page-break-after:auto}
+@media print{@page{size:A4 portrait;margin:12mm}.sidebar,.topbar,.footer,.portal-hero,.report-toolbar,.student-report-controls,.student-report-picker,.student-report-generate,.student-report-status,button,.menu-scrim{display:none!important}#app,.main,#content{display:block!important;margin:0!important;padding:0!important;width:100%!important;max-width:none!important}.panel{border:0!important;padding:0!important;margin:0!important;box-shadow:none!important}.student-report-page{display:block!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;min-height:270mm;break-after:page;page-break-after:always}.student-report-page:last-child{break-after:auto;page-break-after:auto}.report-school-header h1{font-size:20px}.student-report-page table{font-size:10px}.student-report-page th,.student-report-page td{padding:6px 5px}.report-summary div{break-inside:avoid}.report-signatures{margin-top:24px}}
+</style>
 <!-- Legacy super_admin-interface override removed; super_admin-portal.html is the new entry point. -->
 <!-- Role-aware feature directory: navigation-only items are labelled clearly; live modules keep their existing Supabase handlers. -->
 <style>
