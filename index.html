@@ -339,10 +339,10 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
 </style>
 <script>
 (function(){
- const liveSchoolId=()=>activeUser?.school_id||'51c2b858-76f7-4dfa-8c31-5ffc1eccddb5';
+ const liveSchoolId=()=>activeUser?.school_id||null;
  const isSuper=()=>activeUser?.role==='super_admin';
  const fmtTime=v=>v?new Date(v).toLocaleString('en-KE'):'—';
- const liveTable=(headers,rows)=>rows.length?'<div class="tablewrap"><table class="live-table"><thead><tr>'+headers.map(h=>'<th>'+esc(h[1])+'</th>').join('')+'<th>Actions</th></tr></thead><tbody>'+rows.map(r=>'<tr>'+headers.map(h=>'<td>'+esc(r[h[0]]??'—')+'</td>').join('')+'<td><button class="danger" data-live-delete="'+esc(r.__id||'')+'" style="padding:6px 9px;font-size:11px">Delete</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No live records yet. Use “Add record” to create the first record.</div>';
+ const liveTable=(headers,rows)=>rows.length?'<div class="tablewrap"><table class="live-table"><thead><tr>'+headers.map(h=>'<th>'+esc(h[1])+'</th>').join('')+'<th>Actions</th></tr></thead><tbody>'+rows.map(r=>'<tr>'+headers.map(h=>'<td>'+esc(r[h[0]]??'—')+'</td>').join('')+'<td><button class="secondary" data-live-edit="'+esc(r.__id||'')+'" style="padding:6px 9px;font-size:11px">Edit</button> <button class="danger" data-live-delete="'+esc(r.__id||'')+'" style="padding:6px 9px;font-size:11px">Delete</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No live records yet. Use “Add record” to create the first record.</div>';
  const adminPages=['Schools','Users & Roles','Activity Monitor','Communication Centre','System Reports'];
  const liveTables={
   Students:{table:'students',select:'id,admission_no,full_name,grade_level,pathway,created_at',headers:[['admission_no','Admission No.'],['full_name','Student'],['grade_level','Grade'],['pathway','Pathway'],['created_at','Created']],fields:[['admission_no','Admission number','text'],['full_name','Full name','text'],['grade_level','Grade level','select','PP1|PP2|Grade 1|Grade 2|Grade 3|Grade 4|Grade 5|Grade 6|Grade 7|Grade 8|Grade 9|Grade 10|Grade 11|Grade 12'],['pathway','Pathway','text']]},
@@ -429,9 +429,11 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
      return '<div class="field"><label>'+esc(label.toUpperCase())+'</label>'+control+'</div>';
    }).join('');
  }
+ let editingRecordId=null, loadedLiveRows=[];
  async function loadLiveModule(page){
    const cfg=liveTables[page], target=document.getElementById('liveModuleData'); if(!cfg||!target||!supabaseClient)return;
    try{
+     if(!isSuper()&&!liveSchoolId()){target.innerHTML='<div class="live-error">Your account is not assigned to a school. Ask the Super Admin to finish your school setup before editing records.</div>';return;}
      let q=supabaseClient.from(cfg.table).select(cfg.select).order('created_at',{ascending:false}).limit(200);
      if(!isSuper() && liveSchoolId())q=q.eq('school_id',liveSchoolId());
      const {data,error}=await q;if(error)throw error;
@@ -442,13 +444,13 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
      }
      if(page==='Fees')rows=rows.map(r=>({...r,amount_due:Number(r.amount_due||0).toLocaleString('en-KE'),amount_paid:Number(r.amount_paid||0).toLocaleString('en-KE')}));
      if(page==='Examinations')rows=rows.map(r=>({...r,total_percentage:r.total_percentage??(Number(r.cat_marks||0)+Number(r.exam_marks||0))}));
-     rows=rows.map(r=>({...r,__id:r.id}));
+     rows=rows.map(r=>({...r,__id:r.id})); loadedLiveRows=rows;
      target.innerHTML='<div class="live-toolbar"><span class="badge blue">'+rows.length+' record(s) loaded from Supabase</span><span class="live-muted">Showing up to 200 recent records</span></div>'+liveTable(cfg.headers,rows);
      const form=document.getElementById('liveRecordForm');
      if(form){
        renderForm(page,students);
        document.getElementById('liveToggleForm').onclick=()=>{document.getElementById('liveFormWrap').style.display=document.getElementById('liveFormWrap').style.display==='none'?'block':'none'};
-       document.getElementById('liveCancel').onclick=()=>{document.getElementById('liveFormWrap').style.display='none';form.reset()};
+       document.getElementById('liveCancel').onclick=()=>{editingRecordId=null;document.getElementById('liveFormWrap').style.display='none';form.reset();document.getElementById('liveFormMsg').textContent='';document.getElementById('liveToggleForm').textContent='＋ Add record'};
        form.onsubmit=async e=>{
          e.preventDefault();const msg=document.getElementById('liveFormMsg');msg.textContent='Saving…';
          const raw=Object.fromEntries(new FormData(form).entries());
@@ -459,14 +461,17 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
          if(page==='Classes')record.capacity=Number(record.capacity||40);
          if(page==='Students')record.grade_level=record.grade_level||'Grade 7';
          for(const [k,v] of Object.entries(record))if(v==='')record[k]=null;
-         const {error:saveError}=await supabaseClient.from(cfg.table).insert(record);
-         if(saveError){msg.textContent='Save failed: '+saveError.message;return;}
-         msg.textContent='Saved to Supabase.';await logActivity('created_'+page.toLowerCase(),{table:cfg.table});await loadLiveModule(page);
+         const query=editingRecordId?supabaseClient.from(cfg.table).update(record).eq('id',editingRecordId):supabaseClient.from(cfg.table).insert(record);
+         const {error:saveError}=await query;
+         if(saveError){msg.textContent=(editingRecordId?'Update':'Save')+' failed: '+saveError.message;return;}
+         const wasEditing=Boolean(editingRecordId);editingRecordId=null;msg.textContent=wasEditing?'Changes saved to Supabase.':'Saved to Supabase.';form.reset();document.getElementById('liveFormWrap').style.display='none';document.getElementById('liveToggleForm').textContent='＋ Add record';await logActivity((wasEditing?'updated_':'created_')+page.toLowerCase(),{table:cfg.table});await loadLiveModule(page);
        };
+       target.querySelectorAll('[data-live-edit]').forEach(btn=>btn.addEventListener('click',()=>{const row=loadedLiveRows.find(r=>r.id===btn.dataset.liveEdit);if(!row)return;editingRecordId=row.id;renderForm(page,students);const form=document.getElementById('liveRecordForm');for(const field of form.elements){if(field.name&&Object.prototype.hasOwnProperty.call(row,field.name))field.value=row[field.name]??'';}document.getElementById('liveFormWrap').style.display='block';document.getElementById('liveToggleForm').textContent='Editing record';document.getElementById('liveFormMsg').textContent='Editing existing record. Save changes to update it.';form.scrollIntoView({behavior:'smooth',block:'center'});}));
        target.querySelectorAll('[data-live-delete]').forEach(btn=>btn.addEventListener('click',async()=>{
          if(!confirm('Delete this record from Supabase? This cannot be undone.'))return;
          const {error:deleteError}=await supabaseClient.from(cfg.table).delete().eq('id',btn.dataset.liveDelete);
          if(deleteError){alert('Delete failed: '+deleteError.message);return;}
+         if(editingRecordId===btn.dataset.liveDelete)editingRecordId=null;
          await logActivity('deleted_'+page.toLowerCase(),{table:cfg.table});await loadLiveModule(page);
        }));
      }
