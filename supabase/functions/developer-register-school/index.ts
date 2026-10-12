@@ -1,5 +1,5 @@
-// Supabase Edge Function: developer-register-school
-// Deploy with: supabase functions deploy developer-register-school
+// Supabase Edge Function: super_admin-register-school
+// Deploy with: supabase functions deploy super_admin-register-school
 // Required secret: SUPABASE_SERVICE_ROLE_KEY (set in Supabase, never in browser code).
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -28,7 +28,7 @@ Deno.serve(async (req) => {
   }
 
   const authHeader = req.headers.get("Authorization");
-  if (!authHeader) return response({ error: "Sign in as Developer first." }, 401);
+  if (!authHeader) return response({ error: "Sign in as Super Admin first." }, 401);
 
   const admin = createClient(supabaseUrl, serviceKey, {
     auth: { autoRefreshToken: false, persistSession: false },
@@ -42,20 +42,20 @@ Deno.serve(async (req) => {
   if (userError || !userData.user) return response({ error: "Your session is invalid. Sign in again." }, 401);
   const { data: callerProfile, error: profileError } = await admin
     .from("profiles").select("role,school_id").eq("id", userData.user.id).single();
-  if (profileError || callerProfile?.role !== "developer" || callerProfile?.school_id !== null) {
-    return response({ error: "Only a Developer account without a school assignment may register schools." }, 403);
+  if (profileError || callerProfile?.role !== "super_admin" || callerProfile?.school_id !== null) {
+    return response({ error: "Only a Super Admin account without a school assignment may register schools." }, 403);
   }
 
   let input: Record<string, unknown>;
   try { input = await req.json(); } catch { return response({ error: "Invalid JSON request." }, 400); }
   const schoolName = typeof input.school_name === "string" ? input.school_name.trim() : "";
-  const schoolCode = typeof input.school_code === "string" ? input.school_code.trim() : "";
+  const schoolCode = typeof input.school_code === "string" ? input.school_code.trim().toUpperCase() : "";
   const county = typeof input.county === "string" ? input.county.trim() : null;
   const adminName = typeof input.admin_name === "string" ? input.admin_name.trim() : "";
   const adminEmail = typeof input.admin_email === "string" ? input.admin_email.trim().toLowerCase() : "";
   const adminPassword = typeof input.admin_password === "string" ? input.admin_password : "";
   if (schoolName.length < 2 || schoolName.length > 200 ||
-      schoolCode.length < 2 || schoolCode.length > 30 ||
+      !/^[A-Z0-9_-]{2,30}$/.test(schoolCode) ||
       adminName.length < 2 || adminName.length > 120 ||
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminEmail) ||
       adminPassword.length < 10 || adminPassword.length > 128) {
