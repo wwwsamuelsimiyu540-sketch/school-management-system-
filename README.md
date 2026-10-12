@@ -1,4 +1,4 @@
-# Friends Day Senior School Lukhome — School Management System
+# My School System Manager
 
 A mobile-friendly school management system with role-based panels and Supabase Auth/database integration.
 
