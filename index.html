@@ -994,6 +994,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
     [students,teachers,classes,attendance,marks,fees,profiles,links]=rs.map(x=>x.data||[]);
    }
    if(request!==chartRequest||!document.getElementById('visualChartGrid'))return;
+   if(!window.Chart)throw new Error('The chart library did not load. Check your internet connection or allow cdn.jsdelivr.net, then refresh.');
    const dates=[];for(let i=13;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dates.push(d.toISOString().slice(0,10))}
    const grade=grouped(students,'grade_level','Unassigned'),stream=grouped(students,'stream','Unassigned');
    const attendanceStatus=grouped(attendance,'status','Unknown'),schoolStatus=grouped(schools,'status','Unknown'),roleCounts=grouped(profiles,'role','Unknown');
@@ -1036,8 +1037,16 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
    grid.innerHTML=configs.map((c,i)=>'<article class="visual-chart-card '+(c.type==='line'?'wide':'')+'"><h3>'+esc(c.title)+'</h3><p class="chart-caption">'+(c.type==='pie'?'Distribution of current saved records.':c.type==='column'?'Comparison from saved records.':'Trend calculated from dated saved records.')+'</p><div class="visual-chart-canvas '+(c.type==='pie'?'short':'')+'"><canvas id="visualChart'+i+'" aria-label="'+esc(c.title)+'"></canvas></div></article>').join('');
    configs.forEach((c,i)=>{
     const labels=c.labels||[],values=c.values||[];
+    const seriesValues=c.type==='line'?(c.datasets||[]).flatMap(d=>d.data||[]):values;
+    const hasData=seriesValues.some(v=>Number.isFinite(Number(v))&&Number(v)!==0);
+    if(!hasData){
+     const canvas=document.getElementById('visualChart'+i);
+     const wrap=canvas?.parentElement;
+     if(wrap)wrap.innerHTML='<div class="visual-chart-empty">No saved records for this chart yet. Add records in the relevant school module to populate it.</div>';
+     return;
+    }
     if(c.type==='line')draw('visualChart'+i,'line',c.labels,c.datasets||[]);
-    else draw('visualChart'+i,c.type,labels.length?labels:['No records'],[{label:c.title,data:labels.length?values:[0],backgroundColor:labels.length?colors:'#e7ebf4',borderWidth:0}]);
+    else draw('visualChart'+i,c.type,labels,[{label:c.title,data:values,backgroundColor:colors,borderWidth:0}]);
    });
   }catch(e){if(request===chartRequest)empty('Charts could not be loaded from Supabase: '+(e.message||'Check database permissions and try again.'))}
  }
