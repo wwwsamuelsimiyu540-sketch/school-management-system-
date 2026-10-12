@@ -220,9 +220,9 @@ const demoAccounts = {
 };
 const roleMenus = {
  super_admin:[['Dashboard','▦'],['Feature Directory','☷'],['School Approvals','✓'],['School Settings','🏫'],['Reports','▥']],
- principal:[['Dashboard','▦'],['Feature Directory','☷'],['School Registration','🏫'],['Students','♟'],['Teachers','♙'],['Parents','👪'],['Bursars','💰'],['Classes','▤'],['Attendance','✓'],['Fees','＄'],['Examinations','✎'],['Reports','▥'],['School Settings','⚙']],
+ principal:[['Dashboard','▦'],['Feature Directory','☷'],['School Registration','🏫'],['Students','♟'],['Teachers','♙'],['Parents','👪'],['Bursars','💰'],['Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Student Reports','▥'],['Reports','▤'],['School Settings','⚙']],
  teacher:[['Dashboard','▦'],['Feature Directory','☷'],['My Classes','▤'],['Attendance','✓'],['Examinations','✎'],['Reports','▥']],
- bursar:[['Dashboard','▦'],['Feature Directory','☷'],['Fees','＄'],['Reports','▥']],
+ bursar:[['Dashboard','▦'],['Feature Directory','☷'],['Fees','＄'],['Student Reports','▥'],['Reports','▤']],
  parent:[['Dashboard','▦'],['Feature Directory','☷'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']],
  student:[['Dashboard','▦'],['Feature Directory','☷'],['My Results','✎'],['My Attendance','✓'],['My Fees','＄']]
 };
@@ -389,8 +389,10 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
    const addRecordButton=(page==='Teachers'||page==='Students')&&activeUser?.role==='principal'?'style="display:none"':'';
    return hero(moduleTitle[page],moduleDescription[page])+teacherRegistration+studentRegistration+'<div class="panel"><div class="sectionhead"><h2>Live database records</h2><button id="liveToggleForm" '+addRecordButton+'>＋ Add record</button></div><div id="liveFormWrap" style="display:none"><form class="live-form" id="liveRecordForm"></form><div class="form-actions"><button class="secondary" type="button" id="liveCancel">Cancel</button><button type="submit" form="liveRecordForm">Save to Supabase</button></div><p id="liveFormMsg" class="live-muted"></p></div><div id="liveModuleData" class="live-muted">Loading live records…</div></div>';
  }
+ function studentReportsShell(){return hero('Student academic & financial reports','Select a student to print one report combining academic marks with fee payments and the outstanding balance. Financial figures come from Supabase fee records.')+'<div class="panel"><div class="sectionhead"><h2>Student report</h2><div class="live-actions"><button type="button" onclick="window.loadStudentReportStudents()">Load students</button><button type="button" class="secondary" onclick="window.print()">Print / Save PDF</button></div></div><div class="field"><label>STUDENT</label><select id="studentReportStudent"><option value="">Select Load students first</option></select></div><button type="button" onclick="window.generateStudentReport()">Generate report</button><p id="studentReportStatus" class="live-muted" role="status"></p><div id="studentReportOutput"></div></div>'}
  const oldSimpleRolePage=simpleRolePage;
  simpleRolePage=function(page){
+   if(page==='Student Reports'&&['principal','bursar'].includes(activeUser?.role)) return studentReportsShell();
    if(['Parents','Bursars'].includes(page)&&activeUser?.role==='principal') return moduleShell(page);
    if(isSuper() && adminPages.includes(page)) return adminPageShell(page);
    if(previewOriginalUser && liveTables[page]) return null; // Demo previews use the local sample UI; never attach live Supabase write handlers.
@@ -616,6 +618,33 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
  go=function(page){oldGo(page);if(activeUser?.authMode==='supabase')logActivity('viewed_page',{page});};
  const oldShow=showApp;
  showApp=function(){oldShow();if(activeUser?.authMode==='supabase'){logActivity('signed_in',{role:activeUser.role});trackPresence();}};
+  window.loadStudentReportStudents=async function(){
+    const status=document.getElementById('studentReportStatus'),select=document.getElementById('studentReportStudent');if(!status||!select)return;
+    status.textContent='Loading students from Supabase…';
+    try{if(!supabaseClient||!activeUser?.school_id)throw new Error('Your account is not assigned to a school.');
+      const {data,error}=await supabaseClient.from('students').select('id,admission_no,full_name,grade_level').eq('school_id',activeUser.school_id).order('full_name');if(error)throw error;
+      select.innerHTML='<option value="">Choose a student</option>'+(data||[]).map(st=>'<option value="'+esc(st.id)+'">'+esc(st.full_name)+' — '+esc(st.admission_no||'No admission number')+' — '+esc(st.grade_level||'')+'</option>').join('');
+      status.textContent=(data||[]).length+' student(s) loaded.';
+    }catch(err){status.textContent='Could not load students: '+(err.message||err);}
+  };
+  window.generateStudentReport=async function(){
+    const select=document.getElementById('studentReportStudent'),status=document.getElementById('studentReportStatus'),out=document.getElementById('studentReportOutput');if(!select||!status||!out)return;const studentId=select.value;if(!studentId){status.textContent='Choose a student first.';return;}
+    status.textContent='Loading academic and financial records…';out.innerHTML='';
+    try{
+      const [{data:student,error:studentError},{data:marks,error:marksError},{data:fees,error:feesError}]=await Promise.all([
+        supabaseClient.from('students').select('id,school_id,admission_no,full_name,grade_level,pathway').eq('id',studentId).eq('school_id',activeUser.school_id).single(),
+        supabaseClient.from('exam_marks').select('term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('student_id',studentId).eq('school_id',activeUser.school_id).order('term').order('subject'),
+        supabaseClient.from('fee_payments').select('term,academic_year,amount_due,amount_paid,payment_date,receipt_no').eq('student_id',studentId).eq('school_id',activeUser.school_id).order('term')
+      ]);
+      if(studentError)throw studentError;if(marksError)throw marksError;if(feesError)throw feesError;
+      const cash=n=>'KES '+Number(n||0).toLocaleString('en-KE',{minimumFractionDigits:2,maximumFractionDigits:2});
+      const due=(fees||[]).reduce((a,x)=>a+Number(x.amount_due||0),0),paid=(fees||[]).reduce((a,x)=>a+Number(x.amount_paid||0),0),balance=Math.max(0,due-paid);
+      const academicRows=(marks||[]).map(m=>'<tr><td>'+esc(m.term||'—')+'</td><td>'+esc(m.subject||'—')+'</td><td>'+esc(m.cat_marks??'—')+'</td><td>'+esc(m.exam_marks??'—')+'</td><td>'+esc(m.total_percentage??'—')+'</td><td>'+esc(m.grade_letter||'—')+'</td><td>'+esc(m.remarks||'—')+'</td></tr>').join('')||'<tr><td colspan="7">No academic marks recorded.</td></tr>';
+      const feeRows=(fees||[]).map(f=>'<tr><td>'+esc(f.term||'—')+'</td><td>'+esc(f.academic_year||'—')+'</td><td>'+cash(f.amount_due)+'</td><td>'+cash(f.amount_paid)+'</td><td>'+cash(Math.max(0,Number(f.amount_due||0)-Number(f.amount_paid||0)))+'</td><td>'+esc(f.payment_date||'—')+'</td><td>'+esc(f.receipt_no||'—')+'</td></tr>').join('')||'<tr><td colspan="7">No fee account has been recorded for this student.</td></tr>';
+      out.innerHTML='<div class="panel" id="printableStudentReport"><div style="text-align:center;padding:10px 0 18px"><h2 style="margin:0">STUDENT REPORT</h2><p class="live-muted">My School System Manager · Generated '+esc(new Date().toLocaleDateString('en-KE'))+'</p></div><table><tbody><tr><th>Student name</th><td>'+esc(student.full_name)+'</td><th>Admission no.</th><td>'+esc(student.admission_no||'—')+'</td></tr><tr><th>Grade</th><td>'+esc(student.grade_level||'—')+'</td><th>Pathway</th><td>'+esc(student.pathway||'—')+'</td></tr></tbody></table><h3 style="margin-top:22px">Academic performance</h3><div class="tablewrap"><table><thead><tr><th>Term</th><th>Subject</th><th>CAT</th><th>Exam</th><th>Total %</th><th>Grade</th><th>Remarks</th></tr></thead><tbody>'+academicRows+'</tbody></table></div><h3 style="margin-top:22px">Financial summary</h3><div class="cards">'+stat('Fees charged',cash(due),'🧾')+stat('Payments received',cash(paid),'✓')+stat('Outstanding balance',cash(balance),'⏳')+'</div><div class="tablewrap"><table><thead><tr><th>Term</th><th>Academic year</th><th>Fees charged</th><th>Paid</th><th>Balance</th><th>Payment date</th><th>Receipt no.</th></tr></thead><tbody>'+feeRows+'</tbody></table></div><p class="live-muted">Financial balances are calculated from saved fee records. Contact the school bursar if a payment or balance needs correction.</p></div>';
+      status.textContent='Report generated from live Supabase records.';
+    }catch(err){status.textContent='Could not generate report: '+(err.message||err);}
+  };
 })();
 </script>
 
