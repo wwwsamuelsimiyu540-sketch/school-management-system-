@@ -434,6 +434,9 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
    const cfg=liveTables[page], target=document.getElementById('liveModuleData'); if(!cfg||!target||!supabaseClient)return;
    try{
      if(!isSuper()&&!liveSchoolId()){target.innerHTML='<div class="live-error">Your account is not assigned to a school. Ask the Super Admin to finish your school setup before editing records.</div>';return;}
+     const earlyForm=document.getElementById('liveRecordForm'),earlyToggle=document.getElementById('liveToggleForm'),earlyCancel=document.getElementById('liveCancel');
+     if(earlyToggle)earlyToggle.onclick=()=>{const wrap=document.getElementById('liveFormWrap');if(!wrap)return;const opening=wrap.style.display==='none';wrap.style.display=opening?'block':'none';if(opening){editingRecordId=null;earlyToggle.textContent='＋ Add record';document.getElementById('liveFormMsg').textContent='';earlyForm?.reset();}}
+     if(earlyCancel)earlyCancel.onclick=()=>{editingRecordId=null;const wrap=document.getElementById('liveFormWrap');if(wrap)wrap.style.display='none';earlyForm?.reset();document.getElementById('liveFormMsg').textContent='';if(earlyToggle)earlyToggle.textContent='＋ Add record'};
      let q=supabaseClient.from(cfg.table).select(cfg.select).order('created_at',{ascending:false}).limit(200);
      if(!isSuper() && liveSchoolId())q=q.eq('school_id',liveSchoolId());
      const {data,error}=await q;if(error)throw error;
@@ -575,7 +578,7 @@ function exitPanelPreview(){if(!previewOriginalUser)return;activeUser=previewOri
   'Finance Dashboard':'Fees','Student Fee Statements':'Fees','Fee Payment Entry Form':'Fees','Outstanding Balances':'Fees','Financial Reports':'Reports','My Fees':'My Fees','Child Fee Balance View':'My Fees',
   'Exam Dashboard':'Examinations','Enter Marks Form':'Examinations','Examination Results':'Examinations','Print Report Cards':'Reports','My Results':'My Results','Child Results View':'My Results',
   'Communication Centre':'Communication Centre','School Performance Report':'Reports','Student Statistics':'Reports','Staff Statistics':'Reports','Enrollment Report':'Reports','Attendance Report':'Reports','Finance Report':'Reports','Examination Report':'Reports','Export Report to PDF / Print':'Reports',
-  'Register New School':'Schools','Register Student Form':'Students','Register Teacher Form':'Teachers'
+  'Register New School':'School Approvals','Register Student Form':'Students','Register Teacher Form':'Teachers'
  };
  function escFeature(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
  function featureDirectory(){
