@@ -499,7 +499,10 @@ async function loadPersonalPage(page){
    try{await supabaseClient.from('platform_user_presence').upsert({user_id:activeUser.authUserId,school_id:activeUser.school_id||null,last_seen_at:new Date().toISOString(),current_page:currentPage,user_agent:navigator.userAgent},{onConflict:'user_id'})}catch(e){console.warn('Presence not updated',e.message)}
  }
  async function studentsOptions(){
-   const {data,error}=await supabaseClient.from('students').select('id,school_id,full_name,admission_no').order('full_name');
+   let query=supabaseClient.from('students').select('id,school_id,full_name,admission_no,grade_level,stream').order('full_name').limit(10000);
+   // Never offer students from another school to a school staff member.
+   if(!isSuper()&&liveSchoolId())query=query.eq('school_id',liveSchoolId());
+   const {data,error}=await query;
    if(error)throw error;return data||[];
  }
  function renderForm(page,students,schools=[]){
@@ -507,12 +510,12 @@ async function loadPersonalPage(page){
     const schoolField=isSuper()?'<div class="field"><label>SCHOOL</label><select name="school_id" required><option value="">Select school</option>'+schools.map(sc=>'<option value="'+esc(sc.id)+'">'+esc(sc.name)+' ('+esc(sc.code)+')</option>').join('')+'</select></div>':'';
    document.getElementById('liveRecordForm').innerHTML=schoolField+cfg.fields.map(([key,label,type,options])=>{
      let control='';
-     if(type==='student')control='<input type="search" data-student-search placeholder="Search student by name or admission number…" aria-label="Search students"><select name="'+key+'" required><option value="">Select student</option>'+students.map(s=>'<option value="'+esc(s.id)+'" data-school-id="'+esc(s.school_id||'')+'">'+esc(s.full_name)+' ('+esc(s.admission_no||'')+')</option>').join('')+'</select>';
+     if(type==='student')control='<input type="search" data-student-search placeholder="Search name, admission number, grade or stream…" aria-label="Search students by name, admission number, grade or stream"><select name="'+key+'" required><option value="">Select student</option>'+students.map(s=>'<option value="'+esc(s.id)+'" data-school-id="'+esc(s.school_id||'')+'" data-search="'+esc([s.full_name,s.admission_no,s.grade_level,s.stream].filter(Boolean).join(' '))+'">'+esc(s.full_name)+' ('+esc(s.admission_no||'')+') · '+esc(s.grade_level||'Grade not set')+' '+esc(s.stream||'')+'</option>').join('')+'</select>';
      else if(type==='select')control='<select name="'+key+'" required>'+options.split('|').map(v=>'<option value="'+esc(v)+'">'+esc(v)+'</option>').join('')+'</select>';
      else control='<input name="'+key+'" type="'+type+'" '+(type==='number'?'min="0" step="any"':'')+' '+(['date'].includes(type)?'value="'+new Date().toISOString().slice(0,10)+'"':'')+' '+(['number','text','email','tel'].includes(type)?'':'')+' '+(['full_name','admission_no','name','term','subject','amount_due','amount_paid'].includes(key)?'required':'')+'>';
      return '<div class="field"><label>'+esc(label.toUpperCase())+'</label>'+control+'</div>';
    }).join('');
-   document.querySelectorAll('[data-student-search]').forEach(input=>input.addEventListener('input',()=>{const select=input.parentElement.querySelector('select[name="student_id"]');if(!select)return;const q=input.value.trim().toLowerCase();for(const option of select.options){if(!option.value){option.hidden=false;continue;}option.hidden=!option.textContent.toLowerCase().includes(q);}if(select.selectedOptions[0]?.hidden)select.value='';}));
+   document.querySelectorAll('[data-student-search]').forEach(input=>input.addEventListener('input',()=>{const select=input.parentElement.querySelector('select[name="student_id"]');if(!select)return;const q=input.value.trim().toLowerCase();for(const option of select.options){if(!option.value){option.hidden=false;continue;}const searchable=(option.dataset.search||option.textContent).toLowerCase();option.hidden=!searchable.includes(q);}if(select.selectedOptions[0]?.hidden)select.value='';}));
     const form=document.getElementById('liveRecordForm'),schoolSelect=form?.querySelector('[name="school_id"]'),studentSelect=form?.querySelector('[name="student_id"]');if(schoolSelect&&studentSelect){schoolSelect.addEventListener('change',()=>{for(const o of studentSelect.options)o.hidden=Boolean(o.value&&o.dataset.schoolId&&o.dataset.schoolId!==schoolSelect.value);if(studentSelect.selectedOptions[0]?.hidden)studentSelect.value='';});studentSelect.addEventListener('change',()=>{const opt=studentSelect.selectedOptions[0];if(opt?.dataset.schoolId)schoolSelect.value=opt.dataset.schoolId;});}
  }
  let editingRecordId=null, loadedLiveRows=[];
