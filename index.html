@@ -1125,6 +1125,130 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
 })();
 </script>
 
+
+<!-- Integrated live Marks Entry module -->
+<script>
+(function(){
+ const style=document.createElement('style');
+ style.textContent='.me-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.me-grid label{display:block;font-size:12px;font-weight:700;color:#64748b;margin-bottom:6px}.me-grid select,.me-search{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;background:#fff;color:#17243a}.me-pill{display:inline-block;background:#edf5ff;color:#244b83;border-radius:9px;padding:9px 12px;margin:12px 8px 0 0;font-size:13px}.me-table-wrap{overflow:auto}.me-table{width:100%;border-collapse:collapse;min-width:670px}.me-table th,.me-table td{text-align:left;padding:11px;border-bottom:1px solid #e8edf5}.me-table th{font-size:12px;color:#64748b;background:#f8faff}.me-table input{width:95px;padding:8px;border:1px solid #cbd5e1;border-radius:8px}.me-btn{border:0;border-radius:8px;padding:9px 12px;cursor:pointer;font-weight:650;margin:2px}.me-save{background:#e8f1ff;color:#174a92}.me-edit{background:#e9eef6;color:#263954}.me-main{background:#1d5fd0;color:white}.me-note{padding:12px;border-radius:10px;background:#edf5ff;color:#244b83;font-size:13px;margin-bottom:14px}.me-msg{font-size:13px;color:#64748b;margin-left:8px}.me-empty{text-align:center;padding:24px;color:#64748b}@media(max-width:760px){.me-grid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.me-grid{grid-template-columns:1fr}.me-actions .me-btn{width:100%;margin:4px 0}.me-msg{display:block;margin:8px 0}}';
+ document.head.appendChild(style);
+ let meStudents=[],meMarks=new Map(),meSaved=new Set(),meSubjects=[],meClasses=[],meBusy=false;
+ const meEsc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const meEl=id=>document.getElementById(id);
+ function meHtml(){return '<div class="panel"><h2>Marks Entry</h2><div class="me-note" id="meNotice">Choose class/grade, academic year, stream, and one of the school\'s configured subjects. Students will appear only after all filters are selected.</div><div class="me-grid"><div><label for="meGrade">Class / Grade</label><select id="meGrade"><option value="">Not selected</option></select></div><div><label for="meYear">Academic year</label><select id="meYear"><option value="2026" selected>2026</option></select></div><div><label for="meStream">Stream</label><select id="meStream" disabled><option value="">Not selected</option></select></div><div><label for="meSubject">Subject</label><select id="meSubject" disabled><option value="">Not selected</option></select></div></div><div><span class="me-pill">Students: <b id="meTotal">0</b></span><span class="me-pill">Saved: <b id="meSaved">0</b></span><span class="me-pill">Pending: <b id="mePending">0</b></span></div></div><div class="panel"><h3>Student marks</h3><div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px"><div style="flex:1;min-width:210px"><label for="meSearch">Search by student name or admission number</label><input class="me-search" id="meSearch" placeholder="Enter name or admission number"></div><button class="me-btn me-edit" id="meClear" type="button">Clear search</button></div><div class="me-table-wrap"><table class="me-table"><thead><tr><th>No.</th><th>Student</th><th>Admission number</th><th>Marks (0–100)</th><th>Actions</th></tr></thead><tbody id="meRows"><tr><td colspan="5" class="me-empty">Choose all four filters to display students.</td></tr></tbody></table></div><div class="me-actions" style="margin-top:14px"><button class="me-btn me-main" id="meSaveAll" type="button">Save All Marks</button><button class="me-btn me-edit" id="meDeploy" type="button">Deploy Results</button><span class="me-msg" id="meMessage" aria-live="polite"></span></div></div>'}
+ function meNotice(s){const el=meEl('meNotice');if(el)el.textContent=s}
+ function meMessage(s){const el=meEl('meMessage');if(el)el.textContent=s}
+ function meSelect(id,placeholder,items){const el=meEl(id);if(!el)return;el.innerHTML='<option value="">'+meEsc(placeholder)+'</option>'+items.map(x=>'<option value="'+meEsc(x.value)+'">'+meEsc(x.label)+'</option>').join('')}
+ function meUser(){return window.activeUser||activeUser||null}
+ function meClient(){return window.supabaseClient||supabaseClient||null}
+ function meSchoolId(){return (typeof liveSchoolId==='function'?liveSchoolId():null)||meUser()?.school_id||null}
+ function meAllSelected(){return Boolean(meUser()&&meSchoolId()&&meEl('meGrade')?.value&&meEl('meYear')?.value&&meEl('meStream')?.value&&meEl('meSubject')?.value)}
+ function meFiltered(){const q=(meEl('meSearch')?.value||'').trim().toLowerCase();return meStudents.filter(s=>!q||String(s.full_name||'').toLowerCase().includes(q)||String(s.admission_no||'').toLowerCase().includes(q))}
+ function meCounts(){const list=meFiltered();if(meEl('meTotal'))meEl('meTotal').textContent=list.length;if(meEl('meSaved'))meEl('meSaved').textContent=list.filter(s=>meSaved.has(s.id)).length;if(meEl('mePending'))meEl('mePending').textContent=list.filter(s=>!meSaved.has(s.id)).length}
+ async function meInit(){
+  const client=meClient(), school=meSchoolId(), user=meUser();
+  if(!client||!user){meNotice('Please sign in through the main School Management System before entering marks.');return}
+  if(!school){meNotice('This account is not linked to a school, so marks entry is unavailable.');return}
+  const role=String(user.role||'').toLowerCase();
+  if(!['teacher','principal','admin','school_admin'].includes(role)){meNotice('Marks Entry is available to school teachers and authorised school administrators.');return}
+  meNotice('Loading this school\'s class setup and configured subjects…');
+  const cls=await client.from('school_classes').select('id,name,grade_level,stream,academic_year').eq('school_id',school).order('grade_level').order('name').limit(5000);
+  if(cls.error){meNotice('Could not load school classes: '+cls.error.message);return}
+  meClasses=cls.data||[];
+  const years=[...new Set(meClasses.map(c=>String(c.academic_year||'').trim()).filter(Boolean))];if(!years.includes('2026'))years.push('2026');years.sort((a,b)=>Number(b)-Number(a));
+  meSelect('meYear','Select academic year',years.map(y=>({value:y,label:y})));meEl('meYear').value='2026';
+  const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')==='2026').map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));
+  const [teachers,marks]=await Promise.all([client.from('teachers').select('subject').eq('school_id',school).limit(2000),client.from('exam_marks').select('subject').eq('school_id',school).limit(10000)]);
+  const subjects=new Set();
+  if(!teachers.error)(teachers.data||[]).forEach(r=>String(r.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(x=>subjects.add(x)));
+  if(!marks.error)(marks.data||[]).forEach(r=>{const x=String(r.subject||'').trim();if(x)subjects.add(x)});
+  meSubjects=[...subjects].sort((a,b)=>a.localeCompare(b));
+  meSelect('meSubject','Not selected',meSubjects.map(s=>({value:s,label:s})));
+  meEl('meGrade').disabled=false;meEl('meYear').disabled=false;meEl('meSubject').disabled=!meSubjects.length;
+  if(!meSubjects.length)meNotice('No subject names were found in this school\'s teacher assignments or saved exam records. Configure the school\'s subjects first; no subject names have been invented.');
+  else meNotice('Connected to the school database. Select the four filters to load the matching students. '+(meSubjects.length===2?'Two configured subject options were found.':'Found '+meSubjects.length+' subject name(s); check School Settings if exactly two are expected.'));
+ }
+ function meUpdateStreams(){
+  const grade=meEl('meGrade').value,year=meEl('meYear').value;
+  const rows=meClasses.filter(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade);
+  const streams=[...new Set(rows.map(c=>String(c.stream||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  meSelect('meStream','Not selected',streams.map(s=>({value:s,label:s})));meEl('meStream').disabled=!grade;
+  meStudents=[];meMarks.clear();meSaved.clear();meRender();
+ }
+ async function meLoadStudents(){
+  const client=meClient(),school=meSchoolId();meStudents=[];meMarks.clear();meSaved.clear();meRender();
+  if(!meAllSelected()){meNotice('Select class/grade, academic year, stream, and subject to load students.');return}
+  const grade=meEl('meGrade').value,year=meEl('meYear').value,stream=meEl('meStream').value,subject=meEl('meSubject').value;
+  const classRows=meClasses.filter(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade&&String(c.stream||'').trim()===stream);
+  if(!classRows.length){meNotice('No class setup matches those selections. Check Classes in the school system.');return}
+  meNotice('Loading students and saved marks…');
+  const sr=await client.from('students').select('id,school_id,admission_no,full_name,grade_level,stream').eq('school_id',school).limit(10000);
+  if(sr.error){meNotice('Could not load students: '+sr.error.message);return}
+  meStudents=(sr.data||[]).filter(s=>String(s.grade_level||'').trim()===grade&&String(s.stream||'').trim()===stream).sort((a,b)=>String(a.admission_no||'').localeCompare(String(b.admission_no||''),undefined,{numeric:true}));
+  if(!meStudents.length){meNotice('No students match '+grade+', '+year+', stream '+stream+'. Check the student grade and stream records.');meRender();return}
+  const mr=await client.from('exam_marks').select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('school_id',school).eq('subject',subject).eq('term','Term 1').in('student_id',meStudents.map(s=>s.id)).limit(10000);
+  if(mr.error){meNotice('Students loaded, but existing marks could not be read: '+mr.error.message);meRender();return}
+  (mr.data||[]).forEach(m=>{if(!meMarks.has(m.student_id))meMarks.set(m.student_id,m);if(m.total_percentage!==null&&m.total_percentage!==undefined)meMarks.get(m.student_id).value=m.total_percentage;else meMarks.get(m.student_id).value=m.exam_marks??'';meSaved.add(m.student_id)});
+  meNotice('Loaded '+meStudents.length+' matching students, ordered by admission number.');meRender();
+ }
+ function meRender(){
+  const body=meEl('meRows');if(!body)return;
+  if(!meAllSelected()){body.innerHTML='<tr><td colspan="5" class="me-empty">Choose class/grade, academic year, stream, and one configured subject to display students.</td></tr>';meCounts();return}
+  const list=meFiltered();if(!list.length){body.innerHTML='<tr><td colspan="5" class="me-empty">'+(meStudents.length?'No student matches that search.':'No matching students loaded.')+'</td></tr>';meCounts();return}
+  body.innerHTML='';
+  list.forEach((s,i)=>{const mark=meMarks.get(s.id),val=mark?.value??'';const tr=document.createElement('tr');
+   tr.innerHTML='<td>'+(i+1)+'</td><td>'+meEsc(s.full_name||'Unnamed student')+'</td><td>'+meEsc(s.admission_no||'—')+'</td><td><input type="number" min="0" max="100" step="0.01" value="'+meEsc(val)+'" placeholder="0–100" aria-label="Marks for '+meEsc(s.full_name)+'" '+(meSaved.has(s.id)?'disabled':'')+'></td><td><button class="me-btn me-save" type="button">Save</button><button class="me-btn me-edit" type="button">Edit</button><span style="font-size:12px;color:#13804a">'+(meSaved.has(s.id)?'Saved':'Pending')+'</span></td>';
+   const input=tr.querySelector('input'),buttons=tr.querySelectorAll('button'),status=tr.querySelector('span');
+   input.addEventListener('input',()=>{if(mark)mark.value=input.value;else meMarks.set(s.id,{value:input.value});meSaved.delete(s.id);status.textContent='Pending';meCounts()});
+   buttons[1].addEventListener('click',()=>{input.disabled=false;input.focus();status.textContent='Editing';meSaved.delete(s.id);meCounts()});
+   buttons[0].addEventListener('click',()=>meSaveOne(s,input.value,buttons[0],status));
+   body.appendChild(tr);
+  });meCounts();
+ }
+ function meGradeLetter(v){return v>=80?'A':v>=70?'B':v>=60?'C':v>=50?'D':'E'}
+ async function meSaveOne(s,value,button,status){
+  if(!meAllSelected()){meMessage('Select all filters first.');return false}
+  if(value===''||!Number.isFinite(Number(value))||Number(value)<0||Number(value)>100){meMessage('Enter a mark from 0 to 100 for '+s.full_name+'.');return false}
+  const client=meClient(),school=meSchoolId(),existing=meMarks.get(s.id),old=button.textContent;button.disabled=true;button.textContent='Saving…';
+  try{
+   const val=Number(value),payload={school_id:school,student_id:s.id,subject:meEl('meSubject').value,term:'Term 1',cat_marks:0,exam_marks:val,total_percentage:val,grade_letter:meGradeLetter(val),remarks:''};
+   let result=existing?.id?await client.from('exam_marks').update(payload).eq('id',existing.id).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').single():await client.from('exam_marks').insert(payload).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').single();
+   if(result.error)throw result.error;meMarks.set(s.id,{...result.data,value:result.data.total_percentage??val});meSaved.add(s.id);status.textContent='Saved';meMessage('Saved marks for '+s.full_name+'.');meCounts();return true;
+  }catch(e){meMessage('Save failed: '+(e.message||'check database permissions'));return false}
+  finally{button.disabled=false;button.textContent=old}
+ }
+ async function meSaveAll(){
+  if(!meAllSelected()){meMessage('Select all four filters first.');return}
+  const list=meFiltered();if(!list.length){meMessage('No visible students to save.');return}
+  const invalid=list.filter(s=>{const m=meMarks.get(s.id);return !m||m.value===''||!Number.isFinite(Number(m.value))||Number(m.value)<0||Number(m.value)>100});
+  if(invalid.length){meMessage('Enter a valid mark (0–100) for each visible student before saving all.');return}
+  meEl('meSaveAll').disabled=true;let fail=0;
+  try{for(const s of list){const row=[...meEl('meRows').querySelectorAll('tr')].find(r=>r.children[2]?.textContent===String(s.admission_no||'—'));const button=row?.querySelector('.me-save'),status=row?.querySelector('span');if(!await meSaveOne(s,meMarks.get(s.id).value,button||meEl('meSaveAll'),status||{set textContent(v){}}))fail++}meMessage(fail?'Some rows failed to save. Review the errors and retry.':'All '+list.length+' visible marks saved.');}finally{meEl('meSaveAll').disabled=false;meRender()}
+ }
+ function meBind(){
+  meEl('meGrade').addEventListener('change',()=>{meUpdateStreams();meMessage('')});
+  meEl('meYear').addEventListener('change',()=>{const year=meEl('meYear').value;const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')===year).map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));meEl('meGrade').disabled=false;meUpdateStreams();meMessage('')});
+  meEl('meStream').addEventListener('change',()=>{meMessage('');meLoadStudents()});meEl('meSubject').addEventListener('change',()=>{meMessage('');meLoadStudents()});
+  meEl('meSearch').addEventListener('input',meRender);meEl('meClear').addEventListener('click',()=>{meEl('meSearch').value='';meRender()});
+  meEl('meSaveAll').addEventListener('click',meSaveAll);
+  meEl('meDeploy').addEventListener('click',()=>{if(!meAllSelected()){meMessage('Select all four filters first.');return}const unsaved=meFiltered().filter(s=>!meSaved.has(s.id));if(unsaved.length){meMessage('Save all visible marks before deploying.');return}meMessage('Marks are saved. This project does not yet have a separate results-publishing status, so this button cannot publish marks to reports yet.')});
+ }
+ function meEnsureNav(){
+  const role=String(meUser()?.role||'').toLowerCase();if(!['teacher','principal','admin','school_admin'].includes(role))return;
+  const side=document.getElementById('appSidebar');if(!side||side.querySelector('[data-page="Marks Entry"]'))return;
+  const b=document.createElement('button');b.type='button';b.className='navbtn';b.dataset.page='Marks Entry';b.innerHTML='✎ <span>Marks Entry</span>';
+  b.addEventListener('click',()=>{window.currentPage='Marks Entry';currentPage='Marks Entry';document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x===b));if(typeof setMenuOpen==='function')setMenuOpen(false);render();window.scrollTo(0,0)});
+  side.appendChild(b);
+ }
+ const priorShowApp=showApp;
+ showApp=function(){priorShowApp();meEnsureNav()};
+ const priorRender=render;
+ render=function(){if(currentPage!=='Marks Entry'){priorRender();meEnsureNav();return}document.getElementById('pageTitle').textContent='Marks Entry';document.getElementById('content').innerHTML=meHtml();meBind();meEnsureNav();meInit().catch(e=>meNotice('Could not initialize marks entry: '+(e.message||e)))};
+ document.addEventListener('click',e=>{if(e.target.closest('[data-page]')&&e.target.closest('[data-page]').dataset.page==='Marks Entry')return;});
+})();
+</script>
+
 </body>
 </html>
 <!-- ChatGPT GitHub write-access test: 2026-10-11 -->
