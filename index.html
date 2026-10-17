@@ -108,7 +108,7 @@ function saveDB(){localStorage.setItem(STORAGE_KEY,JSON.stringify(db))}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function money(n){return 'KES '+Number(n||0).toLocaleString('en-KE')}
 function setToday(){document.getElementById('today').textContent=new Date().toLocaleDateString('en-KE',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}
-document.getElementById('loginForm').addEventListener('submit',e=>{e.preventDefault();const u=document.getElementById('username').value.trim(),p=document.getElementById('password').value;if(u==='admin'&&p==='admin123'){sessionStorage.setItem('edumanage_login','1');showApp()}else document.getElementById('loginError').textContent='Incorrect username or password.'});
+// Login is handled only by the Supabase Auth handler below; no hard-coded demo credentials are accepted.
 function showApp(){document.getElementById('loginScreen').style.display='none';document.getElementById('app').style.display='block';setToday();render()}
 function logout(){sessionStorage.removeItem('edumanage_login');sessionStorage.removeItem('edumanage_auth_mode');sessionStorage.removeItem('edumanage_demo_user');if(window.supabase&&supabaseClient){supabaseClient.auth.signOut().catch(()=>{});}activeUser=null;document.getElementById('app').style.display='none';document.getElementById('loginScreen').style.display='grid'}
 document.getElementById('logoutBtn').addEventListener('click',logout);
@@ -1206,9 +1206,9 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   const cls=await client.from('school_classes').select('id,name,grade_level,stream,academic_year').eq('school_id',school).order('grade_level').order('name').limit(5000);
   if(cls.error){meNotice('Could not load school classes: '+cls.error.message);return}
   meClasses=cls.data||[];
-  const years=[...new Set(meClasses.map(c=>String(c.academic_year||'').trim()).filter(Boolean))];if(!years.includes('2026'))years.push('2026');years.sort((a,b)=>Number(b)-Number(a));
-  meSelect('meYear','Select academic year',years.map(y=>({value:y,label:y})));meEl('meYear').value='2026';
-  const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')==='2026').map(c=>meClassGrade(c)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const years=[...new Set(meClasses.map(c=>String(c.academic_year||'').trim()).filter(Boolean))];if(!years.length)years.push('2026');years.sort((a,b)=>Number(b)-Number(a));
+  meSelect('meYear','Select academic year',years.map(y=>({value:y,label:y})));meEl('meYear').value=years[0]||'2026';
+  const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')===meEl('meYear').value).map(c=>meClassGrade(c)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));
   if(role==='teacher'){
    const own=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.authUserId||user.id).maybeSingle();
