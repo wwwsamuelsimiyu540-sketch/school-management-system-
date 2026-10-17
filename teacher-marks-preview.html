@@ -166,7 +166,7 @@ $('saveAll').addEventListener('click',async()=>{
  message(failed?'Saved with '+failed+' failure(s); check the messages and retry.':'All '+list.length+' visible marks saved to the school database.');
  }finally{$('saveAll').disabled=false;renderRows()}
 });
-$('deploy').addEventListener('click',()=>{
+$('deploy').addEventListener('click',async()=>{
  if(!allSelected()){message('Select class/grade, academic year, stream, and subject first.');return}
  const list=visibleStudents(),unsaved=list.filter(s=>!savedIds.has(s.id));
  if(!list.length){message('No matching students to deploy.');return}
