@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Teacher Marks Entry | School Management System</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17243a;background:#f3f6fb}*{box-sizing:border-box}body{margin:0}.top{background:#142747;color:#fff;padding:18px 20px}.top strong{font-size:18px}.top p{margin:4px 0 0;color:#c8d6eb;font-size:13px}.wrap{max-width:980px;margin:22px auto;padding:0 14px}.notice{background:#fff8e6;border:1px solid #f0dba0;border-radius:12px;padding:12px 14px;font-size:13px;color:#76520c;margin-bottom:16px}.card{background:white;border:1px solid #e2e8f0;border-radius:15px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #12294a0a}.card h2{font-size:18px;margin:0 0 14px}.controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}label{display:block;font-size:12px;color:#63718a;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #d4dce8;border-radius:9px;font:inherit;background:#fff;color:#17243a}.summary{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}.pill{background:#edf5ff;color:#244b83;border-radius:9px;padding:9px 12px;font-size:13px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:560px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0f5;font-size:14px}th{font-size:12px;color:#63718a;background:#f8faff}td small{display:block;color:#7a8799;margin-top:3px}.mark{max-width:90px;padding:9px}.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer;font:inherit;font-size:13px}.save{background:#e8f1ff;color:#174a92}.primary{background:#1d5fd0;color:white}.secondary{background:#e9eef6;color:#263954}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{font-size:12px;color:#65748b}.rowstatus{font-size:12px;color:#13804a;margin-left:5px}.footer{font-size:12px;color:#7b8798;text-align:center;padding:12px 0 25px}@media(max-width:640px){.wrap{margin:14px auto}.controls{grid-template-columns:1fr}.card{padding:14px}.top{padding:16px}.actions .btn{width:100%}}
+</style>
+</head>
+<body>
+<header class="top"><strong>School Management System</strong><p>Teacher Panel · Marks Entry Preview</p></header>
+<main class="wrap">
+<div class="notice"><strong>Preview mode:</strong> This is a visual demo. Saves are simulated in this browser and are not sent to your school's database.</div>
+<section class="card"><h2>Find students and choose assessment</h2>
+<div class="controls">
+<div><label for="search">Search student name or admission number</label><input id="search" placeholder="e.g. Amina or ADM001"></div>
+<div><label for="class">Class</label><select id="class"><option>Form 2A</option><option>Form 2B</option><option>Form 1A</option><option>Form 3A</option><option>Form 4A</option></select></div>
+<div><label for="exam">Examination</label><select id="exam"><option>Mid-Term</option><option>Opener</option><option>End-Term</option><option>Mock</option><option>CAT</option></select></div>
+</div>
+<div class="summary"><span class="pill">Students: <b id="total">4</b></span><span class="pill">Saved: <b id="saved">0</b></span><span class="pill">Pending: <b id="pending">4</b></span></div>
+</section>
+<section class="card"><h2>Enter marks <span class="status">· Sample student records</span></h2>
+<div class="tablewrap"><table><thead><tr><th>Student</th><th>Admission No.</th><th>Marks / 100</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
+<div class="actions"><button class="btn primary" id="saveAll">Save All Marks</button><button class="btn secondary" id="deploy">Deploy Results</button><span id="message" class="status" aria-live="polite"></span></div>
+</section>
+<div class="footer">School Management System · Teacher marks-entry interface concept</div>
+</main>
+<script>
+const students=[{name:"Amina Wanjiku",adm:"ADM001",mark:75},{name:"Brian Otieno",adm:"ADM002",mark:68},{name:"Cynthia Chebet",adm:"ADM003",mark:82},{name:"Daniel Kiptoo",adm:"ADM004",mark:70}];
+const saved=new Set();const rows=document.getElementById('rows');
+function render(){const q=document.getElementById('search').value.trim().toLowerCase();rows.innerHTML='';students.forEach((s,i)=>{if(!(s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)))return;const tr=document.createElement('tr');tr.innerHTML='<td>'+s.name+'</td><td>'+s.adm+'</td><td><input class="mark" type="number" min="0" max="100" aria-label="Marks for '+s.name+'" value="'+s.mark+'"></td><td><button class="btn save">Save</button><span class="rowstatus">'+(saved.has(i)?'Saved':'')+'</span></td>';const input=tr.querySelector('input');input.addEventListener('input',()=>{s.mark=input.value;saved.delete(i);tr.querySelector('.rowstatus').textContent='Pending';counts()});tr.querySelector('button').addEventListener('click',()=>{if(input.value===''||Number(input.value)<0||Number(input.value)>100){document.getElementById('message').textContent='Enter a mark from 0 to 100.';return}saved.add(i);tr.querySelector('.rowstatus').textContent='Saved';counts();document.getElementById('message').textContent=s.name+' marks saved in preview.'});rows.appendChild(tr)});document.getElementById('total').textContent=students.length;counts()}
+function counts(){document.getElementById('saved').textContent=saved.size;document.getElementById('pending').textContent=students.length-saved.size}
+document.getElementById('search').addEventListener('input',render);
+document.getElementById('saveAll').addEventListener('click',()=>{for(let i=0;i<students.length;i++){if(students[i].mark!==''&&Number(students[i].mark)>=0&&Number(students[i].mark)<=100)saved.add(i)}render();document.getElementById('message').textContent='All valid marks saved in preview only.'});
+document.getElementById('deploy').addEventListener('click',()=>{if(saved.size!==students.length){document.getElementById('message').textContent='Save marks for every student before deploying.';return}document.getElementById('message').textContent='Demo only: results are ready for review; nothing was published to a real school.'});
+render();
+</script>
+</body></html>
