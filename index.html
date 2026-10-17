@@ -663,16 +663,24 @@ async function loadPersonalPage(page){
          d.class_ids=Array.from(teacherForm.querySelectorAll('[name="class_ids"]:checked')).map(o=>o.value).filter(Boolean);
          d.subjects=[...new Set(Array.from(teacherForm.querySelectorAll('[name="subject_option"]:checked')).map(o=>o.value.trim()).filter(Boolean))];
          const msg=document.getElementById('teacherAccountMsg'),submit=teacherForm.querySelector('button[type="submit"]');
-         if(d.subjects.length<2||!d.class_ids.length){msg.textContent='Choose at least two subjects and one class/stream. A teacher must be awarded at least two subjects.';return;}
-         msg.textContent='Creating teacher login and saving subject/class assignments…';if(submit)submit.disabled=true;
+         const showTeacherMsg=(text,kind='info')=>{if(!msg)return;msg.textContent=text;msg.style.display='block';msg.style.whiteSpace='pre-wrap';msg.style.padding='12px';msg.style.marginTop='12px';msg.style.borderRadius='8px';msg.style.fontWeight='600';msg.style.color=kind==='error'?'#991b1b':kind==='success'?'#166534':'#1e3a8a';msg.style.background=kind==='error'?'#fef2f2':kind==='success'?'#f0fdf4':'#eff6ff';msg.style.border='1px solid '+(kind==='error'?'#fecaca':kind==='success'?'#bbf7d0':'#bfdbfe');msg.scrollIntoView({behavior:'smooth',block:'nearest'});};
+         if(!supabaseClient){showTeacherMsg('Registration cannot start because Supabase is not ready. Reload the page and sign in again.','error');return;}
+         if(!liveSchoolId()){showTeacherMsg('This administrator account is not linked to a school. Ask the Developer to finish school setup.','error');return;}
+         if(!d.full_name?.trim()||!d.email?.trim()||!d.password){showTeacherMsg('Enter the teacher name, login email, and temporary password.','error');return;}
+         if(d.password.length<10){showTeacherMsg('The temporary password must contain at least 10 characters.','error');return;}
+         if(d.subjects.length<2||!d.class_ids.length){showTeacherMsg('Select at least two subjects and at least one class/stream before registering the teacher.','error');return;}
+         showTeacherMsg('Creating teacher login and saving the teacher record…');if(submit)submit.disabled=true;
          try{
-           const {data:created,error:createError}=await supabaseClient.functions.invoke('super-admin-create-user',{body:{full_name:d.full_name,email:d.email,password:d.password,role:'teacher',school_id:liveSchoolId(),staff_no:d.staff_no,subject:d.subjects[0],subjects:d.subjects,subject_category:d.subject_category,class_ids:d.class_ids,phone:d.phone}});
+           const {data:created,error:createError}=await supabaseClient.functions.invoke('super-admin-create-user',{body:{full_name:d.full_name.trim(),email:d.email.trim(),password:d.password,role:'teacher',school_id:liveSchoolId(),staff_no:d.staff_no,subject:d.subjects[0],subjects:d.subjects,subject_category:d.subject_category,class_ids:d.class_ids,phone:d.phone}});
            if(createError||created?.error)throw new Error(created?.error||createError?.message||'Teacher account creation failed');
-           msg.textContent='Teacher registered and assigned to '+d.subjects.length+' subject(s) across '+d.class_ids.length+' class(es). Login email: '+created.email+'. Share the temporary password securely.';
+           if(!created?.success||!created?.user_id)throw new Error('Supabase did not confirm teacher registration. Please try again.');
+           showTeacherMsg('Teacher registered successfully. Login email: '+created.email+'. Selected subjects: '+d.subjects.length+'. Selected classes/streams: '+d.class_ids.length+'. Share the temporary password securely.','success');
            teacherForm.reset();
-           await logActivity('teacher_account_registered',{user_id:created.user_id,school_id:liveSchoolId(),email:created.email,subjects:d.subjects,class_ids:d.class_ids});
+           if(subjectSummary)subjectSummary.textContent='Choose one or more subjects';
+           if(classSummary)classSummary.textContent='Choose one or more classes/streams';
+           try{await logActivity('teacher_account_registered',{user_id:created.user_id,school_id:liveSchoolId(),email:created.email,subjects:d.subjects,class_ids:d.class_ids});}catch(logErr){console.warn('Teacher activity log failed:',logErr);}
            await loadLiveModule('Teachers');
-         }catch(err){msg.textContent='Teacher registration failed: '+(err.message||err);}
+         }catch(err){showTeacherMsg('Teacher registration failed: '+(err.message||err)+'\\nCheck that the school is approved, the email is not already in use, and at least two subjects and one class are selected.','error');}
          finally{if(submit)submit.disabled=false;}
        };
      }
