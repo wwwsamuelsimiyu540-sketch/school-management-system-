@@ -944,7 +944,32 @@ if(!route){
  else if(r==='principal')route=pick([[['school','calendar','branding'],'School Settings'],[['student','admission'],'Students'],[['teacher','staff'],'Teachers'],[['parent','guardian'],'Parents'],[['class','stream','timetable'],'Classes'],[['attendance','absence'],'Attendance'],[['fee','finance','payment','receipt'],'Fees'],[['mark','score'],'Marks Entry'],[['exam','assessment','result','grade'],'Examinations'],[['report','performance','analytics'],'Reports'],[['communication','message','email','whatsapp'],'Communication Centre'],[['user','role','account'],'Users & Roles'],[['approval','registration'],'School Approvals']]);
  else if(r==='bursar')route=pick([[['fee','finance','payment','receipt','balance','arrears'],'Fees'],[['report','income','expense','cashbook'],'Reports'],[['student','statement'],'Student Reports']]);
  else if(r==='student'||r==='parent')route=pick([[['assignment','homework'],'Assignments'],[['resource','learning material'],'Learning Resources'],[['attendance','absence'],'My Attendance'],[['fee','payment','balance'],'My Fees'],[['result','mark','score','exam','grade','report'],'My Results'],[['profile','account','password'],'Account Settings'],[['announcement','communication','message'],'Feature Directory']]);
-}if(['super_admin','developer'].includes(activeUser.role)&&route==='School Settings'){window.superAdminSelectedFeature=name;route='Admin Tools';}if(['Register New School','Register a New School','Approve School Registration','Reject School Registration','Pending School Registrations','Rejected Registrations'].includes(name))route='School Approvals';if(['School Suspension','Suspend School','Suspend / Deactivate School','Reactivate School','Reactivate School After Payment','Manage School Access','School Subscription Status'].includes(name))route='School Suspension';if(!route&&['super_admin','developer'].includes(activeUser.role)){window.superAdminSelectedFeature=name;route='Admin Tools';}if(route){if(route==='Admin Tools')window.superAdminSelectedFeature=name;go(route);if(['Register Student Form','Register Teacher Form','Create Class Form','Create Examination Form','Fee Payment Entry Form','Enter Marks Form','Mark Student Attendance'].includes(name)){setTimeout(()=>{let attempts=0;const openForm=()=>{const formButton=document.getElementById('liveToggleForm');if(formButton){formButton.click();return;}if(attempts++<20)setTimeout(openForm,100);};openForm();},50);}return;}content.innerHTML='<div class="portal-hero"><h2>'+escFeature(name)+'</h2></div><div class="panel"><p class="feature-note">This control is not wired to a live database action for this role yet.</p><button id="featureBack">← Back to Feature Directory</button></div>';document.getElementById('featureBack').onclick=()=>go('Feature Directory');}));
+}if(['super_admin','developer'].includes(activeUser.role)&&route==='School Settings'){window.superAdminSelectedFeature=name;route='Admin Tools';}if(['Register New School','Register a New School','Approve School Registration','Reject School Registration','Pending School Registrations','Rejected Registrations'].includes(name))route='School Approvals';if(['School Suspension','Suspend School','Suspend / Deactivate School','Reactivate School','Reactivate School After Payment','Manage School Access','School Subscription Status'].includes(name))route='School Suspension';if(!route&&['super_admin','developer'].includes(activeUser.role)){window.superAdminSelectedFeature=name;route='Admin Tools';}if(route){if(route==='Admin Tools')window.superAdminSelectedFeature=name;go(route);if(['Register Student Form','Register Teacher Form','Create Class Form','Create Examination Form','Fee Payment Entry Form','Enter Marks Form','Mark Student Attendance'].includes(name)){setTimeout(()=>{let attempts=0;const openForm=()=>{const formButton=document.getElementById('liveToggleForm');if(formButton){formButton.click();return;}if(attempts++<20)setTimeout(openForm,100);};openForm();},50);}return;}{
+ const lower=String(name||'').toLowerCase();
+ const targets=[];
+ const addTarget=(test,page,label)=>{if(test.test(lower)&&!targets.some(x=>x.page===page))targets.push({page,label});};
+ addTarget(/student|admission|enrol|guardian|parent/,'Students','Student records');
+ addTarget(/teacher|staff|employee/,'Teachers','Teacher records');
+ addTarget(/class|stream|grade|timetable|subject/,'Classes','Classes and streams');
+ addTarget(/attendance|absence|present|late/,'Attendance','Attendance');
+ addTarget(/fee|payment|receipt|finance|bursar|balance|arrear|cashbook/,'Fees','Fees and payments');
+ addTarget(/mark|score|exam|assessment|result|grade|ranking/,'Marks Entry','Marks entry');
+ addTarget(/report|analysis|analytics|performance|chart|export/,'Reports','Reports and analysis');
+ addTarget(/school|tenant|approval|registration|suspend|subscription/,'Schools','School management');
+ addTarget(/user|role|account|password|permission/,'Users & Roles','Users and roles');
+ addTarget(/message|email|whatsapp|communication|announcement/,'Communication Centre','Communication centre');
+ if(!targets.length){
+   if(['teacher'].includes(activeUser.role))targets.push({page:'Teacher Panel',label:'Teacher workspace'});
+   else if(['student','parent'].includes(activeUser.role))targets.push({page:'Dashboard',label:'My dashboard'});
+   else if(['bursar'].includes(activeUser.role))targets.push({page:'Fees',label:'Fees and payments'});
+   else if(['principal'].includes(activeUser.role))targets.push({page:'Dashboard',label:'School dashboard'});
+   else targets.push({page:'System Reports',label:'System reports'});
+ }
+ const safeButtons=targets.map(t=>'<button type="button" class="secondary" data-service-route="'+escFeature(t.page)+'">'+escFeature(t.label)+'</button>').join(' ');
+ content.innerHTML='<div class="portal-hero"><h2>'+escFeature(name)+'</h2><p>This service shortcut opens the closest available live workspace for your account. Records entered in supported workspaces are saved through Supabase.</p></div><div class="panel"><h3>Open a working workspace</h3><div class="quick">'+safeButtons+'</div><p class="feature-note" style="margin-top:14px">Some specialist services still need their own dedicated form or database workflow. This page will not pretend that an unsupported action has completed.</p><button type="button" id="featureBack">← Back to Feature Directory</button></div>';
+ content.querySelectorAll('[data-service-route]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.serviceRoute)));
+ document.getElementById('featureBack').onclick=()=>go('Feature Directory');
+}}));
  }
 })();
 </script>
