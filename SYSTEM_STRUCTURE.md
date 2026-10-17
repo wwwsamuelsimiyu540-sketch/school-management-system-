@@ -34,4 +34,4 @@
 - Approval creates a school and assigns the requesting principal to that school. Rejection does not grant school access.
 - Super Admin can set an approved school's status to `suspended` and later restore it to `approved`.
 - School administrators register teachers and students within their own workspace. The marks screen supports searching by student name, class, or admission number before entering marks.
-- The Academic Suite's student/teacher/marks records are currently a browser-local prototype; connect these write paths to Supabase and enforce RLS before production use.
+- Marks Entry is integrated with Supabase and supports separate academic year, grade, stream, subject, term and exam filters, admission-number sorting, student search, individual Save/Edit, Save All and publishing. `exam_marks.total_percentage` is a generated database column; the browser writes CAT/exam values and reads the calculated total. Student/teacher CRUD still needs complete end-to-end role testing before production use.
