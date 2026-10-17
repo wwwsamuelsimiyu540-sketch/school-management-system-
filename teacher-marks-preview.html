@@ -3,79 +3,172 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Teacher Marks Entry | School Management System</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17243a;background:#f3f6fb;--navy:#142747;--blue:#1d5fd0;--line:#e2e8f0;--muted:#63718a}*{box-sizing:border-box}body{margin:0}.top{background:linear-gradient(120deg,#142747,#2456a6);color:#fff;padding:18px 20px}.top strong{font-size:19px}.top p{margin:4px 0 0;color:#c8d6eb;font-size:13px}.wrap{max-width:1100px;margin:22px auto;padding:0 14px}.notice{background:#fff8e6;border:1px solid #f0dba0;border-radius:12px;padding:12px 14px;font-size:13px;color:#76520c;margin-bottom:16px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #12294a0a}.card h2{font-size:18px;margin:0 0 15px}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}label{display:block;font-size:12px;color:var(--muted);font-weight:650;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #d4dce8;border-radius:9px;font:inherit;background:#fff;color:#17243a}input:focus,select:focus{outline:2px solid #b9d0ff;border-color:#5282e9}.searchline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}.summary{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}.pill{background:#edf5ff;color:#244b83;border-radius:9px;padding:9px 12px;font-size:13px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:580px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0f5;font-size:14px}th{font-size:12px;color:var(--muted);background:#f8faff}td small{display:block;color:#7a8799;margin-top:3px}.mark{max-width:100px;padding:9px}.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer;font:inherit;font-size:13px}.save{background:#e8f1ff;color:#174a92}.primary{background:var(--blue);color:white}.secondary{background:#e9eef6;color:#263954}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{font-size:12px;color:#65748b}.rowstatus{font-size:12px;color:#13804a;margin-left:5px}.footer{font-size:12px;color:#7b8798;text-align:center;padding:12px 0 25px}.empty{text-align:center;color:#65748b;padding:28px}.section-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.section-top .status{margin-left:auto}@media(max-width:650px){.wrap{margin:14px auto}.controls{grid-template-columns:1fr}.card{padding:14px}.top{padding:16px}.actions .btn{width:100%}.searchline{grid-template-columns:1fr}.section-top .status{margin-left:0}}
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17243a;background:#f3f6fb;--navy:#142747;--blue:#1d5fd0;--line:#e2e8f0;--muted:#63718a}*{box-sizing:border-box}body{margin:0}.top{background:linear-gradient(120deg,#142747,#2456a6);color:#fff;padding:18px 20px}.top strong{font-size:19px}.top p{margin:4px 0 0;color:#c8d6eb;font-size:13px}.wrap{max-width:1150px;margin:22px auto;padding:0 14px}.notice{background:#edf5ff;border:1px solid #c9dcff;border-radius:12px;padding:12px 14px;font-size:13px;color:#244b83;margin-bottom:16px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #12294a0a}.card h2{font-size:18px;margin:0 0 15px}.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px}label{display:block;font-size:12px;color:var(--muted);font-weight:650;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #d4dce8;border-radius:9px;font:inherit;background:#fff;color:#17243a}input:focus,select:focus{outline:2px solid #b9d0ff;border-color:#5282e9}.searchline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}.summary{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}.pill{background:#edf5ff;color:#244b83;border-radius:9px;padding:9px 12px;font-size:13px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:680px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0f5;font-size:14px}th{font-size:12px;color:var(--muted);background:#f8faff}.mark{max-width:110px;padding:9px}.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer;font:inherit;font-size:13px}.save{background:#e8f1ff;color:#174a92}.primary{background:var(--blue);color:white}.secondary{background:#e9eef6;color:#263954}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{font-size:12px;color:#65748b}.rowstatus{font-size:12px;color:#13804a;margin-left:5px}.footer{font-size:12px;color:#7b8798;text-align:center;padding:12px 0 25px}.empty{text-align:center;color:#65748b;padding:28px}.section-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.section-top .status{margin-left:auto}.btn:disabled{opacity:.55;cursor:not-allowed}.hidden{display:none!important}@media(max-width:800px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.wrap{margin:14px auto}.controls{grid-template-columns:1fr}.card{padding:14px}.top{padding:16px}.actions .btn{width:100%}.searchline{grid-template-columns:1fr}.section-top .status{margin-left:0}}
 </style>
 </head>
 <body>
 <header class="top"><strong>School Management System</strong><p>Teacher Panel · Marks Entry</p></header>
 <main class="wrap">
-<div class="notice"><strong>Design preview:</strong> This page demonstrates the marks-entry workflow. Save actions are simulated in this browser; no marks are sent to a school database.</div>
+<div class="notice" id="notice" role="status">Checking your signed-in school account…</div>
 <section class="card">
-<h2>1. Select assessment details</h2>
+<h2>1. Select class and assessment details</h2>
 <div class="controls">
-<div><label for="date">Date of assessment</label><input id="date" type="date" required></div>
-<div><label for="subject">Subject</label><select id="subject"><option value="">Select subject</option><option>Mathematics</option><option>English</option><option>Kiswahili</option><option>Biology</option><option>Chemistry</option><option>Physics</option><option>History</option><option>Geography</option><option>Computer Studies</option><option>Business Studies</option></select></div>
-<div><label for="stream">Stream</label><select id="stream"><option value="">Select stream</option><option>East</option><option>West</option><option>North</option><option>South</option><option>Blue</option><option>Green</option></select></div>
+<div><label for="grade">Class / Grade</label><select id="grade" disabled><option value="">Not selected</option></select></div>
+<div><label for="year">Academic year</label><select id="year"><option>2026</option></select></div>
+<div><label for="stream">Stream</label><select id="stream" disabled><option value="">Not selected</option></select></div>
+<div><label for="subject">Subject (configured by school)</label><select id="subject" disabled><option value="">Not selected</option></select></div>
 </div>
 <div class="summary"><span class="pill">Students shown: <b id="total">0</b></span><span class="pill">Saved: <b id="saved">0</b></span><span class="pill">Pending: <b id="pending">0</b></span></div>
 </section>
 <section class="card">
-<div class="section-top"><h2>2. Find a student and enter marks</h2><span class="status">Students are sorted by admission number</span></div>
-<div class="searchline" style="margin-bottom:14px"><div><label for="search">Search by student name or admission number</label><input id="search" placeholder="Type a name or admission number, e.g. ADM002" autocomplete="off"></div><button class="btn secondary" id="clearSearch" type="button">Clear search</button></div>
-<div class="tablewrap"><table><thead><tr><th>No.</th><th>Student name</th><th>Admission number</th><th>Marks earned</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
-<div class="actions"><button class="btn primary" id="saveAll">Save All Marks</button><button class="btn secondary" id="deploy">Deploy Results</button><span id="message" class="status" aria-live="polite"></span></div>
+<div class="section-top"><h2>2. Find a student and enter marks</h2><span class="status">Sorted by admission number</span></div>
+<div class="searchline" style="margin-bottom:14px"><div><label for="search">Search by student name or admission number</label><input id="search" placeholder="Type a name or admission number" autocomplete="off"></div><button class="btn secondary" id="clearSearch" type="button">Clear search</button></div>
+<div class="tablewrap"><table><thead><tr><th>No.</th><th>Student name</th><th>Admission number</th><th>Marks (0–100)</th><th>Action</th></tr></thead><tbody id="rows"><tr><td colspan="5" class="empty">Select a class/grade, academic year, stream, and configured subject to load students.</td></tr></tbody></table></div>
+<div class="actions"><button class="btn primary" id="saveAll" type="button">Save All Marks</button><button class="btn secondary" id="deploy" type="button">Deploy Results</button><span id="message" class="status" aria-live="polite"></span></div>
 </section>
-<div class="footer">School Management System · Teacher marks-entry interface concept</div>
+<div class="footer">My School System Manager · Marks are saved to the connected school database when access policies allow.</div>
 </main>
 <script>
-const students=[
-{name:"Amina Wanjiku",adm:"ADM001",mark:75,stream:"East"},
-{name:"Brian Otieno",adm:"ADM002",mark:68,stream:"East"},
-{name:"Cynthia Chebet",adm:"ADM003",mark:82,stream:"West"},
-{name:"Daniel Kiptoo",adm:"ADM004",mark:70,stream:"West"},
-{name:"Esther Naliaka",adm:"ADM005",mark:"",stream:"North"},
-{name:"Felix Mwangi",adm:"ADM006",mark:"",stream:"South"}
-].sort((a,b)=>a.adm.localeCompare(b.adm,undefined,{numeric:true}));
-const saved=new Set();const rows=document.getElementById('rows');
-document.getElementById('date').value=new Date().toISOString().slice(0,10);
-function selectedDetails(){return document.getElementById('date').value&&document.getElementById('subject').value&&document.getElementById('stream').value}
-function render(){
- const q=document.getElementById('search').value.trim().toLowerCase(),stream=document.getElementById('stream').value;
- rows.innerHTML='';
- const filtered=students.map((s,i)=>({...s,index:i})).filter(s=>(!stream||s.stream===stream)&&(!q||s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)));
- if(!selectedDetails()){rows.innerHTML='<tr><td colspan="5" class="empty">Select an assessment date, subject, and stream above to list students.</td></tr>'}
- else if(!filtered.length){rows.innerHTML='<tr><td colspan="5" class="empty">No student matches this search in the selected stream.</td></tr>'}
- else filtered.forEach((s,n)=>{
-  const tr=document.createElement('tr');
-  tr.innerHTML='<td>'+(n+1)+'</td><td>'+s.name+'</td><td>'+s.adm+'</td><td><input class="mark" type="number" min="0" max="100" step="0.5" aria-label="Marks for '+s.name+'" value="'+s.mark+'" placeholder="0–100"></td><td><button class="btn save" type="button">Save</button><span class="rowstatus">'+(saved.has(s.index)?'Saved':'')+'</span></td>';
-  const input=tr.querySelector('input');
-  input.addEventListener('input',()=>{s.mark=input.value;students[s.index].mark=input.value;saved.delete(s.index);tr.querySelector('.rowstatus').textContent='Pending';counts()});
-  tr.querySelector('button').addEventListener('click',()=>{if(!validMark(input.value)){document.getElementById('message').textContent='Enter a mark from 0 to 100 for '+s.name+'.';return}saved.add(s.index);tr.querySelector('.rowstatus').textContent='Saved';counts();document.getElementById('message').textContent=s.name+' marks saved in preview only.'});
-  rows.appendChild(tr);
+const SUPABASE_URL='https://emdmnimxeoifgobzuglx.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY='sb_publishable_ewvNnOPh_pGROM_f_rp1Sg_bWGi5OAV';
+const client=window.supabase?.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:false}});
+const $=id=>document.getElementById(id);
+let user=null, profile=null, students=[], loadedMarks=new Map(), savedIds=new Set(), rowValues=new Map(), busy=false;
+const escapeHtml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function message(s){$('message').textContent=s}
+function notice(s){$('notice').textContent=s}
+function setSelect(id,placeholder,values){const el=$(id);el.innerHTML='<option value="">'+escapeHtml(placeholder)+'</option>'+values.map(v=>'<option value="'+escapeHtml(v.value)+'">'+escapeHtml(v.label)+'</option>').join('');}
+function lockFilters(){['grade','stream','subject'].forEach(id=>$(id).disabled=true)}
+function counts(){const visible=visibleStudents();$('total').textContent=visible.length;$('saved').textContent=visible.filter(s=>savedIds.has(s.id)).length;$('pending').textContent=visible.filter(s=>!savedIds.has(s.id)).length}
+function visibleStudents(){const q=$('search').value.trim().toLowerCase();return students.filter(s=>!q||String(s.full_name||'').toLowerCase().includes(q)||String(s.admission_no||'').toLowerCase().includes(q))}
+function allSelected(){return Boolean(user&&profile?.school_id&&$('grade').value&&$('year').value&&$('stream').value&&$('subject').value)}
+async function boot(){
+ if(!client){notice('Supabase could not load. Check your internet connection, then reload.');return}
+ const {data:{session},error}=await client.auth.getSession();
+ if(error||!session){notice('Please sign in to the School Management System first, then open Teacher Marks Entry again.');return}
+ user=session.user;
+ const p=await client.from('profiles').select('id,role,school_id,full_name,username').eq('id',user.id).maybeSingle();
+ if(p.error||!p.data){notice('Your signed-in account profile could not be loaded. Ask the school administrator to check your account.');return}
+ profile=p.data;
+ if(!profile.school_id){notice('This account is not linked to a school. Developer/platform accounts cannot enter school marks.');return}
+ if(!['teacher','principal','admin','school_admin'].includes(String(profile.role||'').toLowerCase())){notice('Marks entry is available to school teachers and authorised school administrators.');return}
+ notice('Connected to your school. Choose class/grade, academic year, stream, and one configured subject.');
+ await loadYearsAndGrades();
+}
+async function loadYearsAndGrades(){
+ const {data,error}=await client.from('school_classes').select('id,name,grade_level,stream,academic_year').eq('school_id',profile.school_id).order('grade_level').order('name').limit(5000);
+ if(error){notice('Could not load this school’s class setup: '+error.message);return}
+ const classes=data||[];window.classRecords=classes;
+ const years=[...new Set(classes.map(c=>String(c.academic_year||'').trim()).filter(Boolean))];
+ if(!years.includes('2026'))years.push('2026');
+ years.sort((a,b)=>Number(b)-Number(a));
+ setSelect('year','2026',years.map(y=>({value:y,label:y})));
+ $('year').value='2026';
+ const grades=[...new Set(classes.filter(c=>String(c.academic_year||'2026')===$('year').value).map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+ setSelect('grade','Not selected',grades.map(g=>({value:g,label:g})));
+ $('grade').disabled=false;
+ await loadSubjects();
+}
+async function loadSubjects(){
+ setSelect('subject','Not selected',[]);$('subject').disabled=true;
+ const names=new Set();
+ // Subject names are discovered from the school's existing teacher subject assignments and saved exam records; no permanent subject names are hard-coded.
+ const [teacherResult,markResult]=await Promise.all([
+  client.from('teachers').select('subject').eq('school_id',profile.school_id).limit(1000),
+  client.from('exam_marks').select('subject').eq('school_id',profile.school_id).limit(5000)
+ ]);
+ if(!teacherResult.error)(teacherResult.data||[]).forEach(r=>String(r.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(x=>names.add(x)));
+ if(!markResult.error)(markResult.data||[]).forEach(r=>{const x=String(r.subject||'').trim();if(x)names.add(x)});
+ const options=[...names].sort((a,b)=>a.localeCompare(b));
+ if(!options.length){notice('No configured subject names were found for this school. Add the school’s subject assignments in School Settings/Teacher assignments first; this page will not invent subject names.');return}
+ setSelect('subject','Not selected',options.map(x=>({value:x,label:x})));$('subject').disabled=false;
+ if(options.length!==2)notice('Loaded '+options.length+' subject name(s) from this school’s existing assignments/marks. If this school should have exactly two, confirm its subject configuration in School Settings.');
+}
+function updateStreams(){
+ const cls=window.classRecords||[],year=$('year').value,grade=$('grade').value;
+ const matches=cls.filter(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade);
+ const streams=[...new Set(matches.map(c=>String(c.stream||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+ setSelect('stream','Not selected',streams.map(x=>({value:x,label:x})));$('stream').disabled=!grade;
+ setSelect('subject','Not selected',[...new Set([ ...$('subject').options].map(o=>o.value).filter(Boolean))].map(x=>({value:x,label:x})));
+ $('subject').disabled=!grade;
+ students=[];savedIds.clear();rowValues.clear();renderRows();
+}
+async function loadStudents(){
+ students=[];loadedMarks.clear();savedIds.clear();rowValues.clear();renderRows();
+ if(!allSelected()){notice('Select all four filters to load the matching students.');return}
+ const grade=$('grade').value,year=$('year').value,stream=$('stream').value,subject=$('subject').value;
+ const matchingClasses=(window.classRecords||[]).filter(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade&&String(c.stream||'').trim()===stream);
+ if(!matchingClasses.length){notice('No class record matches the selected grade, year, and stream. Check the school’s Classes setup.');return}
+ notice('Loading students and existing marks…');
+ let query=client.from('students').select('id,school_id,admission_no,full_name,grade_level,stream').eq('school_id',profile.school_id).eq('grade_level',grade).eq('stream',stream);
+ const {data,error}=await query.order('admission_no',{ascending:true}).limit(5000);
+ if(error){notice('Could not load students: '+error.message);return}
+ students=(data||[]).sort((a,b)=>String(a.admission_no||'').localeCompare(String(b.admission_no||''),undefined,{numeric:true}));
+ if(!students.length){notice('No students match '+grade+', academic year '+year+', stream '+stream+'. Add students or check their grade/stream values.');renderRows();return}
+ const {data:marks,error:marksError}=await client.from('exam_marks').select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('school_id',profile.school_id).eq('subject',subject).in('student_id',students.map(s=>s.id)).limit(10000);
+ if(marksError){notice('Students loaded, but existing marks could not be read: '+marksError.message);renderRows();return}
+ (marks||[]).forEach(m=>{if(!loadedMarks.has(m.student_id))loadedMarks.set(m.student_id,m);});
+ students.forEach(s=>{const m=loadedMarks.get(s.id);rowValues.set(s.id,m?.total_percentage??m?.exam_marks??'');if(m)savedIds.add(s.id)});
+ notice('Loaded '+students.length+' matching student(s). Results are sorted by admission number.');renderRows();
+}
+function renderRows(){
+ const list=visibleStudents(),body=$('rows');
+ if(!allSelected()){body.innerHTML='<tr><td colspan="5" class="empty">Select class/grade, academic year, stream, and one configured subject to list students.</td></tr>';counts();return}
+ if(!list.length){body.innerHTML='<tr><td colspan="5" class="empty">'+(students.length?'No student matches that name or admission number.':'No matching students loaded yet.')+'</td></tr>';counts();return}
+ body.innerHTML='';
+ list.forEach((s,i)=>{
+  const tr=document.createElement('tr'),val=rowValues.get(s.id)??'';
+  tr.innerHTML='<td>'+ (i+1)+'</td><td>'+escapeHtml(s.full_name||'Unnamed student')+'</td><td>'+escapeHtml(s.admission_no||'—')+'</td><td><input class="mark" type="number" min="0" max="100" step="0.01" value="'+escapeHtml(val)+'" placeholder="0–100" aria-label="Marks for '+escapeHtml(s.full_name)+'"></td><td><button class="btn save" type="button">Save</button><span class="rowstatus">'+(savedIds.has(s.id)?'Saved':'Pending')+'</span></td>';
+  const input=tr.querySelector('input'),status=tr.querySelector('.rowstatus'),button=tr.querySelector('button');
+  input.addEventListener('input',()=>{rowValues.set(s.id,input.value);savedIds.delete(s.id);status.textContent='Pending';counts()});
+  button.addEventListener('click',async()=>{await saveOne(s,input.value,button,status)});
+  body.appendChild(tr);
  });
- document.getElementById('total').textContent=filtered.length;counts();
+ counts();
 }
 function validMark(v){return v!==''&&Number.isFinite(Number(v))&&Number(v)>=0&&Number(v)<=100}
-function counts(){const n=students.length;document.getElementById('saved').textContent=saved.size;document.getElementById('pending').textContent=n-saved.size}
-document.getElementById('search').addEventListener('input',render);
-['date','subject','stream'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{document.getElementById('message').textContent='';render()}));
-document.getElementById('clearSearch').addEventListener('click',()=>{document.getElementById('search').value='';render()});
-document.getElementById('saveAll').addEventListener('click',()=>{
- if(!selectedDetails()){document.getElementById('message').textContent='Select the date, subject, and stream first.';return}
- const q=document.getElementById('search').value.trim().toLowerCase(),stream=document.getElementById('stream').value;
- const filtered=students.map((s,i)=>({...s,index:i})).filter(s=>(!stream||s.stream===stream)&&(!q||s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)));
- const invalid=filtered.filter(s=>!validMark(s.mark));
- if(invalid.length){document.getElementById('message').textContent='Enter valid marks (0–100) for all listed students before saving all.';return}
- filtered.forEach(s=>saved.add(s.index));render();document.getElementById('message').textContent='All listed marks saved in preview only.';
+function gradeFor(mark){return mark>=80?'A':mark>=70?'B':mark>=60?'C':mark>=50?'D':'E'}
+async function saveOne(student,value,button,status){
+ if(!allSelected()){message('Select all filters first.');return false}
+ if(!validMark(value)){message('Enter a valid mark from 0 to 100 for '+(student.full_name||'this student')+'.');return false}
+ const oldText=button.textContent;button.disabled=true;button.textContent='Saving…';
+ try{
+  const mark=Number(value),subject=$('subject').value;
+  const payload={school_id:profile.school_id,student_id:student.id,subject,term:'Academic Year '+$('year').value,cat_marks:0,exam_marks:mark,total_percentage:mark,grade_letter:gradeFor(mark),remarks:''};
+  const existing=loadedMarks.get(student.id);
+  let result;
+  if(existing?.id)result=await client.from('exam_marks').update(payload).eq('id',existing.id).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').single();
+  else result=await client.from('exam_marks').insert(payload).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').single();
+  if(result.error)throw result.error;
+  loadedMarks.set(student.id,result.data);rowValues.set(student.id,result.data.total_percentage??mark);savedIds.add(student.id);status.textContent='Saved';message('Saved marks for '+student.full_name+'.');counts();return true;
+ }catch(e){message('Save failed for '+(student.full_name||'student')+': '+(e.message||'database error'));return false}
+ finally{button.disabled=false;button.textContent=oldText}
+}
+$('grade').addEventListener('change',()=>{updateStreams();message('');});
+$('year').addEventListener('change',async()=>{const cls=window.classRecords||[],year=$('year').value;const grades=[...new Set(cls.filter(c=>String(c.academic_year||'2026')===year).map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));setSelect('grade','Not selected',grades.map(g=>({value:g,label:g})));$('grade').disabled=false;updateStreams();await loadSubjects();message('');});
+$('stream').addEventListener('change',()=>{message('');loadStudents()});
+$('subject').addEventListener('change',()=>{message('');loadStudents()});
+$('search').addEventListener('input',renderRows);
+$('clearSearch').addEventListener('click',()=>{$('search').value='';renderRows()});
+$('saveAll').addEventListener('click',async()=>{
+ if(!allSelected()){message('Select class/grade, academic year, stream, and subject first.');return}
+ const list=visibleStudents();if(!list.length){message('There are no visible students to save.');return}
+ const invalid=list.filter(s=>!validMark(rowValues.get(s.id)??''));
+ if(invalid.length){message('Enter valid marks (0–100) for all listed students before Save All.');return}
+ $('saveAll').disabled=true;
+ try{let failed=0;for(const s of list){const tr=[...$('rows').querySelectorAll('tr')].find(r=>r.children[2]?.textContent===String(s.admission_no||'—'));const input=tr?.querySelector('input'),button=tr?.querySelector('button'),status=tr?.querySelector('.rowstatus');if(!await saveOne(s,rowValues.get(s.id),button||$('saveAll'),status||{set textContent(v){} }))failed++}
+ message(failed?'Saved with '+failed+' failure(s); check the messages and retry.':'All '+list.length+' visible marks saved to the school database.');
+ }finally{$('saveAll').disabled=false;renderRows()}
 });
-document.getElementById('deploy').addEventListener('click',()=>{
- if(!selectedDetails()){document.getElementById('message').textContent='Select the date, subject, and stream first.';return}
- const stream=document.getElementById('stream').value,q=document.getElementById('search').value.trim().toLowerCase();
- const filtered=students.map((s,i)=>({...s,index:i})).filter(s=>(!stream||s.stream===stream)&&(!q||s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)));
- if(filtered.some(s=>!saved.has(s.index))){document.getElementById('message').textContent='Save every listed student’s marks before deploying.';return}
- document.getElementById('message').textContent='Preview only: results are ready for review; nothing was published to a real school.';
+$('deploy').addEventListener('click',()=>{
+ if(!allSelected()){message('Select class/grade, academic year, stream, and subject first.');return}
+ const list=visibleStudents(),unsaved=list.filter(s=>!savedIds.has(s.id));
+ if(!list.length){message('No matching students to deploy.');return}
+ if(unsaved.length){message('Save marks for every visible student before deploying.');return}
+ message('All visible marks are saved in the database. The current database schema has no separate publish/deploy status, so results have not been published to student/parent reports.');
 });
-render();
+boot().catch(e=>notice('Could not initialize marks entry: '+(e.message||e)));
 </script>
 </body></html>
