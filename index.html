@@ -60,7 +60,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 <main class="main">
   <header class="topbar"><div class="topbar-start"><button type="button" class="menu-toggle" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false">☰ <span style="font-size:13px">Menu</span></button><div><h1 id="pageTitle">Dashboard</h1><p id="today"></p></div></div><div class="userpill" id="userPill">● Signed out</div></header>
   <div id="content"></div>
-  <div class="footer">My School System Manager · Marks Entry integrated · Build 2026-10-17</div>
+  <div class="footer">My School System Manager · Supabase assessment publishing · Build 2026-10-17 · Update 2</div>
 </main>
 </div>
 <script>
@@ -1183,7 +1183,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   meSelect('meSubject','Not selected',meSubjects.map(s=>({value:s,label:s})));
   meEl('meGrade').disabled=false;meEl('meYear').disabled=false;meEl('meSubject').disabled=!meSubjects.length;
   if(!meSubjects.length)meNotice('No subject names were found in this school\'s teacher assignments or saved exam records. Configure the school\'s subjects first; no subject names have been invented.');
-  else meNotice('Connected to the school database. Select the four filters to load the matching students. '+(meSubjects.length===2?'Two configured subject options were found.':'Found '+meSubjects.length+' subject name(s); check School Settings if exactly two are expected.'));
+  else meNotice('Connected to the school database. Select the all filters to load the matching students. '+(meSubjects.length===2?'Two configured subject options were found.':'Found '+meSubjects.length+' subject name(s); check School Settings if exactly two are expected.'));
  }
  function meUpdateStreams(){
   const grade=meEl('meGrade').value,year=meEl('meYear').value;
