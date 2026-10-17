@@ -1160,7 +1160,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')==='2026').map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));
   if(role==='teacher'){
-   const own=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.id).maybeSingle();
+   const own=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.authUserId||user.id).maybeSingle();
    if(own.error){meNotice('Could not load your awarded subjects: '+own.error.message);return}
    meSubjects=[...new Set(String(own.data?.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
    if(meSubjects.length<2)meNotice('Your teacher account currently has fewer than two recorded subjects. Please ask your school administrator to assign at least two subjects.');
@@ -1310,10 +1310,10 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   if(!user||String(user.role||'').toLowerCase()!=='teacher'){target.textContent='Assigned subjects are shown when the specific teacher account is signed in.';return}
   const client=window.supabaseClient||supabaseClient||null;
   const school=(typeof liveSchoolId==='function'?liveSchoolId():null)||user.school_id;
-  if(!client||!school||!user.id){target.textContent='Could not identify this teacher account. Please sign out and sign in again.';return}
+  if(!client||!school||!(user.authUserId||user.id)){target.textContent='Could not identify this teacher account. Please sign out and sign in again.';return}
   target.textContent='Loading subjects assigned by your school administrator…';
   try{
-   const result=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.id).maybeSingle();
+   const result=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.authUserId||user.id).maybeSingle();
    if(result.error)throw result.error;
    const subjects=[...new Set(String(result.data?.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
    if(!subjects.length){target.textContent='No subjects are assigned to this account yet. Please contact your school administrator.';return}
