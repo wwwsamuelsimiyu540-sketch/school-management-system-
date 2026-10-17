@@ -1249,6 +1249,82 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
 })();
 </script>
 
+
+<!-- Teacher Panel redesign: service dashboard -->
+<style>
+.teacher-hero{background:linear-gradient(130deg,#14213d,#1d4ed8);color:#fff;padding:22px;border-radius:16px;margin-bottom:16px}
+.teacher-hero h2{font-size:23px;margin:0 0 7px}.teacher-hero p{color:#dbeafe;line-height:1.55;margin:0}
+.teacher-shortcuts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0 18px}
+.teacher-shortcut{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px;text-align:left;color:#172033;min-height:112px;box-shadow:0 2px 8px #14213d08}
+.teacher-shortcut .ts-icon{font-size:23px;display:block;margin-bottom:8px}.teacher-shortcut strong{display:block;font-size:14px;margin-bottom:5px}.teacher-shortcut small{font-weight:400;color:#64748b;line-height:1.4}
+.teacher-section-title{font-size:17px;margin:20px 0 10px}
+.teacher-service-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.teacher-service{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:15px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-height:145px}
+.teacher-service .ts-icon{font-size:24px}.teacher-service h3{font-size:15px;margin:0}.teacher-service p{font-size:12px;line-height:1.5;color:#64748b;margin:0;flex:1}.teacher-service button{font-size:12px;padding:9px 11px}
+.teacher-notice{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af;padding:12px;border-radius:10px;margin:12px 0;font-size:13px;line-height:1.5}
+@media(max-width:800px){.teacher-shortcuts{grid-template-columns:repeat(2,minmax(0,1fr))}.teacher-service-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){.teacher-hero{padding:17px}.teacher-hero h2{font-size:20px}.teacher-service-grid{grid-template-columns:1fr}.teacher-service{min-height:120px}}
+</style>
+<script>
+(function(){
+ const teacherServices=[
+  {title:'Dashboard',icon:'▦',desc:'Your teaching overview and quick actions.',page:'Dashboard',live:true},
+  {title:'My Classes',icon:'🏫',desc:'Open class records and review class lists.',page:'Classes',live:true},
+  {title:'Students',icon:'🎓',desc:'Search and review student records.',page:'Students',live:true},
+  {title:'Marks Entry',icon:'📝',desc:'Select year, class, stream and subject; search by student name or admission number.',page:'Marks Entry',live:true},
+  {title:'Attendance',icon:'✓',desc:'Open attendance records and manage entries.',page:'Attendance',live:true},
+  {title:'Lesson Plans',icon:'📚',desc:'Plan lessons and track teaching coverage.',page:'Lesson Plans'},
+  {title:'Assignments',icon:'✍️',desc:'Prepare tasks and monitor submissions.',page:'Assignments'},
+  {title:'Timetable',icon:'🗓️',desc:'View and organise teaching periods.',page:'Timetable'},
+  {title:'Examinations',icon:'📋',desc:'Review examinations and assessment records.',page:'Examinations',live:true},
+  {title:'Academic Reports',icon:'📊',desc:'Review available academic records and reports.',page:'Reports',live:true},
+  {title:'Communication',icon:'💬',desc:'School and parent communication workspace.',page:'Communication'},
+  {title:'Student Welfare',icon:'🤝',desc:'Record and follow up student support matters.',page:'Student Welfare'},
+  {title:'Learning Resources',icon:'📖',desc:'Organise learning materials and references.',page:'Learning Resources'},
+  {title:'My Profile',icon:'👤',desc:'Review your staff record and contact details.',page:'My Profile'},
+  {title:'Settings',icon:'⚙️',desc:'Personal preferences and account settings.',page:'Teacher Settings'}
+ ];
+ window.teacherPanelPage=function(){
+  const user=window.activeUser||null, name=(user&&(user.full_name||user.name||user.email))||'Teacher';
+  const existing=['Dashboard','Classes','Students','Marks Entry','Attendance','Examinations','Reports'];
+  const shortcut=(title,icon,desc,page)=>'<button class="teacher-shortcut" type="button" data-teacher-go="'+page+'"><span class="ts-icon">'+icon+'</span><strong>'+title+'</strong><small>'+desc+'</small></button>';
+  const service=(s)=>'<article class="teacher-service"><span class="ts-icon">'+s.icon+'</span><h3>'+s.title+'</h3><p>'+s.desc+'</p><button type="button" class="'+(s.live?'':'secondary')+'" data-teacher-go="'+s.page+'">'+(s.live?'Open service':'Open section')+' →</button></article>';
+  return '<section class="teacher-hero"><h2>Teacher Portal</h2><p>Welcome, '+esc(name)+'. Manage your classes, attendance, assessments and teaching activities from one place.</p></section>'+
+   '<div class="cards">'+stat('Student records',db.Students.length,'🎓')+stat('Class records',db.Classes.length,'🏫')+stat('Attendance entries',db.Attendance.length,'✓')+stat('Assessment records',db.Examinations.length,'📝')+'</div>'+
+   '<h2 class="teacher-section-title">Quick access</h2><div class="teacher-shortcuts">'+shortcut('Enter Marks','📝','Record student marks','Marks Entry')+shortcut('Take Attendance','✓','Open attendance register','Attendance')+shortcut('My Students','🎓','Find student records','Students')+shortcut('Academic Reports','📊','Open reports','Reports')+'</div>'+
+   '<h2 class="teacher-section-title">Teacher services</h2><div class="teacher-service-grid">'+teacherServices.filter(s=>!['Dashboard'].includes(s.title)).map(service).join('')+'</div>'+
+   '<div class="teacher-notice">Note: Marks Entry, Students, Classes, Attendance, Examinations and Reports open existing sections. Lesson Plans, Assignments, Timetable, Communication, Student Welfare, Learning Resources, My Profile and Teacher Settings are navigation placeholders until their workflows are connected to the school database.</div>';
+ };
+ const oldRender=window.render||render;
+ window.render=function(){
+  if(currentPage==='Teacher Panel'){
+   document.getElementById('pageTitle').textContent='Teacher Panel';
+   document.getElementById('content').innerHTML=window.teacherPanelPage();
+   document.querySelectorAll('[data-teacher-go]').forEach(b=>b.addEventListener('click',()=>{
+    const page=b.getAttribute('data-teacher-go');
+    if(['Lesson Plans','Assignments','Timetable','Communication','Student Welfare','Learning Resources','My Profile','Teacher Settings'].includes(page)){
+      document.getElementById('content').insertAdjacentHTML('afterbegin','<div class="teacher-notice" role="status"><strong>'+esc(page)+':</strong> This section is listed in the teacher portal, but its full database-backed workflow has not been implemented yet.</div>');
+      return;
+    }
+    currentPage=page;
+    document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x.dataset.page===page));
+    if(page==='Marks Entry'&&typeof meInit==='function'){render();return}
+    oldRender();
+   }));
+   return;
+  }
+  oldRender();
+ };
+ const side=document.getElementById('appSidebar');
+ if(side&&!side.querySelector('[data-page="Teacher Panel"]')){
+  const btn=document.createElement('button');btn.type='button';btn.className='navbtn';btn.dataset.page='Teacher Panel';btn.innerHTML='<small>👩‍🏫</small> Teacher Panel';
+  const anchor=side.querySelector('[data-page="Dashboard"]');
+  if(anchor&&anchor.nextSibling)side.insertBefore(btn,anchor.nextSibling);else side.appendChild(btn);
+  btn.addEventListener('click',()=>{currentPage='Teacher Panel';document.querySelectorAll('.navbtn[data-page]').forEach(x=>x.classList.toggle('active',x===btn));if(typeof setMenuOpen==='function')setMenuOpen(false);render();window.scrollTo(0,0)});
+ }
+})();
+</script>
+
 </body>
 </html>
 <!-- ChatGPT GitHub write-access test: 2026-10-11 -->
