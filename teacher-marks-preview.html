@@ -56,7 +56,7 @@ async function boot(){
  profile=p.data;
  if(!profile.school_id){notice('This account is not linked to a school. Developer/platform accounts cannot enter school marks.');return}
  if(!['teacher','principal','admin','school_admin'].includes(String(profile.role||'').toLowerCase())){notice('Marks entry is available to school teachers and authorised school administrators.');return}
- notice('Connected to your school. Choose class/grade, academic year, stream, and one configured subject. Note: the current exam-marks table stores term but has no academic-year column; saved marks use Term 1 until the database is extended to track year separately.');
+ notice('Connected to your school. Choose class/grade, academic year, stream, subject, term and examination. Saved marks are filtered by the selected assessment details.');
  await loadYearsAndGrades();
 }
 async function loadYearsAndGrades(){
