@@ -595,7 +595,7 @@ async function loadPersonalPage(page){
          d.class_ids=Array.from(teacherForm.querySelectorAll('[name="class_ids"]:checked')).map(o=>o.value).filter(Boolean);
          d.subjects=Array.from(teacherForm.querySelectorAll('[name="subject_option"]:checked')).map(o=>o.value.trim()).filter(Boolean);
          const msg=document.getElementById('teacherAccountMsg'),submit=teacherForm.querySelector('button[type="submit"]');
-         if(!d.subjects.length||!d.class_ids.length){msg.textContent='Choose at least one subject and one class/stream.';return;}
+         if(d.subjects.length<2||!d.class_ids.length){msg.textContent='Choose at least two subjects and one class/stream. A teacher must be awarded at least two subjects.';return;}
          msg.textContent='Creating teacher login and saving subject/class assignments…';if(submit)submit.disabled=true;
          try{
            const {data:created,error:createError}=await supabaseClient.functions.invoke('super-admin-create-user',{body:{full_name:d.full_name,email:d.email,password:d.password,role:'teacher',school_id:liveSchoolId(),staff_no:d.staff_no,subject:d.subjects[0],subjects:d.subjects,subject_category:d.subject_category,class_ids:d.class_ids,phone:d.phone}});
