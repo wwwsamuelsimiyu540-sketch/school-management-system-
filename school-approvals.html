@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Super Admin School Management | My School System Manager</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Developer School Management | My School System Manager</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{font-family:Arial,sans-serif;color:#172033;background:#f4f7fb}*{box-sizing:border-box}body{margin:0;padding:24px}.wrap{max-width:1100px;margin:24px auto}.card{background:white;border:1px solid #e2e8f0;border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:0 8px 24px #14213d0b}h1,h2{color:#14213d}h1{margin:0 0 8px}p{color:#64748b;line-height:1.5}.msg{padding:12px;border-radius:8px;margin:12px 0;background:#eff6ff;color:#1d4ed8}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:14px}th,td{text-align:left;padding:12px;border-bottom:1px solid #e2e8f0;vertical-align:top}th{background:#f8fafc}button{border:0;border-radius:8px;padding:9px 12px;background:#15803d;color:white;font-weight:700;cursor:pointer;margin:2px}button.reject{background:#b91c1c}button:disabled{opacity:.6}.muted{font-size:12px;color:#64748b}a{color:#2563eb}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field label{font-size:12px;font-weight:700;color:#475569}.field input,.field select{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:8px;font:inherit}.checks{display:flex;gap:12px;flex-wrap:wrap}.checks label{font-size:13px;font-weight:500}.wide{grid-column:1/-1}.primary{background:#2563eb}@media(max-width:650px){body{padding:10px}.card{padding:16px}.grid{grid-template-columns:1fr}.wide{grid-column:auto}}
 </style></head><body><main class="wrap">
-<section class="card"><h1>Super Admin school management</h1><p>Register schools and their school administrators, review registration requests, and control school access. The Super Admin account is a platform role and must not be assigned to a school.</p><div id="notice" class="msg">Checking your account…</div>
+<section class="card"><h1>Developer school management</h1><p>Register schools and their school administrators, review registration requests, and control school access. The Developer account is a platform role and must not be assigned to a school.</p><div id="notice" class="msg">Checking your account…</div>
 </section>
 <section class="card"><h2>Register a school and administrator</h2><p>This creates the school and its principal account through a protected Supabase Edge Function. The temporary password is sent only to the function and is not saved in this page.</p>
 <form id="createForm" class="grid" hidden>
@@ -18,7 +18,7 @@
 <div id="createNotice" class="msg" hidden></div>
 </section>
 <section class="card"><h2>School registration requests</h2><p>Approve or reject requests submitted by administrators who do not yet belong to a school.</p><div id="list" class="tablewrap"></div></section>
-<section class="card"><h2>Registered schools</h2><p>Suspend school access when needed, or reactivate a suspended school.</p><div id="schoolsList" class="tablewrap"></div><p><a href="./index.html?portal=super_admin">Return to Super Admin Panel</a></p></section>
+<section class="card"><h2>Registered schools</h2><p>Suspend school access when needed, or reactivate a suspended school.</p><div id="schoolsList" class="tablewrap"></div><p><a href="./index.html?portal=super_admin">Return to Developer Portal</a></p></section>
 </main>
 <script>
 const URL='https://emdmnimxeoifgobzuglx.supabase.co', KEY='sb_publishable_ewvNnOPh_pGROM_f_rp1Sg_bWGi5OAV', sb=window.supabase.createClient(URL,KEY);
@@ -29,8 +29,8 @@ async function init(){
  if(!session){$('notice').textContent='Please sign in to the main My School System Manager app first.';return}
  user=session.user;
  const {data:p,error}=await sb.from('profiles').select('role,school_id').eq('id',user.id).single();
- if(error||p?.role!=='super_admin'||p?.school_id!==null){$('notice').textContent='Access denied. Sign in with a Super Admin account that has no school assignment.';return}
- $('notice').textContent='Signed in as Super Admin. You can register schools, review requests, and control school status.';
+ if(error||p?.role!=='super_admin'||p?.school_id!==null){$('notice').textContent='Access denied. Sign in with a Developer account that has no school assignment.';return}
+ $('notice').textContent='Signed in as Developer. You can register schools, review requests, and control school status.';
  $('createForm').hidden=false;await load();await loadSchools()
 }
 $('createForm').addEventListener('submit',async e=>{
