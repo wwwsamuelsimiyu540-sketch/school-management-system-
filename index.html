@@ -1189,7 +1189,8 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
  function meNotice(s){const el=meEl('meNotice');if(el)el.textContent=s}
  function meMessage(s){const el=meEl('meMessage');if(el)el.textContent=s}
  function meSelect(id,placeholder,items){const el=meEl(id);if(!el)return;el.innerHTML='<option value="">'+meEsc(placeholder)+'</option>'+items.map(x=>'<option value="'+meEsc(x.value)+'">'+meEsc(x.label)+'</option>').join('')}
- function meClassGrade(c){const raw=String(c?.grade_level||'').trim();if(raw)return raw;const name=String(c?.name||'').trim();const match=name.match(/\b(PP1|PP2|Grade\s*(?:[1-9]|1[0-2]))\b/i);return match?match[0].replace(/grade\s*/i,'Grade '):name}\n function meUser(){return window.activeUser||activeUser||null}
+ function meClassGrade(c){const raw=String(c?.grade_level||'').trim();if(raw)return raw;const name=String(c?.name||'').trim();const match=name.match(/\b(PP1|PP2|Grade\s*(?:[1-9]|1[0-2]))\b/i);return match?match[0].replace(/grade\s*/i,'Grade '):name}
+ function meUser(){return window.activeUser||activeUser||null}
  function meClient(){return window.supabaseClient||supabaseClient||null}
  function meSchoolId(){return (typeof liveSchoolId==='function'?liveSchoolId():null)||meUser()?.school_id||null}
  function meAllSelected(){return Boolean(meUser()&&meSchoolId()&&meEl('meGrade')?.value&&meEl('meYear')?.value&&meEl('meStream')?.value&&meEl('meSubject')?.value&&meEl('meTerm')?.value&&meEl('meExam')?.value)}
