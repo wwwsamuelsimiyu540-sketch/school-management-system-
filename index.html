@@ -289,7 +289,31 @@ render=function(){
  if(currentPage==='Student Reports' && ['principal','teacher','bursar'].includes(activeUser.role)){content.innerHTML=studentReportsShell();return;}
  if(currentPage==='Reports' && ['principal','teacher','bursar','super_admin','developer'].includes(activeUser.role)){const reportPage=(activeUser.role==='super_admin'||activeUser.role==='developer')?'System Reports':'Reports';const reportView=livePersonalPage(reportPage);content.innerHTML=reportView||`<div class="panel"><h2>Reports</h2><p>Choose a report workspace.</p><button data-goto="Student Reports">Open student reports</button><button data-goto="Examinations">Open marks</button></div>`;content.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));if(activeUser?.authMode==='supabase')loadPersonalPage(reportPage);return;}
  if(['principal','teacher','bursar'].includes(activeUser.role) && ['Parents','Bursars'].includes(currentPage)){content.innerHTML=moduleShell(currentPage);loadLiveModule(currentPage);return;}
- content.innerHTML=`<div class="panel"><h2>${esc(currentPage||'Workspace')}</h2><p>This workspace has no live Supabase form configured yet. Use the available records and reports menus.</p><div class="quick"><button data-goto="Dashboard">Dashboard</button><button data-goto="Students">Students</button><button data-goto="Teachers">Teachers</button><button data-goto="Student Reports">Student Reports</button><button data-goto="Reports">Reports</button></div></div>`;content.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
+ {
+ const title=String(currentPage||'Workspace');
+ const n=title.toLowerCase();
+ const shortcuts=[];
+ const add=(page,label)=>{if(!shortcuts.some(x=>x.page===page))shortcuts.push({page,label});};
+ if(/student|admission|guardian|parent|result|learner/.test(n))add('Students','Student records');
+ if(/teacher|staff|lesson|assignment|resource|timetable/.test(n))add('Teachers','Teacher records');
+ if(/class|stream|grade|subject/.test(n))add('Classes','Classes and streams');
+ if(/attendance|absence/.test(n))add('Attendance','Attendance');
+ if(/fee|payment|finance|receipt|bursar|balance/.test(n))add('Fees','Fees and payments');
+ if(/mark|exam|assessment|score|result|grade/.test(n)){add('Marks Entry','Marks entry');add('Examinations','Examination records');}
+ if(/report|analysis|analytics|performance|ranking/.test(n))add('Reports','Reports and analysis');
+ if(/school|tenant|approval|registration|suspend|subscription/.test(n)&&['developer','super_admin'].includes(activeUser?.role)){add('Schools','School management');add('School Approvals','School approvals');}
+ if(/user|role|account|permission/.test(n)&&['developer','super_admin','principal'].includes(activeUser?.role))add('Users & Roles','Users and roles');
+ if(!shortcuts.length){
+   if(['teacher'].includes(activeUser?.role)){add('Marks Entry','Marks entry');add('Attendance','Attendance');add('Classes','My classes');add('Reports','Reports');}
+   else if(['student','parent'].includes(activeUser?.role)){add('Dashboard','My dashboard');add('Reports','Available reports');}
+   else if(['bursar'].includes(activeUser?.role)){add('Fees','Fees and payments');add('Reports','Finance reports');}
+   else if(['developer','super_admin'].includes(activeUser?.role)){add('Schools','School management');add('Users & Roles','Users and roles');add('System Reports','System reports');}
+   else {add('Students','Students');add('Teachers','Teachers');add('Classes','Classes');add('Attendance','Attendance');add('Fees','Fees');add('Marks Entry','Marks entry');add('Reports','Reports');}
+ }
+ add('Dashboard','Dashboard');add('Feature Directory','All services');
+ content.innerHTML='<div class="panel"><h2>'+esc(title)+'</h2><p>This service does not yet have a separate live form. Use these connected workspaces to complete the related task; supported records save through Supabase.</p><div class="quick">'+shortcuts.map(x=>'<button type="button" data-goto="'+esc(x.page)+'">'+esc(x.label)+'</button>').join(' ')+'</div><p class="notice" style="margin-top:14px">No record was changed by opening this page. Save or update records only from the relevant form.</p></div>';
+ content.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.goto)));
+}
 };
 function previewPanel(){return;}
 function exitPanelPreview(){return;}
