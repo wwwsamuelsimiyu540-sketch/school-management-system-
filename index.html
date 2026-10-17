@@ -65,7 +65,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 </div>
 <script>
 const STORAGE_KEY='edumanage_school_v1';
-try{localStorage.removeItem(STORAGE_KEY);localStorage.removeItem('edumanage_multischool_v2')}catch(_){}
+// Preserve local fallback data across reloads; never clear user data automatically.
 const starter={Students:[],Teachers:[],Classes:[],Attendance:[],Fees:[],Examinations:[]};
 let db=loadDB(), currentPage='Dashboard';
 function loadDB(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||structuredClone(starter)}catch(e){return JSON.parse(JSON.stringify(starter))}}
