@@ -54,7 +54,7 @@ async function boot(){
  profile=p.data;
  if(!profile.school_id){notice('This account is not linked to a school. Developer/platform accounts cannot enter school marks.');return}
  if(!['teacher','principal','admin','school_admin'].includes(String(profile.role||'').toLowerCase())){notice('Marks entry is available to school teachers and authorised school administrators.');return}
- notice('Connected to your school. Choose class/grade, academic year, stream, and one configured subject.');
+ notice('Connected to your school. Choose class/grade, academic year, stream, and one configured subject. Note: the current exam-marks table stores term but has no academic-year column; saved marks use Term 1 until the database is extended to track year separately.');
  await loadYearsAndGrades();
 }
 async function loadYearsAndGrades(){
@@ -107,7 +107,7 @@ async function loadStudents(){
  if(error){notice('Could not load students: '+error.message);return}
  students=(data||[]).sort((a,b)=>String(a.admission_no||'').localeCompare(String(b.admission_no||''),undefined,{numeric:true}));
  if(!students.length){notice('No students match '+grade+', academic year '+year+', stream '+stream+'. Add students or check their grade/stream values.');renderRows();return}
- const {data:marks,error:marksError}=await client.from('exam_marks').select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('school_id',profile.school_id).eq('subject',subject).in('student_id',students.map(s=>s.id)).limit(10000);
+ const {data:marks,error:marksError}=await client.from('exam_marks').select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('school_id',profile.school_id).eq('subject',subject).eq('term','Term 1').in('student_id',students.map(s=>s.id)).limit(10000);
  if(marksError){notice('Students loaded, but existing marks could not be read: '+marksError.message);renderRows();return}
  (marks||[]).forEach(m=>{if(!loadedMarks.has(m.student_id))loadedMarks.set(m.student_id,m);});
  students.forEach(s=>{const m=loadedMarks.get(s.id);rowValues.set(s.id,m?.total_percentage??m?.exam_marks??'');if(m)savedIds.add(s.id)});
@@ -136,7 +136,7 @@ async function saveOne(student,value,button,status){
  const oldText=button.textContent;button.disabled=true;button.textContent='Saving…';
  try{
   const mark=Number(value),subject=$('subject').value;
-  const payload={school_id:profile.school_id,student_id:student.id,subject,term:'Academic Year '+$('year').value,cat_marks:0,exam_marks:mark,total_percentage:mark,grade_letter:gradeFor(mark),remarks:''};
+  const payload={school_id:profile.school_id,student_id:student.id,subject,term:'Term 1',cat_marks:0,exam_marks:mark,total_percentage:mark,grade_letter:gradeFor(mark),remarks:''};
   const existing=loadedMarks.get(student.id);
   let result;
   if(existing?.id)result=await client.from('exam_marks').update(payload).eq('id',existing.id).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').single();
