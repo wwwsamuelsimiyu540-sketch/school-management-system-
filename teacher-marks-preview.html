@@ -4,35 +4,78 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Teacher Marks Entry | School Management System</title>
 <style>
-:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17243a;background:#f3f6fb}*{box-sizing:border-box}body{margin:0}.top{background:#142747;color:#fff;padding:18px 20px}.top strong{font-size:18px}.top p{margin:4px 0 0;color:#c8d6eb;font-size:13px}.wrap{max-width:980px;margin:22px auto;padding:0 14px}.notice{background:#fff8e6;border:1px solid #f0dba0;border-radius:12px;padding:12px 14px;font-size:13px;color:#76520c;margin-bottom:16px}.card{background:white;border:1px solid #e2e8f0;border-radius:15px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #12294a0a}.card h2{font-size:18px;margin:0 0 14px}.controls{display:grid;grid-template-columns:2fr 1fr 1fr;gap:12px}label{display:block;font-size:12px;color:#63718a;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #d4dce8;border-radius:9px;font:inherit;background:#fff;color:#17243a}.summary{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}.pill{background:#edf5ff;color:#244b83;border-radius:9px;padding:9px 12px;font-size:13px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:560px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0f5;font-size:14px}th{font-size:12px;color:#63718a;background:#f8faff}td small{display:block;color:#7a8799;margin-top:3px}.mark{max-width:90px;padding:9px}.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer;font:inherit;font-size:13px}.save{background:#e8f1ff;color:#174a92}.primary{background:#1d5fd0;color:white}.secondary{background:#e9eef6;color:#263954}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{font-size:12px;color:#65748b}.rowstatus{font-size:12px;color:#13804a;margin-left:5px}.footer{font-size:12px;color:#7b8798;text-align:center;padding:12px 0 25px}@media(max-width:640px){.wrap{margin:14px auto}.controls{grid-template-columns:1fr}.card{padding:14px}.top{padding:16px}.actions .btn{width:100%}}
+:root{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#17243a;background:#f3f6fb;--navy:#142747;--blue:#1d5fd0;--line:#e2e8f0;--muted:#63718a}*{box-sizing:border-box}body{margin:0}.top{background:linear-gradient(120deg,#142747,#2456a6);color:#fff;padding:18px 20px}.top strong{font-size:19px}.top p{margin:4px 0 0;color:#c8d6eb;font-size:13px}.wrap{max-width:1100px;margin:22px auto;padding:0 14px}.notice{background:#fff8e6;border:1px solid #f0dba0;border-radius:12px;padding:12px 14px;font-size:13px;color:#76520c;margin-bottom:16px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;margin-bottom:16px;box-shadow:0 5px 18px #12294a0a}.card h2{font-size:18px;margin:0 0 15px}.controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}label{display:block;font-size:12px;color:var(--muted);font-weight:650;margin-bottom:6px}input,select{width:100%;padding:11px;border:1px solid #d4dce8;border-radius:9px;font:inherit;background:#fff;color:#17243a}input:focus,select:focus{outline:2px solid #b9d0ff;border-color:#5282e9}.searchline{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:end}.summary{display:flex;gap:10px;margin-top:15px;flex-wrap:wrap}.pill{background:#edf5ff;color:#244b83;border-radius:9px;padding:9px 12px;font-size:13px}.tablewrap{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:580px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid #edf0f5;font-size:14px}th{font-size:12px;color:var(--muted);background:#f8faff}td small{display:block;color:#7a8799;margin-top:3px}.mark{max-width:100px;padding:9px}.btn{border:0;border-radius:9px;padding:10px 14px;font-weight:650;cursor:pointer;font:inherit;font-size:13px}.save{background:#e8f1ff;color:#174a92}.primary{background:var(--blue);color:white}.secondary{background:#e9eef6;color:#263954}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.status{font-size:12px;color:#65748b}.rowstatus{font-size:12px;color:#13804a;margin-left:5px}.footer{font-size:12px;color:#7b8798;text-align:center;padding:12px 0 25px}.empty{text-align:center;color:#65748b;padding:28px}.section-top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.section-top .status{margin-left:auto}@media(max-width:650px){.wrap{margin:14px auto}.controls{grid-template-columns:1fr}.card{padding:14px}.top{padding:16px}.actions .btn{width:100%}.searchline{grid-template-columns:1fr}.section-top .status{margin-left:0}}
 </style>
 </head>
 <body>
-<header class="top"><strong>School Management System</strong><p>Teacher Panel · Marks Entry Preview</p></header>
+<header class="top"><strong>School Management System</strong><p>Teacher Panel · Marks Entry</p></header>
 <main class="wrap">
-<div class="notice"><strong>Preview mode:</strong> This is a visual demo. Saves are simulated in this browser and are not sent to your school's database.</div>
-<section class="card"><h2>Find students and choose assessment</h2>
+<div class="notice"><strong>Design preview:</strong> This page demonstrates the marks-entry workflow. Save actions are simulated in this browser; no marks are sent to a school database.</div>
+<section class="card">
+<h2>1. Select assessment details</h2>
 <div class="controls">
-<div><label for="search">Search student name or admission number</label><input id="search" placeholder="e.g. Amina or ADM001"></div>
-<div><label for="class">Class</label><select id="class"><option>Form 2A</option><option>Form 2B</option><option>Form 1A</option><option>Form 3A</option><option>Form 4A</option></select></div>
-<div><label for="exam">Examination</label><select id="exam"><option>Mid-Term</option><option>Opener</option><option>End-Term</option><option>Mock</option><option>CAT</option></select></div>
+<div><label for="date">Date of assessment</label><input id="date" type="date" required></div>
+<div><label for="subject">Subject</label><select id="subject"><option value="">Select subject</option><option>Mathematics</option><option>English</option><option>Kiswahili</option><option>Biology</option><option>Chemistry</option><option>Physics</option><option>History</option><option>Geography</option><option>Computer Studies</option><option>Business Studies</option></select></div>
+<div><label for="stream">Stream</label><select id="stream"><option value="">Select stream</option><option>East</option><option>West</option><option>North</option><option>South</option><option>Blue</option><option>Green</option></select></div>
 </div>
-<div class="summary"><span class="pill">Students: <b id="total">4</b></span><span class="pill">Saved: <b id="saved">0</b></span><span class="pill">Pending: <b id="pending">4</b></span></div>
+<div class="summary"><span class="pill">Students shown: <b id="total">0</b></span><span class="pill">Saved: <b id="saved">0</b></span><span class="pill">Pending: <b id="pending">0</b></span></div>
 </section>
-<section class="card"><h2>Enter marks <span class="status">· Sample student records</span></h2>
-<div class="tablewrap"><table><thead><tr><th>Student</th><th>Admission No.</th><th>Marks / 100</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
+<section class="card">
+<div class="section-top"><h2>2. Find a student and enter marks</h2><span class="status">Students are sorted by admission number</span></div>
+<div class="searchline" style="margin-bottom:14px"><div><label for="search">Search by student name or admission number</label><input id="search" placeholder="Type a name or admission number, e.g. ADM002" autocomplete="off"></div><button class="btn secondary" id="clearSearch" type="button">Clear search</button></div>
+<div class="tablewrap"><table><thead><tr><th>No.</th><th>Student name</th><th>Admission number</th><th>Marks earned</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
 <div class="actions"><button class="btn primary" id="saveAll">Save All Marks</button><button class="btn secondary" id="deploy">Deploy Results</button><span id="message" class="status" aria-live="polite"></span></div>
 </section>
 <div class="footer">School Management System · Teacher marks-entry interface concept</div>
 </main>
 <script>
-const students=[{name:"Amina Wanjiku",adm:"ADM001",mark:75},{name:"Brian Otieno",adm:"ADM002",mark:68},{name:"Cynthia Chebet",adm:"ADM003",mark:82},{name:"Daniel Kiptoo",adm:"ADM004",mark:70}];
+const students=[
+{name:"Amina Wanjiku",adm:"ADM001",mark:75,stream:"East"},
+{name:"Brian Otieno",adm:"ADM002",mark:68,stream:"East"},
+{name:"Cynthia Chebet",adm:"ADM003",mark:82,stream:"West"},
+{name:"Daniel Kiptoo",adm:"ADM004",mark:70,stream:"West"},
+{name:"Esther Naliaka",adm:"ADM005",mark:"",stream:"North"},
+{name:"Felix Mwangi",adm:"ADM006",mark:"",stream:"South"}
+].sort((a,b)=>a.adm.localeCompare(b.adm,undefined,{numeric:true}));
 const saved=new Set();const rows=document.getElementById('rows');
-function render(){const q=document.getElementById('search').value.trim().toLowerCase();rows.innerHTML='';students.forEach((s,i)=>{if(!(s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)))return;const tr=document.createElement('tr');tr.innerHTML='<td>'+s.name+'</td><td>'+s.adm+'</td><td><input class="mark" type="number" min="0" max="100" aria-label="Marks for '+s.name+'" value="'+s.mark+'"></td><td><button class="btn save">Save</button><span class="rowstatus">'+(saved.has(i)?'Saved':'')+'</span></td>';const input=tr.querySelector('input');input.addEventListener('input',()=>{s.mark=input.value;saved.delete(i);tr.querySelector('.rowstatus').textContent='Pending';counts()});tr.querySelector('button').addEventListener('click',()=>{if(input.value===''||Number(input.value)<0||Number(input.value)>100){document.getElementById('message').textContent='Enter a mark from 0 to 100.';return}saved.add(i);tr.querySelector('.rowstatus').textContent='Saved';counts();document.getElementById('message').textContent=s.name+' marks saved in preview.'});rows.appendChild(tr)});document.getElementById('total').textContent=students.length;counts()}
-function counts(){document.getElementById('saved').textContent=saved.size;document.getElementById('pending').textContent=students.length-saved.size}
+document.getElementById('date').value=new Date().toISOString().slice(0,10);
+function selectedDetails(){return document.getElementById('date').value&&document.getElementById('subject').value&&document.getElementById('stream').value}
+function render(){
+ const q=document.getElementById('search').value.trim().toLowerCase(),stream=document.getElementById('stream').value;
+ rows.innerHTML='';
+ const filtered=students.map((s,i)=>({...s,index:i})).filter(s=>(!stream||s.stream===stream)&&(!q||s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)));
+ if(!selectedDetails()){rows.innerHTML='<tr><td colspan="5" class="empty">Select an assessment date, subject, and stream above to list students.</td></tr>'}
+ else if(!filtered.length){rows.innerHTML='<tr><td colspan="5" class="empty">No student matches this search in the selected stream.</td></tr>'}
+ else filtered.forEach((s,n)=>{
+  const tr=document.createElement('tr');
+  tr.innerHTML='<td>'+(n+1)+'</td><td>'+s.name+'</td><td>'+s.adm+'</td><td><input class="mark" type="number" min="0" max="100" step="0.5" aria-label="Marks for '+s.name+'" value="'+s.mark+'" placeholder="0–100"></td><td><button class="btn save" type="button">Save</button><span class="rowstatus">'+(saved.has(s.index)?'Saved':'')+'</span></td>';
+  const input=tr.querySelector('input');
+  input.addEventListener('input',()=>{s.mark=input.value;students[s.index].mark=input.value;saved.delete(s.index);tr.querySelector('.rowstatus').textContent='Pending';counts()});
+  tr.querySelector('button').addEventListener('click',()=>{if(!validMark(input.value)){document.getElementById('message').textContent='Enter a mark from 0 to 100 for '+s.name+'.';return}saved.add(s.index);tr.querySelector('.rowstatus').textContent='Saved';counts();document.getElementById('message').textContent=s.name+' marks saved in preview only.'});
+  rows.appendChild(tr);
+ });
+ document.getElementById('total').textContent=filtered.length;counts();
+}
+function validMark(v){return v!==''&&Number.isFinite(Number(v))&&Number(v)>=0&&Number(v)<=100}
+function counts(){const n=students.length;document.getElementById('saved').textContent=saved.size;document.getElementById('pending').textContent=n-saved.size}
 document.getElementById('search').addEventListener('input',render);
-document.getElementById('saveAll').addEventListener('click',()=>{for(let i=0;i<students.length;i++){if(students[i].mark!==''&&Number(students[i].mark)>=0&&Number(students[i].mark)<=100)saved.add(i)}render();document.getElementById('message').textContent='All valid marks saved in preview only.'});
-document.getElementById('deploy').addEventListener('click',()=>{if(saved.size!==students.length){document.getElementById('message').textContent='Save marks for every student before deploying.';return}document.getElementById('message').textContent='Demo only: results are ready for review; nothing was published to a real school.'});
+['date','subject','stream'].forEach(id=>document.getElementById(id).addEventListener('change',()=>{document.getElementById('message').textContent='';render()}));
+document.getElementById('clearSearch').addEventListener('click',()=>{document.getElementById('search').value='';render()});
+document.getElementById('saveAll').addEventListener('click',()=>{
+ if(!selectedDetails()){document.getElementById('message').textContent='Select the date, subject, and stream first.';return}
+ const q=document.getElementById('search').value.trim().toLowerCase(),stream=document.getElementById('stream').value;
+ const filtered=students.map((s,i)=>({...s,index:i})).filter(s=>(!stream||s.stream===stream)&&(!q||s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)));
+ const invalid=filtered.filter(s=>!validMark(s.mark));
+ if(invalid.length){document.getElementById('message').textContent='Enter valid marks (0–100) for all listed students before saving all.';return}
+ filtered.forEach(s=>saved.add(s.index));render();document.getElementById('message').textContent='All listed marks saved in preview only.';
+});
+document.getElementById('deploy').addEventListener('click',()=>{
+ if(!selectedDetails()){document.getElementById('message').textContent='Select the date, subject, and stream first.';return}
+ const stream=document.getElementById('stream').value,q=document.getElementById('search').value.trim().toLowerCase();
+ const filtered=students.map((s,i)=>({...s,index:i})).filter(s=>(!stream||s.stream===stream)&&(!q||s.name.toLowerCase().includes(q)||s.adm.toLowerCase().includes(q)));
+ if(filtered.some(s=>!saved.has(s.index))){document.getElementById('message').textContent='Save every listed student’s marks before deploying.';return}
+ document.getElementById('message').textContent='Preview only: results are ready for review; nothing was published to a real school.';
+});
 render();
 </script>
 </body></html>
