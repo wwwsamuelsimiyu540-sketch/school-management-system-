@@ -1236,7 +1236,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
  }
  async function meLoadStudents(){
   const client=meClient(),school=meSchoolId();meStudents=[];meMarks.clear();meSaved.clear();meRender();
-  if(!meAllSelected()){meNotice('Select class/grade, academic year, stream, and subject to load students.');return}
+  if(!meAllSelected()){meNotice('Select class/grade, academic year, stream, subject, term and examination to load students.');return}
   const grade=meEl('meGrade').value,year=meEl('meYear').value,stream=meEl('meStream').value,subject=meEl('meSubject').value;
   const classRows=meClasses.filter(c=>String(c.academic_year||'2026')===year&&meClassGrade(c)===grade&&String(c.stream||'').trim()===stream);
   if(!classRows.length){meNotice('No class setup matches those selections. Check Classes in the school system.');return}
