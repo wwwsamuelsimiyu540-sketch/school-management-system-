@@ -19,6 +19,8 @@
 <div><label for="year">Academic year</label><select id="year"><option>2026</option></select></div>
 <div><label for="stream">Stream</label><select id="stream" disabled><option value="">Not selected</option></select></div>
 <div><label for="subject">Subject (configured by school)</label><select id="subject" disabled><option value="">Not selected</option></select></div>
+<div><label for="term">Term</label><select id="term"><option value="Term 1">Term 1</option><option value="Term 2">Term 2</option><option value="Term 3">Term 3</option></select></div>
+<div><label for="exam">Examination</label><select id="exam"><option value="End of Term Exam">End of Term Exam</option><option value="Opener Exam">Opener Exam</option><option value="Mid-Term Exam">Mid-Term Exam</option><option value="CAT">CAT</option><option value="Mock Exam">Mock Exam</option></select></div>
 </div>
 <div class="summary"><span class="pill">Students shown: <b id="total">0</b></span><span class="pill">Saved: <b id="saved">0</b></span><span class="pill">Pending: <b id="pending">0</b></span></div>
 </section>
@@ -43,7 +45,7 @@ function setSelect(id,placeholder,values){const el=$(id);el.innerHTML='<option v
 function lockFilters(){['grade','stream','subject'].forEach(id=>$(id).disabled=true)}
 function counts(){const visible=visibleStudents();$('total').textContent=visible.length;$('saved').textContent=visible.filter(s=>savedIds.has(s.id)).length;$('pending').textContent=visible.filter(s=>!savedIds.has(s.id)).length}
 function visibleStudents(){const q=$('search').value.trim().toLowerCase();return students.filter(s=>!q||String(s.full_name||'').toLowerCase().includes(q)||String(s.admission_no||'').toLowerCase().includes(q))}
-function allSelected(){return Boolean(user&&profile?.school_id&&$('grade').value&&$('year').value&&$('stream').value&&$('subject').value)}
+function allSelected(){return Boolean(user&&profile?.school_id&&$('grade').value&&$('year').value&&$('stream').value&&$('subject').value&&$('term').value&&$('exam').value)}
 async function boot(){
  if(!client){notice('Supabase could not load. Check your internet connection, then reload.');return}
  const {data:{session},error}=await client.auth.getSession();
@@ -98,7 +100,7 @@ function updateStreams(){
 async function loadStudents(){
  students=[];loadedMarks.clear();savedIds.clear();rowValues.clear();renderRows();
  if(!allSelected()){notice('Select all four filters to load the matching students.');return}
- const grade=$('grade').value,year=$('year').value,stream=$('stream').value,subject=$('subject').value;
+ const grade=$('grade').value,year=$('year').value,stream=$('stream').value,subject=$('subject').value,term=$('term').value,examName=$('exam').value;
  const matchingClasses=(window.classRecords||[]).filter(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade&&String(c.stream||'').trim()===stream);
  if(!matchingClasses.length){notice('No class record matches the selected grade, year, and stream. Check the school’s Classes setup.');return}
  notice('Loading students and existing marks…');
@@ -107,7 +109,7 @@ async function loadStudents(){
  if(error){notice('Could not load students: '+error.message);return}
  students=(data||[]).sort((a,b)=>String(a.admission_no||'').localeCompare(String(b.admission_no||''),undefined,{numeric:true}));
  if(!students.length){notice('No students match '+grade+', academic year '+year+', stream '+stream+'. Add students or check their grade/stream values.');renderRows();return}
- const {data:marks,error:marksError}=await client.from('exam_marks').select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').eq('school_id',profile.school_id).eq('subject',subject).eq('term','Term 1').in('student_id',students.map(s=>s.id)).limit(10000);
+ const {data:marks,error:marksError}=await client.from('exam_marks').select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks,academic_year,exam_name,class_id,stream,published,published_at,published_by').eq('school_id',profile.school_id).eq('subject',subject).eq('term',term).eq('academic_year',year).eq('exam_name',examName).in('student_id',students.map(s=>s.id)).limit(10000);
  if(marksError){notice('Students loaded, but existing marks could not be read: '+marksError.message);renderRows();return}
  (marks||[]).forEach(m=>{if(!loadedMarks.has(m.student_id))loadedMarks.set(m.student_id,m);});
  students.forEach(s=>{const m=loadedMarks.get(s.id);rowValues.set(s.id,m?.total_percentage??m?.exam_marks??'');if(m)savedIds.add(s.id)});
@@ -136,7 +138,7 @@ async function saveOne(student,value,button,status){
  const oldText=button.textContent;button.disabled=true;button.textContent='Saving…';
  try{
   const mark=Number(value),subject=$('subject').value;
-  const payload={school_id:profile.school_id,student_id:student.id,subject,term:'Term 1',cat_marks:0,exam_marks:mark,total_percentage:mark,grade_letter:gradeFor(mark),remarks:''};
+  const payload={school_id:profile.school_id,student_id:student.id,subject,term:$('term').value,academic_year:$('year').value,exam_name:$('exam').value,class_id:(window.classRecords||[]).find(c=>String(c.academic_year||'2026')===$('year').value&&String(c.grade_level||c.name||'').trim()===$('grade').value&&String(c.stream||'').trim()===$('stream').value)?.id||null,stream:$('stream').value,cat_marks:0,exam_marks:mark,grade_letter:gradeFor(mark),remarks:''};
   const existing=loadedMarks.get(student.id);
   let result;
   if(existing?.id)result=await client.from('exam_marks').update(payload).eq('id',existing.id).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks').single();
@@ -150,6 +152,8 @@ $('grade').addEventListener('change',()=>{updateStreams();message('');});
 $('year').addEventListener('change',async()=>{const cls=window.classRecords||[],year=$('year').value;const grades=[...new Set(cls.filter(c=>String(c.academic_year||'2026')===year).map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));setSelect('grade','Not selected',grades.map(g=>({value:g,label:g})));$('grade').disabled=false;updateStreams();await loadSubjects();message('');});
 $('stream').addEventListener('change',()=>{message('');loadStudents()});
 $('subject').addEventListener('change',()=>{message('');loadStudents()});
+$('term').addEventListener('change',()=>{message('');loadStudents()});
+$('exam').addEventListener('change',()=>{message('');loadStudents()});
 $('search').addEventListener('input',renderRows);
 $('clearSearch').addEventListener('click',()=>{$('search').value='';renderRows()});
 $('saveAll').addEventListener('click',async()=>{
@@ -167,7 +171,7 @@ $('deploy').addEventListener('click',()=>{
  const list=visibleStudents(),unsaved=list.filter(s=>!savedIds.has(s.id));
  if(!list.length){message('No matching students to deploy.');return}
  if(unsaved.length){message('Save marks for every visible student before deploying.');return}
- message('All visible marks are saved in the database. The current database schema has no separate publish/deploy status, so results have not been published to student/parent reports.');
+ const ids=list.map(s=>loadedMarks.get(s.id)?.id).filter(Boolean);if(!ids.length){message('There are no saved marks to publish.');return}const btn=$('deploy');btn.disabled=true;try{const result=await client.from('exam_marks').update({published:true,published_at:new Date().toISOString(),published_by:user.id}).in('id',ids).eq('school_id',profile.school_id).select('id');if(result.error)throw result.error;message('Published '+(result.data||[]).length+' result(s) for '+$('exam').value+' · '+$('term').value+'.')}catch(e){message('Publishing failed: '+(e.message||'check permissions'))}finally{btn.disabled=false}
 });
 boot().catch(e=>notice('Could not initialize marks entry: '+(e.message||e)));
 </script>
