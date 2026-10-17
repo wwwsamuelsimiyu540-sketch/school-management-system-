@@ -1497,7 +1497,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
       if(data?.error)throw new Error(data.error);
       if(data?.success!==true||!data?.school_code)throw new Error('The server did not confirm the application. Please try again.');
       registrationForm.reset();
-      msg.textContent='Application submitted successfully.\nSchool code: '+data.school_code+'\\nStatus: PENDING DEVELOPER APPROVAL\\nThe administrator account has been created, but sign-in will remain blocked until approval. Keep your school code for reference.';
+      msg.textContent='Application submitted successfully.\nSchool code: '+data.school_code+'\nStatus: PENDING DEVELOPER APPROVAL\nThe administrator account has been created, but sign-in will remain blocked until approval. Keep your school code for reference.';
       msg.style.color='#166534';
     }catch(err){msg.textContent='Registration failed: '+(err.message||'Unknown error.');msg.style.color='#b91c1c';}
     finally{btn.disabled=false;}
