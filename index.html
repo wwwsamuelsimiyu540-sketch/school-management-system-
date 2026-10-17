@@ -1298,15 +1298,34 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   const service=(s)=>'<article class="teacher-service"><span class="ts-icon">'+s.icon+'</span><h3>'+s.title+'</h3><p>'+s.desc+'</p><button type="button" class="'+(s.live?'':'secondary')+'" data-teacher-go="'+s.page+'">'+(s.live?'Open service':'Open section')+' →</button></article>';
   return '<section class="teacher-hero"><h2>Teacher Portal</h2><p>Welcome, '+esc(name)+'. Manage your classes, attendance, assessments and teaching activities from one place.</p></section>'+
    '<div class="cards">'+stat('Student records',db.Students.length,'🎓')+stat('Class records',db.Classes.length,'🏫')+stat('Attendance entries',db.Attendance.length,'✓')+stat('Assessment records',db.Examinations.length,'📝')+'</div>'+
-   '<h2 class="teacher-section-title">Quick access</h2><div class="teacher-shortcuts">'+shortcut('Enter Marks','📝','Record student marks','Marks Entry')+shortcut('Take Attendance','✓','Open attendance register','Attendance')+shortcut('My Students','🎓','Find student records','Students')+shortcut('Academic Reports','📊','Open reports','Reports')+'</div>'+
+   '<div class="panel" id="teacherAssignedSubjectsPanel"><div class="sectionhead"><h2>My Awarded Subjects</h2><span class="badge blue">Assigned to your account</span></div><p class="teacher-notice" id="teacherAssignedSubjects" role="status">Loading your assigned subjects…</p></div>'+
+   '<h2 class="teacher-section-title">Quick access</h2><div class="teacher-shortcuts">'+shortcut('Enter Marks','📝','Record marks only for your awarded subjects','Marks Entry')+shortcut('Take Attendance','✓','Open attendance register','Attendance')+shortcut('My Students','🎓','Find student records','Students')+shortcut('Academic Reports','📊','Open reports','Reports')+'</div>'+
    '<h2 class="teacher-section-title">Teacher services</h2><div class="teacher-service-grid">'+teacherServices.filter(s=>!['Dashboard'].includes(s.title)).map(service).join('')+'</div>'+
    '<div class="teacher-notice">Note: Marks Entry, Students, Classes, Attendance, Examinations and Reports open existing sections. Lesson Plans, Assignments, Timetable, Communication, Student Welfare, Learning Resources, My Profile and Teacher Settings are navigation placeholders until their workflows are connected to the school database.</div>';
  };
+ async function loadTeacherAwardedSubjects(){
+  const target=document.getElementById('teacherAssignedSubjects');
+  if(!target)return;
+  const user=window.activeUser||activeUser||null;
+  if(!user||String(user.role||'').toLowerCase()!=='teacher'){target.textContent='Assigned subjects are shown when the specific teacher account is signed in.';return}
+  const client=window.supabaseClient||supabaseClient||null;
+  const school=(typeof liveSchoolId==='function'?liveSchoolId():null)||user.school_id;
+  if(!client||!school||!user.id){target.textContent='Could not identify this teacher account. Please sign out and sign in again.';return}
+  target.textContent='Loading subjects assigned by your school administrator…';
+  try{
+   const result=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.id).maybeSingle();
+   if(result.error)throw result.error;
+   const subjects=[...new Set(String(result.data?.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+   if(!subjects.length){target.textContent='No subjects are assigned to this account yet. Please contact your school administrator.';return}
+   target.innerHTML='<span style="display:flex;gap:8px;flex-wrap:wrap">'+subjects.map(s=>'<span class="badge blue" style="font-size:13px;padding:8px 11px">'+esc(s)+'</span>').join('')+'</span><p style="margin:12px 0 0;font-size:12px;color:#64748b">Your subject list is loaded from your own staff record. Marks Entry will only offer these subjects.</p>';
+  }catch(error){target.textContent='Could not load assigned subjects: '+(error.message||'check your school database permissions');}
+ }
  const oldRender=window.render||render;
  window.render=function(){
   if(currentPage==='Teacher Panel'){
    document.getElementById('pageTitle').textContent='Teacher Panel';
    document.getElementById('content').innerHTML=window.teacherPanelPage();
+   loadTeacherAwardedSubjects();
    document.querySelectorAll('[data-teacher-go]').forEach(b=>b.addEventListener('click',()=>{
     const page=b.getAttribute('data-teacher-go');
     if(['Lesson Plans','Assignments','Timetable','Communication','Student Welfare','Learning Resources','My Profile','Teacher Settings'].includes(page)){
