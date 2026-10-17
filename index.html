@@ -95,7 +95,7 @@ button.secondary{background:#e8eef9;color:var(--navy)}button.danger{background:#
 <main class="main">
   <header class="topbar"><div class="topbar-start"><button type="button" class="menu-toggle" id="menuToggle" aria-label="Open navigation menu" aria-expanded="false">☰ <span style="font-size:13px">Menu</span></button><div><h1 id="pageTitle">Dashboard</h1><p id="today"></p></div></div><div class="userpill" id="userPill">● Signed out</div></header>
   <div id="content"></div>
-  <div class="footer">My School System Manager · Supabase assessment publishing · Build 2026-10-17 · Update 2</div>
+  <div class="footer">My School System Manager · Supabase assessment publishing · Build 2026-10-18 · Update 3</div>
 </main>
 </div>
 <script>
@@ -1189,7 +1189,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
  function meNotice(s){const el=meEl('meNotice');if(el)el.textContent=s}
  function meMessage(s){const el=meEl('meMessage');if(el)el.textContent=s}
  function meSelect(id,placeholder,items){const el=meEl(id);if(!el)return;el.innerHTML='<option value="">'+meEsc(placeholder)+'</option>'+items.map(x=>'<option value="'+meEsc(x.value)+'">'+meEsc(x.label)+'</option>').join('')}
- function meUser(){return window.activeUser||activeUser||null}
+ function meClassGrade(c){const raw=String(c?.grade_level||'').trim();if(raw)return raw;const name=String(c?.name||'').trim();const match=name.match(/\b(PP1|PP2|Grade\s*(?:[1-9]|1[0-2]))\b/i);return match?match[0].replace(/grade\s*/i,'Grade '):name}\n function meUser(){return window.activeUser||activeUser||null}
  function meClient(){return window.supabaseClient||supabaseClient||null}
  function meSchoolId(){return (typeof liveSchoolId==='function'?liveSchoolId():null)||meUser()?.school_id||null}
  function meAllSelected(){return Boolean(meUser()&&meSchoolId()&&meEl('meGrade')?.value&&meEl('meYear')?.value&&meEl('meStream')?.value&&meEl('meSubject')?.value&&meEl('meTerm')?.value&&meEl('meExam')?.value)}
@@ -1207,7 +1207,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   meClasses=cls.data||[];
   const years=[...new Set(meClasses.map(c=>String(c.academic_year||'').trim()).filter(Boolean))];if(!years.includes('2026'))years.push('2026');years.sort((a,b)=>Number(b)-Number(a));
   meSelect('meYear','Select academic year',years.map(y=>({value:y,label:y})));meEl('meYear').value='2026';
-  const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')==='2026').map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
+  const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')==='2026').map(c=>meClassGrade(c)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));
   if(role==='teacher'){
    const own=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.authUserId||user.id).maybeSingle();
@@ -1224,11 +1224,11 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   meSelect('meSubject','Not selected',meSubjects.map(s=>({value:s,label:s})));
   meEl('meGrade').disabled=false;meEl('meYear').disabled=false;meEl('meSubject').disabled=!meSubjects.length;
   if(!meSubjects.length)meNotice('No subject names were found in this school\'s teacher assignments or saved exam records. Configure the school\'s subjects first; no subject names have been invented.');
-  else meNotice('Connected to the school database. Select the all filters to load the matching students. '+(meSubjects.length===2?'Two configured subject options were found.':'Found '+meSubjects.length+' subject name(s); check School Settings if exactly two are expected.'));
+  else meNotice('Connected to the school database. Select all filters to load the matching students. '+(meSubjects.length===2?'Two configured subject options were found.':'Found '+meSubjects.length+' subject name(s); check School Settings if exactly two are expected.'));
  }
  function meUpdateStreams(){
   const grade=meEl('meGrade').value,year=meEl('meYear').value;
-  const rows=meClasses.filter(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade);
+  const rows=meClasses.filter(c=>String(c.academic_year||'2026')===year&&meClassGrade(c)===grade);
   const streams=[...new Set(rows.map(c=>String(c.stream||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   meSelect('meStream','Not selected',streams.map(s=>({value:s,label:s})));meEl('meStream').disabled=!grade;
   meStudents=[];meMarks.clear();meSaved.clear();meRender();
@@ -1237,7 +1237,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   const client=meClient(),school=meSchoolId();meStudents=[];meMarks.clear();meSaved.clear();meRender();
   if(!meAllSelected()){meNotice('Select class/grade, academic year, stream, and subject to load students.');return}
   const grade=meEl('meGrade').value,year=meEl('meYear').value,stream=meEl('meStream').value,subject=meEl('meSubject').value;
-  const classRows=meClasses.filter(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade&&String(c.stream||'').trim()===stream);
+  const classRows=meClasses.filter(c=>String(c.academic_year||'2026')===year&&meClassGrade(c)===grade&&String(c.stream||'').trim()===stream);
   if(!classRows.length){meNotice('No class setup matches those selections. Check Classes in the school system.');return}
   meNotice('Loading students and saved marks…');
   const sr=await client.from('students').select('id,school_id,admission_no,full_name,grade_level,stream').eq('school_id',school).limit(10000);
@@ -1269,7 +1269,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   if(value===''||!Number.isFinite(Number(value))||Number(value)<0||Number(value)>100){meMessage('Enter a mark from 0 to 100 for '+s.full_name+'.');return false}
   const client=meClient(),school=meSchoolId(),existing=meMarks.get(s.id),old=button.textContent;button.disabled=true;button.textContent='Saving…';
   try{
-   const val=Number(value),year=meEl('meYear').value,term=meEl('meTerm').value,examName=meEl('meExam').value,grade=meEl('meGrade').value,stream=meEl('meStream').value,classRow=meClasses.find(c=>String(c.academic_year||'2026')===year&&String(c.grade_level||c.name||'').trim()===grade&&String(c.stream||'').trim()===stream),payload={school_id:school,student_id:s.id,subject:meEl('meSubject').value,term,academic_year:year,exam_name:examName,class_id:classRow?.id||null,stream,cat_marks:0,exam_marks:val,total_percentage:val,grade_letter:meGradeLetter(val),remarks:''};
+   const val=Number(value),year=meEl('meYear').value,term=meEl('meTerm').value,examName=meEl('meExam').value,grade=meEl('meGrade').value,stream=meEl('meStream').value,classRow=meClasses.find(c=>String(c.academic_year||'2026')===year&&meClassGrade(c)===grade&&String(c.stream||'').trim()===stream),payload={school_id:school,student_id:s.id,subject:meEl('meSubject').value,term,academic_year:year,exam_name:examName,class_id:classRow?.id||null,stream,cat_marks:0,exam_marks:val,grade_letter:meGradeLetter(val),remarks:''};
    let result=existing?.id?await client.from('exam_marks').update(payload).eq('id',existing.id).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks,academic_year,exam_name,class_id,stream,published').single():await client.from('exam_marks').insert(payload).select('id,student_id,term,subject,cat_marks,exam_marks,total_percentage,grade_letter,remarks,academic_year,exam_name,class_id,stream,published').single();
    if(result.error)throw result.error;meMarks.set(s.id,{...result.data,value:result.data.total_percentage??val});meSaved.add(s.id);status.textContent='Saved';meMessage('Saved marks for '+s.full_name+'.');meCounts();return true;
   }catch(e){meMessage('Save failed: '+(e.message||'check database permissions'));return false}
@@ -1285,7 +1285,7 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
  }
  function meBind(){
   meEl('meGrade').addEventListener('change',()=>{meUpdateStreams();meMessage('')});
-  meEl('meYear').addEventListener('change',()=>{const year=meEl('meYear').value;const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')===year).map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));meEl('meGrade').disabled=false;meUpdateStreams();meMessage('')});
+  meEl('meYear').addEventListener('change',()=>{const year=meEl('meYear').value;const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')===year).map(c=>meClassGrade(c)).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));meEl('meGrade').disabled=false;meUpdateStreams();meMessage('')});
   meEl('meStream').addEventListener('change',()=>{meMessage('');meLoadStudents()});meEl('meSubject').addEventListener('change',()=>{meMessage('');meLoadStudents()});meEl('meTerm').addEventListener('change',()=>{meMessage('');meLoadStudents()});meEl('meExam').addEventListener('change',()=>{meMessage('');meLoadStudents()});
   meEl('meSearch').addEventListener('input',meRender);meEl('meClear').addEventListener('click',()=>{meEl('meSearch').value='';meRender()});
   meEl('meSaveAll').addEventListener('click',meSaveAll);
