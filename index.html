@@ -1159,11 +1159,18 @@ button{border-radius:10px;transition:filter .15s,transform .15s;box-shadow:0 2px
   meSelect('meYear','Select academic year',years.map(y=>({value:y,label:y})));meEl('meYear').value='2026';
   const grades=[...new Set(meClasses.filter(c=>String(c.academic_year||'2026')==='2026').map(c=>String(c.grade_level||c.name||'').trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true}));
   meSelect('meGrade','Not selected',grades.map(g=>({value:g,label:g})));
-  const [teachers,marks]=await Promise.all([client.from('teachers').select('subject').eq('school_id',school).limit(2000),client.from('exam_marks').select('subject').eq('school_id',school).limit(10000)]);
-  const subjects=new Set();
-  if(!teachers.error)(teachers.data||[]).forEach(r=>String(r.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(x=>subjects.add(x)));
-  if(!marks.error)(marks.data||[]).forEach(r=>{const x=String(r.subject||'').trim();if(x)subjects.add(x)});
-  meSubjects=[...subjects].sort((a,b)=>a.localeCompare(b));
+  if(role==='teacher'){
+   const own=await client.from('teachers').select('subject').eq('school_id',school).eq('user_id',user.id).maybeSingle();
+   if(own.error){meNotice('Could not load your awarded subjects: '+own.error.message);return}
+   meSubjects=[...new Set(String(own.data?.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+   if(meSubjects.length<2)meNotice('Your teacher account currently has fewer than two recorded subjects. Please ask your school administrator to assign at least two subjects.');
+  }else{
+   const [teachers,marks]=await Promise.all([client.from('teachers').select('subject').eq('school_id',school).limit(2000),client.from('exam_marks').select('subject').eq('school_id',school).limit(10000)]);
+   const subjects=new Set();
+   if(!teachers.error)(teachers.data||[]).forEach(r=>String(r.subject||'').split(/[,;|]/).map(x=>x.trim()).filter(Boolean).forEach(x=>subjects.add(x)));
+   if(!marks.error)(marks.data||[]).forEach(r=>{const x=String(r.subject||'').trim();if(x)subjects.add(x)});
+   meSubjects=[...subjects].sort((a,b)=>a.localeCompare(b));
+  }
   meSelect('meSubject','Not selected',meSubjects.map(s=>({value:s,label:s})));
   meEl('meGrade').disabled=false;meEl('meYear').disabled=false;meEl('meSubject').disabled=!meSubjects.length;
   if(!meSubjects.length)meNotice('No subject names were found in this school\'s teacher assignments or saved exam records. Configure the school\'s subjects first; no subject names have been invented.');
