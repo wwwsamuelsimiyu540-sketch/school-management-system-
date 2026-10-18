@@ -1,37 +1,52 @@
-# My School System Manager — System Structure
+# School Management System — System Structure
 
 ## Platform
+
 - Front end: responsive HTML/CSS/JavaScript in `index.html`.
 - Identity: Supabase Auth email/password.
-- Authorization: role assigned in `public.profiles.role`; never allow the user to choose their role at login.
-- Database: existing Supabase project `emdmnimxeoifgobzuglx`; keep the current school and profile records.
-- Public client uses the Supabase publishable key only. Never put a service-role/secret key in browser code.
+- Authorization: `public.profiles.role`; never allow users to choose their own privileged role.
+- Database: Supabase project `emdmnimxeoifgobzuglx`; preserve existing school, profile, student and marks data.
+- Browser client uses only the public Supabase key. Never expose service-role keys.
 
 ## Roles and panels
-1. `super_admin` — platform-wide role with no school assignment (`school_id IS NULL`); reviews school registrations, activates/suspends schools, and manages platform users, activity, communications, reports and settings.
-2. `principal` — school dashboard, students, teachers, classes, attendance, fees overview, exams/marks, report cards, announcements, calendar and school settings.
-3. `teacher` — assigned classes, attendance, assessments/marks, class reports, announcements and calendar.
-4. `bursar` — fee records, payments, balances, receipts and finance reports.
-5. `parent` — linked children only; results, attendance, announcements and fee balances.
-6. `student` — own results, attendance, timetable and announcements.
 
-## Database modules
-- Existing tables retained: `schools`, `profiles`, `students`, `exam_marks`, `platform_activity_log`, `platform_user_presence`, `platform_messages`.
-- Added by the core migration: `teachers`, `school_classes`, `attendance_records`, `fee_payments`, `school_events`, `school_announcements`, `parent_student_links`, `school_messages`.
-- School registration workflow: `school_registration_requests` (created and secured by `20261011190000_school_registration_requests.sql`).
-- Row-level security is enabled on all new tables. Policies scope data to a school and reserve fee management for principal/bursar and platform oversight for super_admins.
+1. **`developer`** — platform-wide, no school assignment; school approvals, suspensions/reactivation, user management, analytics, subscriptions, system health, audit logs, demo centre, support, platform settings, feature management, notifications, incidents, privacy requests, integrations, scheduled tasks and data quality.
+2. **`administrator`** — one approved school; school settings, academic calendar, classes/streams, subjects, students, teachers and assignments, examinations, marks entry, attendance, grading scales, rubrics/competencies, fees, announcements and academic reports.
+3. **`teacher`** — assigned classes, streams and subjects; marks entry and announcements. Teachers cannot manage school-wide class/student administration or choose the academic year/term.
+4. **`bursar`** — fee charges, balances, payment recording, receipts, payment history and finance reports.
+5. **`parent`** — linked children only; results, attendance, fee charges, payments and balances.
+6. **`student`** — own profile, results, subjects, attendance and fee statement.
 
-## Important rollout notes
-- Existing login and school/profile rows must be preserved.
-- The browser may use only the publishable key; do not expose service-role keys.
-- Production parent/student isolation depends on linking accounts correctly in `parent_student_links` and on appropriate RLS policies for the existing student/marks tables.
-- WhatsApp/email actions open the user's installed app or email client; they do not send messages in the background.
-- Counts and activity panels should be labeled accurately when a table has no records yet.
+## Education-level rules
 
+- **Pre-Primary:** PP1 and PP2.
+- **Primary:** Grades 1–6.
+- **Junior School:** Grades 7–9.
+- **Senior School:** Grades 10–12 with pathways and tracks.
 
-## School lifecycle and marks workflow
-- School registration requests start as `pending`; Super Admin can approve or reject them.
-- Approval creates a school and assigns the requesting principal to that school. Rejection does not grant school access.
-- Super Admin can set an approved school's status to `suspended` and later restore it to `approved`.
-- School administrators register teachers and students within their own workspace. The marks screen supports searching by student name, class, or admission number before entering marks.
-- Marks Entry is integrated with Supabase and supports separate academic year, grade, stream, subject, term and exam filters, admission-number sorting, student search, individual Save/Edit, Save All and publishing. `exam_marks.total_percentage` is a generated database column; the browser writes CAT/exam values and reads the calculated total. Student/teacher CRUD still needs complete end-to-end role testing before production use.
+Only levels registered for a school appear in its grade options. Classes and streams are separate per grade. Subjects must match their education level and grade. Senior School subjects and new/edited student placements require a configured pathway and track. Marks and competency assessments must match the student’s grade and, for Senior School, pathway/track. Student and subject rankings reset within each grade and within each Senior School pathway/track cohort.
+
+## Academic calendar and assessment workflow
+
+- Administrator sets the school-wide active academic year and term in **School Settings**.
+- Exams and payment records inherit the school-wide year and term.
+- Teachers are assigned classes, streams and subjects by the administrator; new teacher registration requires at least two distinct subjects.
+- Teachers can save marks for one student or part of a class, continue later, and submit marks. Missing marks are not treated as zero.
+- School-specific grading ranges and competency rubrics are used in reports.
+- Academic reports are administrator-only and include filters for education level, grade, stream, Senior School pathway/track, subject, gender, exam and analysis type. Rankings do not mix grades or Senior School pathways/tracks.
+- Fee charges can be applied to all students in a selected class/stream. Student, parent, administrator and bursar views calculate totals from recorded charges and payments.
+
+## Data integrity and security
+
+- RLS scopes school records to the signed-in user’s school and role.
+- Database triggers validate registered education levels, class/stream membership, subject/teacher assignment, mark/subject/student consistency, fee amounts and same-school relationships.
+- Unique indexes prevent duplicate class/stream pairs, student admission numbers, staff numbers and subject definitions.
+- Removing a level already used by classes, subjects, students, grading scales or rubric criteria is blocked.
+- Older Senior School student/subject records with missing pathway data are preserved and can be completed in the administrator’s placement/classification forms.
+- Parent/student records depend on secure account links. Never expose service-role secrets in GitHub Pages.
+- Email/WhatsApp buttons open drafts; they do not silently send messages.
+- Backups are managed in Supabase project settings.
+
+## Verification note
+
+The JavaScript validator checks that inline code parses, and GitHub Pages builds the site. Both must pass, but production readiness also requires signing in with each role and testing database writes, RLS isolation, marks submission, fee balances and report outputs against real school data.
