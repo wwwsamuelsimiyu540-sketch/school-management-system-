@@ -88,7 +88,7 @@ td button{padding:7px 10px;font-size:12px}
 }
 @media(max-width:390px){.top .brand{font-size:0}.top .brand .logo,.top .brand #hamb{font-size:15px}.top #badge{max-width:76px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat{padding:12px}.num{font-size:23px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
-</style><script>
+.workflow-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:12px}.workflow-step{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fff;min-width:0}.workflow-step p{color:var(--muted);font-size:13px;line-height:1.45;min-height:56px}.workflow-step-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.workflow-status{display:inline-block;border-radius:999px;padding:4px 7px;font-size:10px;font-weight:750;white-space:nowrap}.workflow-status.ready{background:#e7f7ee;color:#176b3a}.workflow-status.pending{background:#fff3dc;color:#855600}.workflow-step button{margin-top:9px;max-width:100%;white-space:normal}</style><script>
 window.addEventListener('error',function(e){if(!e.error)return;const message='JavaScript error: '+(e.message||'Unknown error')+'. Refresh the page and try again.';const show=function(){const app=document.getElementById('app'),auth=document.getElementById('auth'),content=document.getElementById('content'),msg=document.getElementById('authmsg');document.body.classList.remove('auth-pending');if(app&&!app.classList.contains('hidden')&&content){content.innerHTML='<section class="panel"><h2>Dashboard could not finish loading</h2><p class="msg error"></p><button type="button" onclick="location.reload()">Refresh system</button></section>';content.querySelector('.msg').textContent=message;return}if(auth)auth.classList.remove('hidden');if(msg){msg.className='msg error';msg.textContent=message}};if(document.body)show();else document.addEventListener('DOMContentLoaded',show,{once:true})});
 window.addEventListener('unhandledrejection',function(e){const reason=e.reason;const message='Startup error: '+(reason&&reason.message?reason.message:String(reason||'Unknown error'))+'. Refresh the page and try again.';const show=function(){const app=document.getElementById('app'),auth=document.getElementById('auth'),content=document.getElementById('content'),msg=document.getElementById('authmsg');document.body.classList.remove('auth-pending');if(app&&!app.classList.contains('hidden')&&content){content.innerHTML='<section class="panel"><h2>Dashboard could not finish loading</h2><p class="msg error"></p><button type="button" onclick="location.reload()">Refresh system</button></section>';content.querySelector('.msg').textContent=message;return}if(auth)auth.classList.remove('hidden');if(msg){msg.className='msg error';msg.textContent=message}};if(document.body)show();else document.addEventListener('DOMContentLoaded',show,{once:true})});
 </script></head><body class="auth-pending">
@@ -310,12 +310,73 @@ chartPanel('4. Payments by stream','Recorded payments grouped by student stream'
 }
 return '';
 }
+function workflowPanel(){
+const arr=k=>Array.isArray(data[k])?data[k]:[];
+const teachers=arr('staff').filter(x=>x.role==='teacher');
+const submitted=arr('marks').filter(x=>x.status==='submitted');
+let steps=[];
+if(profile.role==='administrator'){
+steps=[
+{title:'1. Set school calendar',page:'School Settings',detail:'Confirm education levels, academic year and active term.',ready:!!(school?.active_academic_year&&school?.active_term)},
+{title:'2. Set up classes and streams',page:'Classes & Streams',detail:'Create every grade and stream before assigning learners.',ready:arr('classes').length>0,count:arr('classes').length},
+{title:'3. Configure learning areas',page:'Subjects',detail:'Add subjects for each grade and the applicable pathway.',ready:arr('subjects').length>0,count:arr('subjects').length},
+{title:'4. Assign teachers',page:'Teachers',detail:'Register staff and assign each teacher to the correct classes, streams and subjects.',ready:teachers.length>0&&arr('assignments').length>0,count:arr('assignments').length},
+{title:'5. Configure grading',page:'Grading System',detail:'Save the school-approved grading ranges for each education level.',ready:arr('gradingScales').length>0,count:arr('gradingScales').length},
+{title:'6. Enrol learners',page:'Students',detail:'Register learners and place each in the correct class and stream.',ready:arr('students').length>0,count:arr('students').length},
+{title:'7. Create examinations',page:'Examinations',detail:'Set the exam name, academic year and term before marks entry.',ready:arr('exams').length>0,count:arr('exams').length},
+{title:'8. Publish timetable',page:'Timetable',detail:'Allocate teachers, subjects, periods and rooms; resolve clashes before publishing.',ready:arr('timetable').length>0,count:arr('timetable').length},
+{title:'9. Set fee charges',page:'Fees',detail:'Configure the charges used to calculate each learner’s balance.',ready:arr('charges').length>0,count:arr('charges').length},
+{title:'10. Record and submit marks',page:'Marks Entry',detail:'Teachers enter marks, save drafts, then submit completed assessments.',ready:submitted.length>0,count:submitted.length},
+{title:'11. Review academic reports',page:'Reports',detail:'Check subject, class, stream and learner analysis before printing or sharing results.',ready:submitted.length>0,count:submitted.length},
+{title:'12. Manage finance and stock',page:'Finance & Accounting',detail:'Reconcile payments and expenses; track stock, suppliers and purchase orders.',ready:arr('financialLedger').length>0||arr('inventory').length>0,count:arr('financialLedger').length+arr('inventory').length},
+{title:'13. Enable learning and parent updates',page:'Learning Resources',detail:'Publish learning resources and assignments, then queue approved parent notices.',ready:arr('learningResources').length>0||arr('learningAssignments').length>0,count:arr('learningResources').length+arr('learningAssignments').length}
+];
+}else if(profile.role==='teacher'){
+steps=[
+{title:'1. Confirm your assignments',page:'My Classes',detail:'Check only the classes, streams and subjects assigned by the administrator.',ready:arr('assignments').some(x=>x.teacher_id===user.id),count:arr('assignments').filter(x=>x.teacher_id===user.id).length},
+{title:'2. Check your timetable',page:'Timetable',detail:'Review teaching periods and approved substitutions.',ready:arr('timetable').some(x=>x.teacher_id===user.id)},
+{title:'3. Enter and submit marks',page:'Marks Entry',detail:'Choose the assigned class, subject, stream and exam. Save drafts as needed, then submit.',ready:submitted.some(x=>x.entered_by===user.id||x.updated_by===user.id)},
+{title:'4. Record CBE evidence',page:'Competency Assessments',detail:'Record observations and rubric evidence against the correct learners and competencies.',ready:arr('rubricAssessments').some(x=>x.assessor_id===user.id||x.created_by===user.id)},
+{title:'5. Share learning materials',page:'Learning Resources',detail:'Publish approved resources for the classes and streams you teach.',ready:arr('learningResources').some(x=>x.created_by===user.id)},
+{title:'6. Manage assignments',page:'My Assignments',detail:'Publish tasks, review learner submissions and give feedback.',ready:arr('learningAssignments').some(x=>x.teacher_id===user.id)}
+];
+}else if(profile.role==='bursar'){
+steps=[
+{title:'1. Review fee accounts',page:'Fee Accounts',detail:'Check charges, payments and outstanding learner balances.',ready:arr('charges').length>0||arr('fees').length>0},
+{title:'2. Record payments',page:'Record Payment',detail:'Record each payment against the correct learner and issue a receipt.',ready:arr('fees').length>0,count:arr('fees').length},
+{title:'3. Review payment history',page:'Payment History',detail:'Confirm recorded payments and investigate duplicate or unmatched entries.',ready:arr('fees').length>0},
+{title:'4. Reconcile finance',page:'Finance & Accounting',detail:'Review ledger entries, bank transactions, income and expenditure.',ready:arr('financialLedger').length>0||arr('bankTransactions').length>0},
+{title:'5. Control stock and purchasing',page:'Inventory',detail:'Receive and issue stock, monitor reorder levels and follow purchase orders.',ready:arr('inventory').length>0||arr('purchaseOrders').length>0},
+{title:'6. Review financial reports',page:'Fee Reports',detail:'Check collection totals, outstanding balances and payment trends.',ready:arr('fees').length>0||arr('charges').length>0}
+];
+}else if(profile.role==='parent'){
+steps=[
+{title:'1. Confirm linked children',page:'My Children',detail:'Check that each child is correctly linked to your account.',ready:arr('studentLinks').some(x=>x.user_id===user.id&&x.active&&['parent','guardian'].includes(x.relationship))},
+{title:'2. Review results',page:'My Children’s Results',detail:'View released results and the learner’s academic progress.',ready:submitted.length>0},
+{title:'3. Check attendance',page:'My Children’s Attendance',detail:'Review attendance records and follow up on unexplained absences.',ready:arr('attendance').length>0},
+{title:'4. Check fee statements',page:'Fee Statements',detail:'Review charges, payments and any outstanding balance.',ready:arr('charges').length>0||arr('fees').length>0},
+{title:'5. Follow learning tasks',page:'My Children’s Assignments',detail:'Check assignments and available learning materials.',ready:arr('learningAssignments').length>0}
+];
+}else if(profile.role==='student'){
+steps=[
+{title:'1. Check your subjects',page:'My Subjects',detail:'Confirm the subjects and learning areas shown for your class.',ready:arr('subjects').length>0},
+{title:'2. Review released results',page:'My Results',detail:'Only submitted marks are shown as released results.',ready:submitted.length>0},
+{title:'3. Check attendance',page:'My Attendance',detail:'Review your attendance record and report discrepancies.',ready:arr('attendance').length>0},
+{title:'4. Complete assignments',page:'My Assignments',detail:'Read instructions and submit work before its due date.',ready:arr('learningAssignments').length>0},
+{title:'5. Review your learning portfolio',page:'My Learning Portfolio',detail:'Follow your competency evidence, reflections and learning progress.',ready:arr('learningPortfolios').length>0||arr('learningProgress').length>0},
+{title:'6. Check fees',page:'My Fees',detail:'View the fee information available to your linked student record.',ready:arr('charges').length>0||arr('fees').length>0}
+];
+}
+if(!steps.length)return '';
+const cards=steps.map(st=>'<article class="workflow-step"><div class="workflow-step-top"><strong>'+esc(st.title)+'</strong><span class="workflow-status '+(st.ready?'ready':'pending')+'">'+(st.ready?'Records found':'Needs attention')+'</span></div><p>'+esc(st.detail)+'</p>'+(st.count!==undefined?'<div class="small muted">Current records: '+st.count+'</div>':'')+'<button type="button" class="secondary" data-quick="'+esc(st.page)+'">Open '+esc(st.page)+'</button></article>').join('');
+return panel('Recommended school workflow','<p class="muted small">Use this sequence to connect setup, daily operations and reporting. Statuses are based on records currently loaded; they do not certify that every task is complete.</p><div class="workflow-list">'+cards+'</div>');
+}
 function dashboard(){
 let dev=profile.role==='developer';
 let cards=dev?[stat('Registered schools',data.schools.length),stat('Pending approvals',data.schools.filter(s=>s.status==='pending').length),stat('Approved schools',data.schools.filter(s=>s.status==='approved').length),stat('Platform users',data.users.length)]:[stat('Students',data.students.length),stat('Grades / streams',new Set(data.classes.map(x=>x.grade)).size+' / '+data.classes.length),stat('Subjects',data.subjects.length),stat('Marks',data.marks.length)];
 let quick=(menus[profile.role]||[]).filter(x=>x!=='Dashboard').map(x=>'<button class="secondary" data-quick="'+esc(x)+'">'+esc(x)+'</button>').join('');
 let main=dev?developerAnalytics()+panel('Recent platform activity',developerActivity(6)):profile.role==='teacher'?teacherPerformanceCharts()+panel('System overview','Your dashboard reflects saved records available to your account.'):profile.role==='student'?studentPortalPage('Dashboard'):profile.role==='parent'?parentPortalPage('Dashboard'):profile.role==='bursar'?bursarPortalPage('Dashboard'):panel('System overview','Your dashboard reflects saved records available to your account.');
-return header(dev?'Developer Portal':'Dashboard','Welcome, '+(profile.full_name||user.email))+'<div class="stats">'+cards.join('')+'</div>'+panel('Quick actions','<div class="actions">'+quick+'</div>')+main+(dev||profile.role==='teacher'?'':roleDashboardCharts());
+return header(dev?'Developer Portal':'Dashboard','Welcome, '+(profile.full_name||user.email))+'<div class="stats">'+cards.join('')+'</div>'+panel('Quick actions','<div class="actions">'+quick+'</div>')+(dev?'':workflowPanel())+main+(dev||profile.role==='teacher'?'':roleDashboardCharts());
 }
 function teacherPerformanceCharts(){
 if(profile.role!=='teacher')return '';
