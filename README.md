@@ -39,7 +39,7 @@ The administrator sets the school-wide academic year and term once in **School S
 - **Core Competencies & Values** records curriculum-linked core competencies, values and pertinent contemporary issues (PCIs), with achievement level, evidence and next steps.
 - **Learner Accommodations** records practical instructional, assessment, accessibility and communication adjustments. These details are restricted to authorized school staff.
 - **Community Service Learning** records project goals, community partners, dates, outcomes and status; learners’ evidence can be attached to their portfolios.
-- New additive database migrations are in `supabase/migrations/20261018000000_cbe_cbc_additions.sql`, `20261018003000_cbe_cbc_policy_tuning.sql`, and `20261018004000_cbe_competencies_inclusion_service_learning.sql`. They create new tables and policies and do not drop or rewrite existing records.
+- New additive database migrations are in `supabase/migrations/20261018000000_cbe_cbc_additions.sql`, `20261018003000_cbe_cbc_policy_tuning.sql`, and `20261018004000_cbe_competencies_inclusion_service_learning.sql`, and `20261018005000_cbe_cbc_fk_indexes.sql`. They create new tables, policies and indexes and do not drop or rewrite existing records.
 - Competency rubrics remain separate from numeric grading scales; assessment evidence should not be automatically converted into a numeric mark unless the applicable assessment policy requires it.
 
 ## Data and security
