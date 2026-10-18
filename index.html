@@ -131,8 +131,13 @@ const assigned=data.assignments.filter(a=>a.teacher_id===user.id),subjectIds=[..
 const valid=data.marks.filter(m=>m.status==='submitted'&&subjectIds.includes(m.subject_id)&&data.exams.some(e=>e.id===m.exam_id));
 const avg=(arr)=>arr.length?arr.reduce((sum,m)=>sum+Number(m.marks||0),0)/arr.length:null;
 const escLabel=x=>esc(String(x||'').length>14?String(x).slice(0,12)+'…':(x||''));
-if(!subjects.length)return panel('Subject Performance Analysis','<p class="muted">No subjects are assigned to your account yet. Ask your school administrator to assign your subjects, classes and streams.</p>');
-if(!valid.length)return panel('Subject Performance Analysis','<p class="muted">Your subjects are listed, but there are no submitted marks to chart yet. Charts update automatically when marks are submitted and saved in the system.</p>');
+if(!subjects.length||!valid.length){
+const reason=!subjects.length?'No subjects are assigned to your account yet. Ask the school administrator to assign your subjects, classes and streams.':'No submitted marks are available for your assigned subjects yet. These charts will populate after marks are submitted.';
+return '<div class="grid">'+
+panel('1. Average marks by assigned subject','<p class="muted">'+esc(reason)+'</p><p>Chart ready — no data to plot yet.</p>')+
+panel('2. Subject performance trends by examination','<p class="muted">'+esc(reason)+'</p><p>Chart ready — no data to plot yet.</p>')+
+panel('3. Students assessed by assigned subject','<p class="muted">'+esc(reason)+'</p><p>Chart ready — no data to plot yet.</p>')+'</div>';
+}
 const exams=[...new Map(valid.map(m=>[m.exam_id,data.exams.find(e=>e.id===m.exam_id)]).filter(x=>x[1])).values()].sort((a,b)=>String(a.academic_year||'').localeCompare(String(b.academic_year||''))||String(a.term||'').localeCompare(String(b.term||''))||String(a.name||'').localeCompare(String(b.name||'')));
 const labelExam=e=>[e.name,e.term,e.academic_year].filter(Boolean).join(' ');
 const averages=subjects.map(s=>({s,marks:valid.filter(m=>m.subject_id===s.id),average:avg(valid.filter(m=>m.subject_id===s.id))})).filter(x=>x.average!==null);
