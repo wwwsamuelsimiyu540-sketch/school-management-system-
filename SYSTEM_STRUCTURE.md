@@ -43,7 +43,10 @@ Only levels registered for a school appear in its grade options. Classes and str
 - Learning support plans track a specific learning need, support action, target/review date, status and outcome.
 - Learning reflections record strengths and next steps.
 - Assessment moderation logs preserve review status and notes.
-- Migration: `supabase/migrations/20261018000000_cbe_cbc_additions.sql`. Apply it before using these new panels. It creates new tables and policies only; it does not drop existing tables or modify existing learner marks.
+- Core Competencies & Values tracks core competencies, values and PCIs with achievement evidence and next steps.
+- Learner Accommodations stores staff-only instructional, assessment, accessibility and communication adjustments.
+- Community Service Learning tracks school projects, partners, dates, outcomes and status; portfolio entries can store learner evidence.
+- Additive migrations: `20261018000000_cbe_cbc_additions.sql`, `20261018003000_cbe_cbc_policy_tuning.sql`, and `20261018004000_cbe_competencies_inclusion_service_learning.sql`. These add tables/policies without dropping existing tables or changing existing marks.
 - Competency rubrics are separate from numerical grading ranges; never assume every competency level should be converted into a percentage.
 
 ## Data integrity and security
