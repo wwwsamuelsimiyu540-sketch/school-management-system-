@@ -80,11 +80,8 @@ using (
 );
 drop policy if exists cbe_portfolio_write on public.school_learning_portfolios;
 create policy cbe_portfolio_write on public.school_learning_portfolios for all to authenticated
-using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_portfolios.school_id and p.role in ('administrator','teacher')))
-with check (
-  exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_portfolios.school_id and p.role in ('administrator','teacher'))
-  and exists (select 1 from public.students s where s.id=school_learning_portfolios.student_id and s.school_id=school_learning_portfolios.school_id)
-);
+using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_portfolios.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_portfolios.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_portfolios.student_id and s.school_id=school_learning_portfolios.school_id and ta.teacher_id=auth.uid())))
+with check (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_portfolios.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_portfolios.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_portfolios.student_id and s.school_id=school_learning_portfolios.school_id and ta.teacher_id=auth.uid())));
 
 drop policy if exists cbe_support_select on public.school_learning_support_plans;
 create policy cbe_support_select on public.school_learning_support_plans for select to authenticated
@@ -97,10 +94,8 @@ using (
 );
 drop policy if exists cbe_support_write on public.school_learning_support_plans;
 create policy cbe_support_write on public.school_learning_support_plans for all to authenticated
-using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role in ('administrator','teacher')))
-with check (
-  (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_support_plans.student_id and s.school_id=school_learning_support_plans.school_id and ta.teacher_id=auth.uid())))
-);
+using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_support_plans.student_id and s.school_id=school_learning_support_plans.school_id and ta.teacher_id=auth.uid())))
+with check (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_support_plans.student_id and s.school_id=school_learning_support_plans.school_id and ta.teacher_id=auth.uid())));
 
 drop policy if exists cbe_reflections_select on public.school_learning_reflections;
 create policy cbe_reflections_select on public.school_learning_reflections for select to authenticated
@@ -113,10 +108,8 @@ using (
 );
 drop policy if exists cbe_reflections_write on public.school_learning_reflections;
 create policy cbe_reflections_write on public.school_learning_reflections for all to authenticated
-using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role in ('administrator','teacher')))
-with check (
-  (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_reflections.student_id and s.school_id=school_learning_reflections.school_id and ta.teacher_id=auth.uid())))
-);
+using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_reflections.student_id and s.school_id=school_learning_reflections.school_id and ta.teacher_id=auth.uid())))
+with check (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_reflections.student_id and s.school_id=school_learning_reflections.school_id and ta.teacher_id=auth.uid())));
 
 drop policy if exists cbe_moderation_select on public.school_assessment_moderation;
 create policy cbe_moderation_select on public.school_assessment_moderation for select to authenticated
