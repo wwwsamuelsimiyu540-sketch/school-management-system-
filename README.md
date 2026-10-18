@@ -29,6 +29,16 @@ The system filters grades, subjects, streams, teacher assignments and academic r
 
 The administrator sets the school-wide academic year and term once in **School Settings**. Exams, marks and fee transactions inherit that calendar. Teachers do not choose their own academic year or term.
 
+## CBE/CBC additions (additive)
+
+- **Curriculum & Learning Areas** gives administrators a level-aware setup checklist and links to existing subject, grading and rubric configuration; subject lists must be checked against current KICD curriculum designs.
+- **Learner Portfolio** records project/practical/presentation/observation evidence, optional evidence links, learning areas and competency tags without replacing exam marks.
+- **Learning Support** records learner-specific needs, support actions, target/review dates and outcomes.
+- **Learning Reflections** stores teacher observations, learner strengths and next steps.
+- **Assessment Moderation** records administrator review status and notes.
+- New tables are introduced in `supabase/migrations/20261018000000_cbe_cbc_additions.sql`; the migration is additive and does not drop or rewrite existing records. Apply it to the linked Supabase project before using the new panels.
+- Competency rubrics remain separate from numeric grading scales; assessment evidence should not be automatically converted into a numeric mark unless the applicable assessment policy requires it.
+
 ## Data and security
 
 - Supabase Auth determines the signed-in user. Users cannot grant themselves privileged roles from the login form.
