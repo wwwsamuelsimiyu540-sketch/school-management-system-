@@ -11,6 +11,7 @@ SELECT CASE
  ELSE NULL END;
 $$;
 REVOKE EXECUTE ON FUNCTION public.school_level_for_grade(text) FROM PUBLIC, anon, authenticated;
+ALTER FUNCTION public.school_level_for_grade(text) SET search_path = public, pg_temp;
 
 CREATE OR REPLACE FUNCTION public.validate_school_level_record()
 RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path=public,pg_temp AS $$
@@ -113,7 +114,11 @@ REVOKE EXECUTE ON FUNCTION public.prevent_removing_school_levels_in_use() FROM P
 DROP TRIGGER IF EXISTS prevent_removing_school_levels_in_use ON public.schools;
 CREATE TRIGGER prevent_removing_school_levels_in_use BEFORE UPDATE OF school_level ON public.schools FOR EACH ROW EXECUTE FUNCTION public.prevent_removing_school_levels_in_use();
 
-CREATE UNIQUE INDEX IF NOT EXISTS school_classes_school_grade_stream_unique ON public.school_classes(school_id,grade,stream);
-CREATE UNIQUE INDEX IF NOT EXISTS students_school_admission_unique ON public.students(school_id,lower(admission_no));
-CREATE UNIQUE INDEX IF NOT EXISTS profiles_school_staff_no_unique ON public.profiles(school_id,lower(staff_no)) WHERE staff_no IS NOT NULL AND trim(staff_no)<>'';
-CREATE UNIQUE INDEX IF NOT EXISTS subjects_school_level_grade_name_pathway_track_unique ON public.subjects(school_id,education_level,grade,lower(name),coalesce(pathway,''),coalesce(track,''));
+DROP INDEX IF EXISTS public.school_classes_school_grade_stream_unique;
+CREATE UNIQUE INDEX school_classes_school_grade_stream_unique ON public.school_classes(school_id,grade,lower(trim(stream)));
+DROP INDEX IF EXISTS public.students_school_admission_unique;
+CREATE UNIQUE INDEX students_school_admission_unique ON public.students(school_id,lower(trim(admission_no)));
+DROP INDEX IF EXISTS public.profiles_school_staff_no_unique;
+CREATE UNIQUE INDEX profiles_school_staff_no_unique ON public.profiles(school_id,lower(trim(staff_no))) WHERE staff_no IS NOT NULL AND trim(staff_no)<>'';
+DROP INDEX IF EXISTS public.subjects_school_level_grade_name_pathway_track_unique;
+CREATE UNIQUE INDEX subjects_school_level_grade_name_pathway_track_unique ON public.subjects(school_id,education_level,grade,lower(trim(name)),coalesce(pathway,''),coalesce(track,''));
