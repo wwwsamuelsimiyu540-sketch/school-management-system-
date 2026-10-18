@@ -46,7 +46,7 @@ Only levels registered for a school appear in its grade options. Classes and str
 - Core Competencies & Values tracks core competencies, values and PCIs with achievement evidence and next steps.
 - Learner Accommodations stores staff-only instructional, assessment, accessibility and communication adjustments.
 - Community Service Learning tracks school projects, partners, dates, outcomes and status; portfolio entries can store learner evidence.
-- Additive migrations: `20261018000000_cbe_cbc_additions.sql`, `20261018003000_cbe_cbc_policy_tuning.sql`, and `20261018004000_cbe_competencies_inclusion_service_learning.sql`. These add tables/policies without dropping existing tables or changing existing marks.
+- Additive migrations: `20261018000000_cbe_cbc_additions.sql`, `20261018003000_cbe_cbc_policy_tuning.sql`, and `20261018004000_cbe_competencies_inclusion_service_learning.sql`, and `20261018005000_cbe_cbc_fk_indexes.sql`. These add tables/policies/indexes without dropping existing tables or changing existing marks.
 - Competency rubrics are separate from numerical grading ranges; never assume every competency level should be converted into a percentage.
 
 ## Data integrity and security
