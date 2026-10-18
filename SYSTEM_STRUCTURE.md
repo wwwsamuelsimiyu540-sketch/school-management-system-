@@ -36,6 +36,16 @@ Only levels registered for a school appear in its grade options. Classes and str
 - Academic reports are administrator-only and include filters for education level, grade, stream, Senior School pathway/track, subject, gender, exam and analysis type. Rankings do not mix grades or Senior School pathways/tracks.
 - Fee charges can be applied to all students in a selected class/stream. Student, parent, administrator and bursar views calculate totals from recorded charges and payments.
 
+## CBE/CBC additions (additive)
+
+- Curriculum & Learning Areas helps administrators review level-specific setup while preserving the school's existing classes, subjects, grading rules and rubrics.
+- Learner portfolios capture project/practical/presentation/observation evidence and competency tags.
+- Learning support plans track a specific learning need, support action, target/review date, status and outcome.
+- Learning reflections record strengths and next steps.
+- Assessment moderation logs preserve review status and notes.
+- Migration: `supabase/migrations/20261018000000_cbe_cbc_additions.sql`. Apply it before using these new panels. It creates new tables and policies only; it does not drop existing tables or modify existing learner marks.
+- Competency rubrics are separate from numerical grading ranges; never assume every competency level should be converted into a percentage.
+
 ## Data integrity and security
 
 - RLS scopes school records to the signed-in user’s school and role.
