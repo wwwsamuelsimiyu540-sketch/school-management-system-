@@ -74,7 +74,7 @@ create policy cbe_portfolio_select on public.school_learning_portfolios for sele
 using (
   exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_portfolios.school_id)
   and (
-    exists (select 1 from public.profiles p where p.id=auth.uid() and p.role in ('administrator','developer','teacher'))
+    exists (select 1 from public.profiles p where p.id=auth.uid() and p.role in ('administrator','developer')) or exists (select 1 from public.profiles p join public.students s on s.school_id=p.school_id join public.teacher_assignments ta on ta.school_id=s.school_id and ta.teacher_id=p.id and ta.grade=s.grade and ta.stream=s.stream where p.id=auth.uid() and p.role='teacher' and s.id=school_learning_portfolios.student_id)
     or exists (select 1 from public.student_account_links l where l.user_id=auth.uid() and l.student_id=school_learning_portfolios.student_id and l.active=true)
   )
 );
@@ -91,7 +91,7 @@ create policy cbe_support_select on public.school_learning_support_plans for sel
 using (
   exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id)
   and (
-    exists (select 1 from public.profiles p where p.id=auth.uid() and p.role in ('administrator','teacher'))
+    exists (select 1 from public.profiles p where p.id=auth.uid() and p.role='administrator') or exists (select 1 from public.profiles p join public.students s on s.school_id=p.school_id join public.teacher_assignments ta on ta.school_id=s.school_id and ta.teacher_id=p.id and ta.grade=s.grade and ta.stream=s.stream where p.id=auth.uid() and p.role='teacher' and s.id=school_learning_support_plans.student_id)
     or exists (select 1 from public.student_account_links l where l.user_id=auth.uid() and l.student_id=school_learning_support_plans.student_id and l.active=true)
   )
 );
@@ -99,8 +99,7 @@ drop policy if exists cbe_support_write on public.school_learning_support_plans;
 create policy cbe_support_write on public.school_learning_support_plans for all to authenticated
 using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role in ('administrator','teacher')))
 with check (
-  exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role in ('administrator','teacher'))
-  and exists (select 1 from public.students s where s.id=school_learning_support_plans.student_id and s.school_id=school_learning_support_plans.school_id)
+  (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_support_plans.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_support_plans.student_id and s.school_id=school_learning_support_plans.school_id and ta.teacher_id=auth.uid())))
 );
 
 drop policy if exists cbe_reflections_select on public.school_learning_reflections;
@@ -108,7 +107,7 @@ create policy cbe_reflections_select on public.school_learning_reflections for s
 using (
   exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id)
   and (
-    exists (select 1 from public.profiles p where p.id=auth.uid() and p.role in ('administrator','teacher'))
+    exists (select 1 from public.profiles p where p.id=auth.uid() and p.role='administrator') or exists (select 1 from public.profiles p join public.students s on s.school_id=p.school_id join public.teacher_assignments ta on ta.school_id=s.school_id and ta.teacher_id=p.id and ta.grade=s.grade and ta.stream=s.stream where p.id=auth.uid() and p.role='teacher' and s.id=school_learning_reflections.student_id)
     or exists (select 1 from public.student_account_links l where l.user_id=auth.uid() and l.student_id=school_learning_reflections.student_id and l.active=true)
   )
 );
@@ -116,8 +115,7 @@ drop policy if exists cbe_reflections_write on public.school_learning_reflection
 create policy cbe_reflections_write on public.school_learning_reflections for all to authenticated
 using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role in ('administrator','teacher')))
 with check (
-  exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role in ('administrator','teacher'))
-  and exists (select 1 from public.students s where s.id=school_learning_reflections.student_id and s.school_id=school_learning_reflections.school_id)
+  (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='administrator') or (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_learning_reflections.school_id and p.role='teacher') and exists (select 1 from public.students s join public.teacher_assignments ta on ta.school_id=s.school_id and ta.grade=s.grade and ta.stream=s.stream where s.id=school_learning_reflections.student_id and s.school_id=school_learning_reflections.school_id and ta.teacher_id=auth.uid())))
 );
 
 drop policy if exists cbe_moderation_select on public.school_assessment_moderation;
@@ -127,3 +125,9 @@ drop policy if exists cbe_moderation_write on public.school_assessment_moderatio
 create policy cbe_moderation_write on public.school_assessment_moderation for all to authenticated
 using (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_assessment_moderation.school_id and p.role='administrator'))
 with check (exists (select 1 from public.profiles p where p.id=auth.uid() and p.school_id=school_assessment_moderation.school_id and p.role='administrator'));
+
+-- Ensure the authenticated Data API role can reach the new RLS-protected tables.
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.school_learning_portfolios TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.school_learning_support_plans TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.school_learning_reflections TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.school_assessment_moderation TO authenticated;
