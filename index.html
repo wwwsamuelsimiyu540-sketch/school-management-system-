@@ -329,7 +329,7 @@ function bindCbe(){
  const bindInsert=async(formId,msgId,tableName,build,label)=>{
   const f=$(formId);if(!f)return;
   f.onsubmit=async e=>{e.preventDefault();const btn=f.querySelector('button[type="submit"],button');btn.disabled=true;
-   try{const fd=new FormData(f),payload=build(fd);const r=await sb.from(tableName).insert(payload);if(r.error)throw r.error;notice(msgId,label+' saved successfully.');await go(page)}
+   try{const fd=new FormData(f),payload=build(fd);const r=await sb.from(tableName).insert(payload);if(r.error)throw r.error;await go(page);notice(msgId,label+' saved successfully.')}
    catch(err){notice(msgId,'Could not save '+label.toLowerCase()+': '+(err.message||'Please check the database migration and permissions.'),true);btn.disabled=false}
   };
  };
