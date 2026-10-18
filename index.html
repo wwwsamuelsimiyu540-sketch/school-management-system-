@@ -1,5 +1,90 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>School Management System</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
 :root{--navy:#0c2b59;--blue:#1265d8;--bg:#f3f7fd;--line:#dce5f1;--muted:#66758d}*{box-sizing:border-box}body{margin:0;background:var(--bg);font:15px system-ui;color:#17243a}button,input,select,textarea{font:inherit}button{border:0;border-radius:9px;background:var(--blue);color:white;padding:10px 14px;cursor:pointer;font-weight:650}button.secondary{background:#e8eff9;color:var(--navy)}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;background:white}label{display:block;font-size:13px;font-weight:650;margin:9px 0 5px}.hidden{display:none!important}.muted{color:var(--muted)}.small{font-size:12px}.brand{font-size:20px;font-weight:800;display:flex;align-items:center;gap:10px}.logo{background:#1265d8;color:white;border-radius:12px;padding:9px}.login{min-height:100vh;display:grid;grid-template-columns:1fr 420px;gap:35px;align-items:center;padding:5vw;background:linear-gradient(130deg,#0c2b59,#1265d8)}.welcome{color:white}.welcome h1{font-size:clamp(35px,5vw,60px);line-height:1.1}.welcome p{font-size:18px;line-height:1.7;color:#e1edff;max-width:650px}.card,.panel,.stat{background:white;border:1px solid var(--line);border-radius:14px;padding:18px}.card{padding:28px;box-shadow:0 20px 60px #00183a44}.panel{margin-bottom:16px}.panel h2{font-size:17px;margin:0 0 12px}.msg{padding:10px;background:#eaf3ff;border-radius:8px;margin-top:12px}.error{background:#fff0f0;color:#a22}.app{min-height:100vh}.top{height:68px;background:white;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:3}.layout{display:grid;grid-template-columns:235px 1fr;min-height:calc(100vh - 68px)}aside{background:var(--navy);padding:15px;color:white}.who{padding:12px;background:#ffffff12;border-radius:9px;margin:15px 0}.nav{display:grid;gap:5px}.nav button{background:transparent;text-align:left;color:#e2ecfb}.nav button.active{background:#1768cb}.content{padding:24px;max-width:1500px;width:100%;margin:auto}.head{display:flex;justify-content:space-between;gap:12px;margin-bottom:18px}.head h1{margin:0 0 5px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}.num{font-size:28px;font-weight:800;margin:7px 0}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px}.fields .full{grid-column:1/-1}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.tablewrap{overflow:auto}.mark-toolbar{display:grid;grid-template-columns:2fr 1fr;gap:12px}.mark-count{font-size:13px;color:var(--muted);margin:12px 0}.marks-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.mark-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px;min-width:0}.mark-student{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}.mark-name{font-weight:750;font-size:15px}.mark-pill{font-size:11px;font-weight:700;border-radius:99px;padding:5px 8px;white-space:nowrap}.mark-pill.empty{background:#eef2f7;color:#4b5b70}.mark-pill.draft{background:#fff4d8;color:#785500}.mark-pill.submitted{background:#e4f7ed;color:#14633a}.mark-inputs{display:grid;grid-template-columns:1fr 1fr;gap:12px}.mark-grade{padding:10px;border:1px solid var(--line);border-radius:9px;min-height:42px;background:#f8fafd}.mark-row-actions{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.mark-row-actions button{flex-shrink:0}.mark-card textarea{resize:vertical}.mark-card input:disabled,.mark-card textarea:disabled{background:#f0f3f7;color:#66758d}@media(max-width:850px){.mark-toolbar,.marks-cards{grid-template-columns:1fr}.mark-card{padding:12px}.mark-inputs{grid-template-columns:1fr 1fr}.mark-row-actions{align-items:flex-start;flex-direction:column}.mark-row-actions button{width:100%}}table{border-collapse:collapse;width:100%;min-width:500px}td,th{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f5f8fc}.notice{background:#fff6da;padding:12px;border-radius:9px;margin-bottom:12px}.mobile{display:none}@media(max-width:850px){.login{display:block;padding:20px}.welcome{display:none}.card{max-width:480px;margin:8vh auto}.layout{grid-template-columns:1fr}aside{display:none;position:fixed;top:68px;bottom:0;width:260px;z-index:4;overflow:auto}.layout.open aside{display:block}.mobile{display:inline-block}.stats{grid-template-columns:repeat(2,1fr)}.content{padding:14px}.grid,.fields{grid-template-columns:1fr}.fields .full{grid-column:auto}.brand{font-size:16px}}@media print{aside,.top button,.actions{display:none!important}.layout{display:block}.content{padding:0}}
+
+/* Visual refresh: clean, accessible, mobile-first school workspace */
+:root{--navy:#10264b;--blue:#315fe8;--bg:#f4f7fc;--line:#e1e8f3;--muted:#687891;--ink:#17243b;--teal:#16a6a1;--shadow:0 10px 28px rgba(20,45,90,.07)}
+body{color:var(--ink);background:radial-gradient(ellipse at 8% 0%,#eaf1ff 0,transparent 34%),var(--bg);letter-spacing:.005em}
+button{background:linear-gradient(135deg,#3768f3,#234ed2);box-shadow:0 3px 8px rgba(49,95,232,.16);transition:transform .16s ease,box-shadow .16s ease,filter .16s ease}
+button:hover{filter:brightness(1.04);box-shadow:0 6px 14px rgba(35,78,210,.2);transform:translateY(-1px)}
+button:active{transform:translateY(0)}
+button:disabled{opacity:.65;cursor:wait;transform:none}
+button.secondary{background:#edf2ff;color:#2448a6;box-shadow:none;border:1px solid #dce5ff}
+input,select,textarea{border-color:#d8e1ef;box-shadow:0 1px 2px rgba(15,35,70,.025);transition:border-color .15s ease,box-shadow .15s ease}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#6488ff;box-shadow:0 0 0 3px rgba(75,112,245,.13)}
+label{color:#34445e;font-size:12px;letter-spacing:.025em}
+.login{background:radial-gradient(circle at 18% 20%,#3472ed 0,transparent 32%),radial-gradient(circle at 80% 90%,#0e9caa 0,transparent 30%),linear-gradient(135deg,#0b1d3b,#174bb5 65%,#123b7e);position:relative;overflow:hidden}
+.login:before{content:"";position:absolute;width:420px;height:420px;border:1px solid #ffffff20;border-radius:50%;right:38%;top:-220px;box-shadow:0 0 0 45px #ffffff08,0 0 0 90px #ffffff06;pointer-events:none}
+.welcome,.login>.card{position:relative;z-index:1}
+.welcome h1{letter-spacing:-.045em;font-weight:850}
+.welcome p{max-width:580px}
+.card{border:1px solid #ffffffc9;border-radius:24px;box-shadow:0 28px 80px #00122f55}
+.card h2{font-size:25px;letter-spacing:-.025em;margin-bottom:6px}
+.logo{display:inline-flex;align-items:center;justify-content:center;min-width:38px;min-height:38px;border-radius:13px;background:linear-gradient(135deg,#4779ff,#2148c9);box-shadow:0 5px 14px #1645b844}
+.top{height:72px;padding:0 clamp(12px,2.4vw,32px);background:#ffffffed;backdrop-filter:blur(14px);box-shadow:0 3px 16px #132e5808}
+.top .brand{letter-spacing:-.025em}
+.top #badge{font-size:12px;font-weight:650;padding:7px 10px;border-radius:999px;background:#eff4ff;color:#35539a;display:inline-block;margin-right:7px}
+.layout{grid-template-columns:255px minmax(0,1fr)}
+aside{background:linear-gradient(180deg,#10264b 0%,#142f5c 55%,#10264b 100%);padding:20px 14px;border-right:1px solid #ffffff0d}
+aside .brand{font-size:15px;padding:4px 9px;color:#f3f7ff}
+.who{background:linear-gradient(135deg,#ffffff18,#ffffff0a);border:1px solid #ffffff14;padding:14px;border-radius:14px;line-height:1.7}
+.nav{gap:5px;margin-top:18px}
+.nav button{display:flex;align-items:center;min-height:42px;padding:10px 12px;border-radius:10px;color:#dbe6fb;font-size:13px;font-weight:600;box-shadow:none;border:1px solid transparent}
+.nav button:hover{background:#ffffff12;transform:translateX(2px);box-shadow:none}
+.nav button.active{background:linear-gradient(100deg,#3768f3,#2c57cb);color:white;border-color:#ffffff1c;box-shadow:0 5px 13px #071b4d44}
+.content{padding:clamp(16px,2.3vw,34px);max-width:1600px}
+.head{align-items:center;padding:4px 0 18px;border-bottom:1px solid #e1e8f3;margin-bottom:22px}
+.head h1{font-size:clamp(23px,2.2vw,31px);letter-spacing:-.04em;font-weight:820;color:#15284a}
+.head .muted{font-size:13px}
+.panel,.stat{border:1px solid #e3eaf4;border-radius:17px;box-shadow:var(--shadow);transition:box-shadow .18s ease,border-color .18s ease}
+.panel{padding:clamp(15px,1.6vw,22px);margin-bottom:18px;overflow:hidden}
+.panel:hover,.stat:hover{border-color:#d4def0;box-shadow:0 13px 32px rgba(20,45,90,.09)}
+.panel h2{font-size:16px;letter-spacing:-.015em;color:#1b3155;display:flex;align-items:center;gap:9px}
+.panel h2:before{content:"";display:inline-block;width:4px;height:19px;border-radius:6px;background:linear-gradient(#4777ff,#18a6a2);flex:0 0 4px}
+.stats{gap:14px}
+.stat{position:relative;overflow:hidden;padding:18px;background:linear-gradient(145deg,#fff,#f9fbff)}
+.stat:after{content:"";position:absolute;right:-20px;top:-26px;width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#dfe9ff88,#c8f3ef55);pointer-events:none}
+.num{font-size:clamp(25px,2.5vw,34px);letter-spacing:-.045em;color:#193b80;position:relative;z-index:1}
+.grid{gap:16px}
+.msg{border:1px solid #d9e8ff;background:linear-gradient(110deg,#edf5ff,#f6f9ff);color:#28466f;padding:12px 14px;border-radius:11px;line-height:1.55}
+.msg.error{background:#fff1f1;border-color:#ffd6d6;color:#9d2929}
+.notice{border:1px solid #f1df9f;background:#fff9e8}
+table{border-collapse:separate;border-spacing:0;min-width:520px}
+th{background:#f2f6fd;color:#344968;font-size:11px;text-transform:uppercase;letter-spacing:.055em;font-weight:750}
+td,th{padding:12px 13px;border-bottom:1px solid #e8edf5}
+tr:last-child td{border-bottom:0}
+tbody tr:hover td{background:#f8faff}
+td button{padding:7px 10px;font-size:12px}
+.mark-card{border-color:#e0e8f4;border-radius:15px;box-shadow:0 5px 18px #18365b0a}
+.mark-card:focus-within{border-color:#9bb4ff;box-shadow:0 0 0 3px #5079f21a}
+.mark-pill{letter-spacing:.02em}
+.mark-grade{background:#f5f8ff;border-color:#e1e8f4}
+.actions{gap:9px}
+.actions button{min-height:40px}
+.small{line-height:1.55}
+.muted{color:#6b7890}
+@media(max-width:850px){
+ .top{height:64px}
+ .layout{grid-template-columns:minmax(0,1fr)}
+ aside{top:64px;width:min(290px,86vw);box-shadow:18px 0 40px #071a3b38}
+ .content{padding:16px 12px 28px}
+ .head{align-items:flex-start;flex-direction:column;gap:8px}
+ .stats{gap:10px}
+ .stat{padding:14px;border-radius:14px}
+ .num{font-size:26px}
+ .panel{border-radius:14px;padding:15px;margin-bottom:14px}
+ .panel h2{font-size:15px}
+ .top .brand{gap:7px;font-size:14px}
+ .top .logo{min-width:32px;min-height:32px;padding:6px;border-radius:10px}
+ .top #badge{max-width:110px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-right:3px}
+ .top #logout{padding:9px 10px;font-size:12px}
+ .login{padding:18px;display:flex;align-items:center}
+ .card{width:100%;padding:23px 19px;border-radius:21px;margin:0 auto}
+ .card h2{font-size:23px}
+ .fields{gap:6px}
+ table{min-width:560px}
+}
+@media(max-width:390px){.top .brand{font-size:0}.top .brand .logo,.top .brand #hamb{font-size:15px}.top #badge{max-width:76px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat{padding:12px}.num{font-size:23px}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
 </style></head><body>
 <section id="auth" class="login"><div class="welcome"><div class="brand"><span class="logo">🎓</span> School Management System</div><h1>Better learning.<br>Smarter management.</h1><p>A unified platform for administrators, teachers, bursars, parents and students. Manage grades, streams, subjects, attendance, fees and academic reports in one place.</p><p>✓ Multi-school support　✓ Role-based access　✓ Mobile friendly</p></div><div class="card"><div class="brand"><span class="logo">🎓</span> School Management</div><h2 id="authTitle">Welcome back</h2><p class="muted" id="authSub">Sign in to your account.</p><form id="authForm"><div id="namebox" class="hidden"><label>Full name</label><input id="name"></div><label>Email</label><input id="email" type="email" required autocomplete="username" autocapitalize="none" spellcheck="false"><label>Password</label><input id="password" type="password" required minlength="6" autocomplete="current-password"><button id="submit" type="submit" style="width:100%;margin-top:15px">Sign in</button></form><div class="actions"><button id="toggle" class="secondary" type="button">Create account</button><button id="reset" class="secondary" type="button">Reset password</button></div><div id="authmsg"></div><p class="small muted">New accounts do not choose their own privileged role. Ask your developer or administrator to assign your school and access role.</p></div></section>
 <section id="app" class="app hidden"><header class="top"><div class="brand"><button id="hamb" class="secondary mobile">☰</button><span class="logo">🎓</span> School Management System</div><div><span id="badge" class="muted"></span> <button id="logout" class="secondary">Log out</button></div></header><div id="layout" class="layout"><aside><div class="brand">My Workspace</div><div class="who"><b id="uname"></b><br><span id="urole"></span></div><nav id="nav" class="nav"></nav></aside><main id="content" class="content"></main></div></section>
