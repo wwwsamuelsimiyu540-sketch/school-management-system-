@@ -88,7 +88,37 @@ td button{padding:7px 10px;font-size:12px}
 }
 @media(max-width:390px){.top .brand{font-size:0}.top .brand .logo,.top .brand #hamb{font-size:15px}.top #badge{max-width:76px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat{padding:12px}.num{font-size:23px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
-.workflow-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:12px}.workflow-step{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fff;min-width:0}.workflow-step p{color:var(--muted);font-size:13px;line-height:1.45;min-height:56px}.workflow-step-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.workflow-status{display:inline-block;border-radius:999px;padding:4px 7px;font-size:10px;font-weight:750;white-space:nowrap}.workflow-status.ready{background:#e7f7ee;color:#176b3a}.workflow-status.pending{background:#fff3dc;color:#855600}.workflow-step button{margin-top:9px;max-width:100%;white-space:normal}</style><script>
+.workflow-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,245px),1fr));gap:12px}.workflow-step{border:1px solid var(--line);border-radius:12px;padding:13px;background:#fff;min-width:0}.workflow-step p{color:var(--muted);font-size:13px;line-height:1.45;min-height:56px}.workflow-step-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.workflow-status{display:inline-block;border-radius:999px;padding:4px 7px;font-size:10px;font-weight:750;white-space:nowrap}.workflow-status.ready{background:#e7f7ee;color:#176b3a}.workflow-status.pending{background:#fff3dc;color:#855600}.workflow-step button{margin-top:9px;max-width:100%;white-space:normal}
+/* Administrator dashboard visual refresh — responsive, data-driven */
+:root{--navy:#082b55;--blue:#1769e8;--bg:#f3f7fc;--line:#dbe6f4;--muted:#66758d}
+body{background:#f3f7fc;color:#172b4d}
+.app{min-height:100vh}
+.top{background:linear-gradient(110deg,#082b55,#124b91);color:#fff;box-shadow:0 4px 18px #0b2e591c}
+.brand{color:#fff}
+#hamb{background:#ffffff1c;color:#fff;border:1px solid #ffffff26}
+.sidebar{background:linear-gradient(180deg,#092e58,#061f3c);color:#eaf2ff}
+.sidebar button,.sidebar a{border-radius:9px}
+.sidebar button.active,.sidebar .active{background:#1769e8;color:#fff}
+.content{padding:clamp(12px,2vw,26px);min-width:0}
+.panel,.stat,.stats>*,.card{border:1px solid #dce7f5!important;border-radius:13px!important;background:#fff;box-shadow:0 3px 12px #16365b0a}
+.panel{padding:clamp(14px,1.7vw,22px);margin-bottom:15px}
+.panel h2,.panel h3{color:#12345d;letter-spacing:-.02em}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:14px 0 18px}
+.stat{padding:17px!important;min-width:0}
+.stat strong,.stat b{color:#092f60}
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:10px}
+.actions button{min-height:44px;text-align:left;border:1px solid #d9e6f6;background:#f8fbff;color:#164577;box-shadow:none}
+.actions button:hover{background:#eaf3ff;border-color:#9cc5ff}
+button{transition:background .15s ease,transform .15s ease}
+button:active{transform:translateY(1px)}
+input,select,textarea{border-radius:9px!important;border-color:#d5e0ef!important;background:#fff}
+table{border-collapse:separate;border-spacing:0;width:100%;overflow:hidden;border-radius:10px}
+th{background:#edf4fd;color:#163b68}
+td,th{padding:10px;border-bottom:1px solid #e7edf6}
+svg{max-width:100%;height:auto}
+@media(max-width:900px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.content{padding:12px}.panel{padding:14px}}
+@media(max-width:520px){.stats{gap:8px}.stat{padding:12px!important}.actions{grid-template-columns:repeat(2,minmax(0,1fr))}.actions button{font-size:13px;padding:10px 8px}.panel{border-radius:11px!important}}
+</style><script>
 window.addEventListener('error',function(e){if(!e.error)return;const message='JavaScript error: '+(e.message||'Unknown error')+'. Refresh the page and try again.';const show=function(){const app=document.getElementById('app'),auth=document.getElementById('auth'),content=document.getElementById('content'),msg=document.getElementById('authmsg');document.body.classList.remove('auth-pending');if(app&&!app.classList.contains('hidden')&&content){content.innerHTML='<section class="panel"><h2>Dashboard could not finish loading</h2><p class="msg error"></p><button type="button" onclick="location.reload()">Refresh system</button></section>';content.querySelector('.msg').textContent=message;return}if(auth)auth.classList.remove('hidden');if(msg){msg.className='msg error';msg.textContent=message}};if(document.body)show();else document.addEventListener('DOMContentLoaded',show,{once:true})});
 window.addEventListener('unhandledrejection',function(e){const reason=e.reason;const message='Startup error: '+(reason&&reason.message?reason.message:String(reason||'Unknown error'))+'. Refresh the page and try again.';const show=function(){const app=document.getElementById('app'),auth=document.getElementById('auth'),content=document.getElementById('content'),msg=document.getElementById('authmsg');document.body.classList.remove('auth-pending');if(app&&!app.classList.contains('hidden')&&content){content.innerHTML='<section class="panel"><h2>Dashboard could not finish loading</h2><p class="msg error"></p><button type="button" onclick="location.reload()">Refresh system</button></section>';content.querySelector('.msg').textContent=message;return}if(auth)auth.classList.remove('hidden');if(msg){msg.className='msg error';msg.textContent=message}};if(document.body)show();else document.addEventListener('DOMContentLoaded',show,{once:true})});
 </script></head><body class="auth-pending">
