@@ -10,11 +10,12 @@ Mobile-friendly, multi-school management system built with HTML/CSS/JavaScript, 
 ## Role-based panels
 
 - **Developer:** platform dashboard, school approval/suspension, users, system analytics, subscriptions, system health, audit logs, demo centre, support, settings and data-quality tools.
-- **Administrator:** school settings, classes/streams, subjects, students, teachers and assignments, examinations, marks, attendance, grading rules, rubrics/competencies, fees, announcements and academic reports.
-- **Teacher:** assigned classes/streams/subjects, marks entry, announcements and teaching performance charts.
-- **Bursar:** fee charges by class/stream, student balances, payment recording, receipts, payment history and fee reports.
-- **Parent:** linked children’s results, attendance, fee charges, payments and balances.
-- **Student:** own profile, results, subjects, attendance, fee charges, payments and balance.
+- **Administrator:** school settings, classes/streams, subjects, students, teachers, staff account registration, examinations, marks, attendance, grading, competencies, announcements and academic/operational reports. Financial transactions and library operations are excluded.
+- **Teacher:** assigned classes/streams/subjects, marks entry, assignments, attendance, teaching analysis and reports limited to assigned learners and subjects.
+- **Bursar:** the independent finance portal for fee types/charges, student balances, payments, receipts, expenditure, procurement, payroll and financial reports.
+- **Librarian:** the independent library portal for book catalogue, inventory, borrowing, returns, overdue tracking and library reports.
+- **Parent:** linked children’s results, academic progress, attendance, fee statements, receipts and reports.
+- **Student:** own profile, results, subjects, attendance, learning resources, library activity and read-only fee statement.
 
 ## School-level setup
 
