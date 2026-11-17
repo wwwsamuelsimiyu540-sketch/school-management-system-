@@ -274,9 +274,7 @@ function timetableSubstitutionsPage(){
 
 function schoolManagementToolsOperationsPage(){
  if(profile.role!=='administrator')return header(page,'')+panel('Restricted','These school operations tools are available to school administrators.');
- const ledger=data.financialLedger||[],items=data.inventory||[],tt=data.timetable||[],students=data.students||[],subjects=data.subjects||[];
- const income=ledger.filter(x=>x.entry_type==='income').reduce((n,x)=>n+Number(x.amount||0),0);
- const expenses=ledger.filter(x=>x.entry_type==='expense').reduce((n,x)=>n+Number(x.amount||0),0);
+ const items=data.inventory||[],tt=data.timetable||[],students=data.students||[],subjects=data.subjects||[];
  const low=items.filter(x=>Number(x.quantity||0)<=Number(x.reorder_level||0));
  const clashes=[];
  for(let i=0;i<tt.length;i++)for(let j=i+1;j<tt.length;j++){
@@ -287,9 +285,8 @@ function schoolManagementToolsOperationsPage(){
   if(teacherConflict||classConflict)clashes.push({day: a.day_of_week||a.day||'—',time:startA+'–'+endA,reason:teacherConflict?'Teacher double-booked':'Class/stream double-booked',grade:a.grade||'—',stream:a.stream||'—'});
  }
  const rows=clashes.map(x=>[x.day,x.time,x.reason,x.grade,x.stream]);
- const finRows=[['Income (ledger)',income],['Expenses (ledger)',expenses],['Net movement (income - expenses)',income-expenses],['Fee payments recorded', (data.fees||[]).reduce((n,x)=>n+Number(x.amount||0),0)],['Outstanding fees (calculated)', (data.charges||[]).reduce((n,x)=>n+Number(x.amount||0),0)-(data.fees||[]).reduce((n,x)=>n+Number(x.amount||0),0)]];
  return header(page,'Extra operations checks and exports; values use records currently loaded for this school')
- +panel('Financial statements snapshot','<p class="muted small">Management summary, not an audited balance sheet. Record all income/expenses in Finance & Accounting and reconcile bank transactions for complete figures.</p>'+table(['Measure','Amount (KES)'],finRows.map(x=>[x[0],money(x[1])]))+'<div class="actions"><button type="button" id="exportFinanceCsv">Export finance summary CSV</button><button type="button" class="secondary" data-quick="Finance & Accounting">Open finance ledger</button></div>')
+ return header(page,'Extra operations checks and exports; values use records currently loaded for this school')
  +panel('Inventory reorder alerts','<p class="muted small">Items at or below their configured reorder level.</p>'+table(['Item','Store','Quantity','Reorder level','Unit'],low.map(x=>[x.item_name,x.storage_location||'—',x.quantity,x.reorder_level,x.unit]))+'<p class="muted">'+low.length+' item(s) need review.</p><div class="actions"><button type="button" id="exportInventoryCsv">Export inventory CSV</button><button type="button" class="secondary" data-quick="Inventory">Manage stock</button></div>')
  +panel('Timetable clash audit','<p class="muted small">Checks saved timetable entries with day and start/end times. If older records do not store these fields, they cannot be checked here.</p>'+table(['Day','Time','Conflict','Grade','Stream'],rows)+'<p class="muted">'+clashes.length+' possible clash(es) found.</p><div class="actions"><button type="button" id="exportClashesCsv">Export clash list CSV</button><button type="button" class="secondary" data-quick="Timetable">Open timetable</button></div>')
  +panel('Student CSV import / school data export','<p>Import a CSV with headers <code>admission_no,full_name,grade,stream</code>. Optional columns: <code>gender,parent_phone,pathway,track</code>. The import validates existing grade/stream combinations and duplicate admission numbers before saving.</p><form id="studentCsvImportForm" class="fields"><div class="full"><label>Student CSV file</label><input type="file" id="studentCsvFile" accept=".csv,text/csv" required></div><div class="full"><button>Validate and import students</button><div id="studentCsvImportMsg" class="muted small"></div></div></form><div class="actions"><button type="button" id="exportStudentsCsv">Export student register CSV</button><button type="button" id="exportSubjectsCsv" class="secondary">Export subject list CSV</button><button type="button" class="secondary" data-quick="Reports">Open academic reports</button></div>')
@@ -373,7 +370,7 @@ function roleDashboardCharts(){
 const role=profile.role;
 if(role==='teacher')return '';
 if(role==='administrator'){
-const submitted=data.marks.filter(m=>m.status==='submitted'),paid=data.fees;
+const submitted=data.marks.filter(m=>m.status==='submitted');
 const attendance=data.attendance;
 return '<div class="grid">'+
 chartPanel('1. Students by grade','Student enrolment across grades',groupedCounts(data.students,'grade'))+
@@ -382,7 +379,7 @@ chartPanel('3. Subjects by grade','Subjects configured for each grade',groupedCo
 chartPanel('4. Submitted marks by subject','Submitted mark records by subject',groupedCounts(submitted,m=>(data.subjects.find(s=>s.id===m.subject_id)||{}).name||'Unknown subject'))+
 chartPanel('5. Results by examination','Submitted marks per examination',groupedCounts(submitted,m=>(data.exams.find(e=>e.id===m.exam_id)||{}).name||'Unknown examination'))+
 chartPanel('6. Attendance status','Attendance records by status',groupedCounts(attendance,'status'))+
-chartPanel('7. Payments by method','Recorded fee payments by method',groupedCounts(paid,'payment_method'))+'</div>';
+chartPanel('7. Student gender distribution','Student enrolment grouped by gender',groupedCounts(data.students,x=>x.gender||'Not recorded'))+'</div>';
 }
 if(role==='developer'){
 const schools=data.schools,users=data.users,acts=data.activity,subs=data.subscriptions,tickets=data.tickets,incs=data.incidents,features=data.features,notifs=data.notifications,privacy=data.privacy,integrations=data.integrations,tasks=data.tasks,changes=data.changes;
@@ -452,11 +449,11 @@ steps=[
 {title:'6. Enrol learners',page:'Students',detail:'Register learners and place each in the correct class and stream.',ready:arr('students').length>0,count:arr('students').length},
 {title:'7. Create examinations',page:'Examinations',detail:'Set the exam name, academic year and term before marks entry.',ready:arr('exams').length>0,count:arr('exams').length},
 {title:'8. Publish timetable',page:'Timetable',detail:'Allocate teachers, subjects, periods and rooms; resolve clashes before publishing.',ready:arr('timetable').length>0,count:arr('timetable').length},
-{title:'9. Set fee charges',page:'Fees',detail:'Configure the charges used to calculate each learner’s balance.',ready:arr('charges').length>0,count:arr('charges').length},
-{title:'10. Record and submit marks',page:'Marks Entry',detail:'Teachers enter marks, save drafts, then submit completed assessments.',ready:submitted.length>0,count:submitted.length},
-{title:'11. Review academic reports',page:'Reports',detail:'Check subject, class, stream and learner analysis before printing or sharing results.',ready:submitted.length>0,count:submitted.length},
-{title:'12. Manage finance and stock',page:'Finance & Accounting',detail:'Reconcile payments and expenses; track stock, suppliers and purchase orders.',ready:arr('financialLedger').length>0||arr('inventory').length>0,count:arr('financialLedger').length+arr('inventory').length},
-{title:'13. Enable learning and parent updates',page:'Learning Resources',detail:'Publish learning resources and assignments, then queue approved parent notices.',ready:arr('learningResources').length>0||arr('learningAssignments').length>0,count:arr('learningResources').length+arr('learningAssignments').length}
+
+{title:'9. Record and submit marks',page:'Marks Entry',detail:'Teachers enter marks, save drafts, then submit completed assessments.',ready:submitted.length>0,count:submitted.length},
+{title:'10. Review academic reports',page:'Reports',detail:'Check subject, class, stream and learner analysis before printing or sharing results.',ready:submitted.length>0,count:submitted.length},
+{title:'11. Monitor school inventory',page:'Inventory',detail:'Review school assets and stock levels; financial purchasing and payments remain with the Bursar.',ready:arr('inventory').length>0,count:arr('inventory').length},
+{title:'12. Enable learning and parent updates',page:'Learning Resources',detail:'Publish learning resources and assignments, then queue approved parent notices.',ready:arr('learningResources').length>0||arr('learningAssignments').length>0,count:arr('learningResources').length+arr('learningAssignments').length}
 ];
 }else if(profile.role==='teacher'){
 steps=[
