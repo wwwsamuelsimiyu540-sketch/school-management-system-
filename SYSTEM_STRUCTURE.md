@@ -11,11 +11,12 @@
 ## Roles and panels
 
 1. **`developer`** — platform-wide, no school assignment; school approvals, suspensions/reactivation, user management, analytics, subscriptions, system health, audit logs, demo centre, support, platform settings, feature management, notifications, incidents, privacy requests, integrations, scheduled tasks and data quality.
-2. **`administrator`** — one approved school; school settings, academic calendar, classes/streams, subjects, students, teachers and assignments, examinations, marks entry, attendance, grading scales, rubrics/competencies, fees, announcements and academic reports.
-3. **`teacher`** — assigned classes, streams and subjects; marks entry and announcements. Teachers cannot manage school-wide class/student administration or choose the academic year/term.
-4. **`bursar`** — fee charges, balances, payment recording, receipts, payment history and finance reports.
-5. **`parent`** — linked children only; results, attendance, fee charges, payments and balances.
-6. **`student`** — own profile, results, subjects, attendance and fee statement.
+2. **`administrator`** — one approved school; school settings, academic calendar, classes/streams, subjects, students, teacher assignments, examinations, marks workflow, attendance, grading scales, competencies, announcements and academic/operational reports. Does not manage financial transactions or library circulation.
+3. **`teacher`** — assigned classes, streams and subjects; marks entry, assignments, attendance, learning resources and reports limited to assigned learners and subjects. Teachers cannot manage school-wide class/student administration or choose the academic year/term.
+4. **`bursar`** — independent finance portal; fee types and charges, balances, payment recording, receipts, expenditure, procurement, payroll and finance reports.
+5. **`librarian`** — independent library portal; book catalogue, inventory, borrowing, returns, overdue tracking and library reports.
+6. **`parent`** — linked children only; results, performance history, attendance, fee statements and reports.
+7. **`student`** — own profile, results, subjects, attendance, learning resources, library activity and read-only fee statement.
 
 ## Education-level rules
 
