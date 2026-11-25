@@ -15,7 +15,7 @@ for (const file of process.argv.slice(2)) {
       console.log('PASS ' + file + ': inline script ' + number);
     } catch (error) {
       failed = true;
-      console.error('FAIL ' + file + ': inline script ' + number + ': ' + error.message);
+      console.error('FAIL ' + file + ': inline script ' + number + ': ' + error.stack);
     }
   }
 }
