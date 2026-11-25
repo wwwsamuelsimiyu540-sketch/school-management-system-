@@ -15,8 +15,7 @@ for (const file of process.argv.slice(2)) {
       console.log('PASS ' + file + ': inline script ' + number);
     } catch (error) {
       failed = true;
-      console.error('FAIL ' + file + ': inline script ' + number + ': ' + error.stack);
-      console.error('Nearby source lines:\n' + match[2].split(/\r?\n/).slice(210, 220).map((line, i) => (211 + i) + ': ' + line.slice(0, 1600)).join('\n'));
+      console.error('FAIL ' + file + ': inline script ' + number + ': ' + error.message);
     }
   }
 }
